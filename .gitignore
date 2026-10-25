@@ -1,0 +1,35 @@
+data/raw/
+*.pyc
+__pycache__/
+.venv/
+.venv-1/
+docs/_stage2_validation_raw.json
+docs/_dataset_schema_snapshot.json
+docs/_stage4_analysis_raw.json
+docs/_stage4_split_assignment.csv
+docs/_stage5_preprocessing_raw.json
+docs/_stage6_feature_engineering_raw.json
+docs/_stage7_*_raw.json
+.ipynb_checkpoints/
+.pytest_cache/
+.DS_Store
+
+# Secrets / credentials / environment files -- none exist in this project as
+# of Stage 7, but excluded defensively so one is never committed by accident.
+.env
+.env.*
+*.pem
+*.key
+kaggle.json
+credentials.json
+secrets.json
+
+# Large generated model artifacts / matrices -- none exist yet (no model has
+# been saved anywhere in this project); excluded defensively ahead of Stage 7+
+# actually producing any, per the same "generated, not hand-authored" logic
+# already applied to the _stageN_*_raw.json evidence files above.
+*.pkl
+*.joblib
+*.npy
+*.npz
+*.h5
