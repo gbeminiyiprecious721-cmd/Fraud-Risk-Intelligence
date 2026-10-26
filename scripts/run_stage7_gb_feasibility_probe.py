@@ -31,6 +31,7 @@ from src.preprocessing import (  # noqa: E402
     select_indicator_columns,
 )
 from src.model_selection import build_bounded_gradient_boosting, build_chronological_pilot_subset  # noqa: E402
+from src.experiment_tracking import track_run  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data" / "raw" / "ieee-fraud-detection"
@@ -63,17 +64,30 @@ def main() -> dict:
     section(f"1. Measure GradientBoostingClassifier fit time at {PROBE_SIZES} chronological TRAIN rows")
     measured = []
     for n_rows in PROBE_SIZES:
-        pilot_df = build_chronological_pilot_subset(ASSIGNMENT_PATH, TRAIN_TXN, all_cols, n_rows=n_rows)
-        ct = build_preprocessing_pipeline(numeric_no_indicator, numeric_with_indicator, categorical)
-        X = ct.fit_transform(pilot_df[all_cols])
-        y = pilot_df["isFraud"].to_numpy()
+        # Stage 8 automatic logging: one tracked run per measured probe
+        # size, wrapping the EXISTING fit below unchanged.
+        with track_run(7, f"gb_feasibility_probe_{n_rows}_rows", "One measured point of the GBM full-data feasibility power-law fit.") as record:
+            pilot_df = build_chronological_pilot_subset(ASSIGNMENT_PATH, TRAIN_TXN, all_cols, n_rows=n_rows)
+            ct = build_preprocessing_pipeline(numeric_no_indicator, numeric_with_indicator, categorical)
+            X = ct.fit_transform(pilot_df[all_cols])
+            y = pilot_df["isFraud"].to_numpy()
 
-        model = build_bounded_gradient_boosting()
-        t0 = time.perf_counter()
-        model.fit(X, y)
-        fit_s = time.perf_counter() - t0
-        print(f"n_rows={n_rows:6d}  shape={X.shape}  fit_seconds={fit_s:.3f}")
-        measured.append({"n_rows": n_rows, "fit_seconds": fit_s, "shape": list(X.shape)})
+            model = build_bounded_gradient_boosting()
+            t0 = time.perf_counter()
+            model.fit(X, y)
+            fit_s = time.perf_counter() - t0
+            print(f"n_rows={n_rows:6d}  shape={X.shape}  fit_seconds={fit_s:.3f}")
+            measured.append({"n_rows": n_rows, "fit_seconds": fit_s, "shape": list(X.shape)})
+
+            record["model_family"] = "GradientBoostingClassifier"
+            record["hyperparameters"] = {k: v for k, v in model.get_params().items() if k in ("n_estimators", "max_depth", "random_state")}
+            record["random_seed"] = model.get_params().get("random_state")
+            record["preprocessing_config"] = {"pipeline": "build_preprocessing_pipeline (approved, unscaled)"}
+            record["partitions"] = {"train_pilot": {"id": f"train (earliest {n_rows} rows, chronological)", "n_rows": n_rows}}
+            record["feature_count"] = X.shape[1]
+            record["training_time_seconds"] = round(fit_s, 3)
+            record["validation_consulted"] = False
+            record["validation_purpose"] = "this probe measures fit time only -- no validation scoring occurs"
 
     report["measured"] = measured
 
@@ -113,6 +127,33 @@ def main() -> dict:
     with open(out_path, "w") as f:
         json.dump(report, f, indent=2, default=str)
     print(f"\nFull structured report written to {out_path}")
+
+    # Stage 8 automatic logging: the full-data run ITSELF (never executed)
+    # gets its own record, matching the backfilled historical convention --
+    # a resource-budget decision, not a predictive-performance judgment.
+    decision_status = "infeasible_not_run" if not feasible else "diagnostic"
+    decision_reason = (
+        f"Power-law extrapolation (exponent k={report['fitted_exponent_k']}, worse than linear) with a "
+        f"{safety_margin}x safety margin estimated {report['conservative_estimate_seconds']}s against a "
+        f"{PRACTICAL_BUDGET_SECONDS}s practical budget."
+        + (" Exceeds the budget -- not launched." if not feasible else " Within budget -- see Stage 7 report for whether it was actually launched.")
+    )
+    with track_run(
+        7, "gb_full_data_training", "The full-data (438,125-row) Gradient Boosting benchmark itself.",
+    ) as decision_record:
+        decision_record["status"] = decision_status
+        decision_record["status_reason"] = decision_reason
+        decision_record["model_family"] = "GradientBoostingClassifier"
+        decision_record["hyperparameters"] = {"n_estimators": 100, "max_depth": 3, "random_state": 42}
+        decision_record["partitions"] = {"train": {"id": "train (complete)", "n_rows": FULL_TRAIN_N_ROWS}}
+        decision_record["runtime_settings"] = {
+            "practical_budget_seconds": PRACTICAL_BUDGET_SECONDS,
+            "conservative_estimate_seconds": report["conservative_estimate_seconds"],
+            "fitted_scaling_exponent_k": report["fitted_exponent_k"],
+        }
+        decision_record["validation_consulted"] = False
+        decision_record["evidence_paths"] = ["docs/_stage7_gb_feasibility_probe_raw.json"]
+
     return report
 
 

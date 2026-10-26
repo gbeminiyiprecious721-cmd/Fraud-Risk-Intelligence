@@ -67,6 +67,7 @@ from src.model_selection import (  # noqa: E402
     load_labels,
     sparse_magnitude_summary,
 )
+from src.experiment_tracking import track_run  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data" / "raw" / "ieee-fraud-detection"
@@ -102,6 +103,30 @@ def fit_rf_and_evaluate(X_train, y_train, X_val, y_val, label: str) -> dict:
     }
 
 
+def tracked_fit_rf_and_evaluate(
+    X_train, y_train, X_val, y_val, label, *, experiment_name, experiment_purpose,
+    preprocessing_config, partitions, validation_purpose, influenced_subsequent_decisions,
+):
+    """Stage 8 automatic logging wrapper around the EXISTING, unchanged
+    `fit_rf_and_evaluate` -- logs the same result it already returns,
+    changes nothing about how that result is computed."""
+    with track_run(7, experiment_name, experiment_purpose) as record:
+        result = fit_rf_and_evaluate(X_train, y_train, X_val, y_val, label)
+        record["model_family"] = "RandomForestClassifier"
+        record["hyperparameters"] = {"n_estimators": 100, "max_depth": 10, "min_samples_leaf": 20, "n_jobs": -1, "random_state": 42}
+        record["random_seed"] = 42
+        record["preprocessing_config"] = preprocessing_config
+        record["partitions"] = partitions
+        record["feature_count"] = result["shape"][1] if result.get("shape") else None
+        record["training_time_seconds"] = result["fit_seconds"]
+        record["inference_time_seconds"] = result["predict_seconds"]
+        record["metrics"] = result["metrics"]
+        record["validation_consulted"] = True
+        record["validation_purpose"] = validation_purpose
+        record["influenced_subsequent_decisions"] = influenced_subsequent_decisions
+    return result
+
+
 def run_feature_ablation() -> dict:
     section("Feature-engineering ablation (Random Forest): A = Stage 5 only, B = Stage 5 + Stage 6")
     columns = load_included_columns(REGISTER_PATH, TRAIN_TXN)
@@ -132,7 +157,13 @@ def run_feature_ablation() -> dict:
     val_df = align_labels_to_partition_df(val_raw_partition, val_labels)
     y_val = val_df["isFraud"].to_numpy()
     X_val_a = ct_a.transform(val_df[all_cols])
-    result_a = fit_rf_and_evaluate(X_train_a, y_train, X_val_a, y_val, "arm_a_stage5_only")
+    result_a = tracked_fit_rf_and_evaluate(
+        X_train_a, y_train, X_val_a, y_val, "arm_a_stage5_only",
+        experiment_name="rf_feature_ablation_arm_a", experiment_purpose="Feature-engineering ablation, Random Forest, Stage 5 preprocessing alone (the reference arm).",
+        preprocessing_config={"pipeline": "build_preprocessing_pipeline"},
+        partitions={"train_pilot": {"id": "train (earliest 15,000 rows, chronological)", "n_rows": PILOT_N_ROWS}, "validation": {"id": "validation", "n_rows": len(y_val)}},
+        validation_purpose="compare whether Stage 6 engineered features add measurable value", influenced_subsequent_decisions=False,
+    )
 
     section("Building Stage 6 engineered features -- point-in-time-correct for BOTH train-pilot and validation rows")
     raw_cols = ["TransactionID", "TransactionDT", "card1", "P_emaildomain", "R_emaildomain", "ProductCD", "card4", "TransactionAmt"]
@@ -181,7 +212,13 @@ def run_feature_ablation() -> dict:
     X_val_b = hstack_sparse([X_val_a, X_val_feat])
 
     section("Arm B: Stage 5 + Stage 6 engineered features")
-    result_b = fit_rf_and_evaluate(X_train_b, y_train, X_val_b, y_val, "arm_b_stage5_plus_stage6")
+    result_b = tracked_fit_rf_and_evaluate(
+        X_train_b, y_train, X_val_b, y_val, "arm_b_stage5_plus_stage6",
+        experiment_name="rf_feature_ablation_arm_b", experiment_purpose="Feature-engineering ablation, Random Forest, Stage 5 + Stage 6 engineered features.",
+        preprocessing_config={"pipeline": "build_preprocessing_pipeline + build_engineered_feature_block (Stage 6)"},
+        partitions={"train_pilot": {"id": "train (earliest 15,000 rows, chronological)", "n_rows": PILOT_N_ROWS}, "validation": {"id": "validation", "n_rows": len(y_val)}},
+        validation_purpose="compare whether Stage 6 engineered features add measurable value", influenced_subsequent_decisions=False,
+    )
 
     ap_delta = result_b["metrics"]["average_precision"] - result_a["metrics"]["average_precision"]
     print(f"\nAP delta (B - A): {ap_delta:+.5f}")
@@ -217,7 +254,13 @@ def run_indicator_ablation() -> dict:
     ct_orig = build_preprocessing_pipeline(numeric_no_indicator, numeric_with_indicator, categorical)
     X_train_orig = ct_orig.fit_transform(pilot_df[all_cols])
     X_val_orig = ct_orig.transform(val_df[all_cols])
-    result_orig = fit_rf_and_evaluate(X_train_orig, y_train, X_val_orig, y_val, "original_full_indicators")
+    result_orig = tracked_fit_rf_and_evaluate(
+        X_train_orig, y_train, X_val_orig, y_val, "original_full_indicators",
+        experiment_name="rf_indicator_ablation_original", experiment_purpose="Missingness-indicator ablation, Random Forest, approved full indicator representation.",
+        preprocessing_config={"pipeline": "build_preprocessing_pipeline"},
+        partitions={"train_pilot": {"id": "train (earliest 15,000 rows, chronological)", "n_rows": PILOT_N_ROWS}, "validation": {"id": "validation", "n_rows": len(y_val)}},
+        validation_purpose="compare the approved full-indicator representation against the collapsed prototype", influenced_subsequent_decisions=False,
+    )
 
     section("Indicator-duplicate groups -- recomputed fresh on this pilot subset")
     groups = find_duplicate_indicator_groups(pilot_df, numeric_with_indicator)
@@ -228,7 +271,13 @@ def run_indicator_ablation() -> dict:
     ct_collapsed = build_preprocessing_pipeline_with_collapsed_indicators(numeric_no_indicator, numeric_with_indicator, categorical, representatives)
     X_train_collapsed = ct_collapsed.fit_transform(pilot_df[all_cols])
     X_val_collapsed = ct_collapsed.transform(val_df[all_cols])
-    result_collapsed = fit_rf_and_evaluate(X_train_collapsed, y_train, X_val_collapsed, y_val, "collapsed_indicators")
+    result_collapsed = tracked_fit_rf_and_evaluate(
+        X_train_collapsed, y_train, X_val_collapsed, y_val, "collapsed_indicators",
+        experiment_name="rf_indicator_ablation_collapsed", experiment_purpose="Missingness-indicator ablation, Random Forest, Stage 6 collapsed-indicator prototype.",
+        preprocessing_config={"pipeline": "build_preprocessing_pipeline_with_collapsed_indicators", "n_representatives": len(representatives)},
+        partitions={"train_pilot": {"id": "train (earliest 15,000 rows, chronological)", "n_rows": PILOT_N_ROWS}, "validation": {"id": "validation", "n_rows": len(y_val)}},
+        validation_purpose="compare the approved full-indicator representation against the collapsed prototype", influenced_subsequent_decisions=False,
+    )
 
     ap_delta = result_collapsed["metrics"]["average_precision"] - result_orig["metrics"]["average_precision"]
     print(f"\nAP delta (collapsed - original): {ap_delta:+.5f}")
