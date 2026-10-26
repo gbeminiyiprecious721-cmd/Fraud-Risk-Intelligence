@@ -46,6 +46,8 @@ Three endpoints, in `src/api.py`:
 
 **No decision threshold anywhere.** The response is a raw probability (`fraud_probability`, float in [0,1]). Stage 1 never approved a specific cost-justified threshold (Stage 10's cost-sweep stayed explicitly conditional); this API does not invent one. There is no `is_fraud` field, no "confirmed"/"flagged" label — only the number, exactly as every prior stage has reported it.
 
+**Closure clarification, added explicitly for this field (2026-10-26):** `fraud_probability` is `RandomForestClassifier.predict_proba`'s raw output, used throughout this project for *ranking* (AP, Precision@K/Recall@K — Stage 10) and for the *relative* magnitudes compared in Stage 11's SHAP analysis. **It has never been validated as a calibrated estimate of real-world fraud likelihood** — no calibration check (e.g. a reliability diagram, Brier score, or isotonic/Platt recalibration) has been performed at any stage of this project (a limitation Stage 10 already carried, `docs/STAGE10_EVALUATION_PROTOCOL.md`). A returned value of, say, `0.70` is not a claim that "70% of transactions scored this way are truly fraudulent" — it is only a claim that this transaction ranks above one scored `0.50` and below one scored `0.90`, in a model whose *ranking* quality (not calibration) was measured in Stage 10.
+
 ## 3. Model loading and inference
 
 `create_app()` uses FastAPI's `lifespan` context manager to call `load_artifact(DEFAULT_ARTIFACT_PATH)` **once** at process startup, storing the result on `app.state`. Every request reuses that same already-fitted artifact — **nothing is ever re-fit, re-loaded, or re-validated per request**.
