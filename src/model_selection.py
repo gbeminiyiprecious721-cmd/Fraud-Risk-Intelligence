@@ -477,3 +477,135 @@ def warnings_catch_all():
             return self._cm.__exit__(*exc)
 
     return _Catcher()
+
+
+# ---------------------------------------------------------------------------
+# Controlled numeric-redundancy-reduction branch (Stage 7 conditioning
+# verification round). Independent of, and does not modify, the approved
+# indicator-collapse prototype (src/feature_engineering.py) -- this reduces
+# the numeric VALUE columns only, never the indicator-mask representation.
+# Every decision here is derived from TRAINING data only, by a fixed,
+# position-based rule -- never from the target or from validation AP.
+# ---------------------------------------------------------------------------
+
+def find_highly_correlated_value_groups(values: np.ndarray, columns: list[str], threshold: float = 0.99) -> dict[str, list[str]]:
+    """Connected-component grouping of `columns` by |Pearson correlation|
+    >= `threshold`, computed on whatever `values` the caller passes
+    (intended to be TRAIN-partition-only imputed values -- this function
+    has no partition awareness itself, same design as the other
+    diagnostics in this module; the driver script owns that discipline).
+
+    Deterministic by construction: traversal order follows `columns`'
+    own input order, and within each connected component the
+    REPRESENTATIVE is simply the first column by that same input order --
+    a fixed, position-based rule. No target column, no validation score,
+    and no row order ever influences which column is kept. Constant
+    (zero-variance) columns produce an undefined (NaN) correlation and
+    are deliberately excluded here -- `find_duplicate_value_columns`
+    already covers the exact-duplicate case (which includes most
+    practically-occurring constant-column ties) via direct equality, not
+    correlation.
+    """
+    n = len(columns)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        corr = np.corrcoef(values, rowvar=False)
+    corr = np.nan_to_num(corr, nan=0.0)
+    np.fill_diagonal(corr, 0.0)
+    adjacency = np.abs(corr) >= threshold
+
+    visited = [False] * n
+    groups: dict[str, list[str]] = {}
+    for i in range(n):
+        if visited[i]:
+            continue
+        visited[i] = True
+        component = [i]
+        queue = [i]
+        while queue:
+            node = queue.pop(0)
+            for neighbor in np.where(adjacency[node])[0]:
+                if not visited[neighbor]:
+                    visited[neighbor] = True
+                    component.append(int(neighbor))
+                    queue.append(int(neighbor))
+        if len(component) > 1:
+            component_sorted = sorted(component)  # positional order, not discovery order
+            names = [columns[idx] for idx in component_sorted]
+            groups[names[0]] = names
+    return groups
+
+
+def select_reduced_numeric_columns(
+    columns: list[str], exact_duplicate_groups: dict[str, list[str]], correlated_groups: dict[str, list[str]]
+) -> dict:
+    """Combine exact-duplicate-value groups and highly-correlated-value
+    groups into one TRAIN-derived keep/drop decision, with a full,
+    documented mapping from every dropped column to the representative
+    that replaces it. A column present in both kinds of groups keeps
+    whichever representative it was first assigned (exact-duplicate
+    groups are resolved first, since exact duplication is the stronger,
+    unambiguous case).
+    """
+    dropped_to_representative: dict[str, str] = {}
+    for rep, members in exact_duplicate_groups.items():
+        for m in members:
+            if m != rep:
+                dropped_to_representative[m] = rep
+    for rep, members in correlated_groups.items():
+        for m in members:
+            if m != rep and m not in dropped_to_representative and rep not in dropped_to_representative:
+                dropped_to_representative[m] = rep
+
+    keep = [c for c in columns if c not in dropped_to_representative]
+    return {
+        "keep": keep,
+        "dropped_to_representative": dropped_to_representative,
+        "n_original": len(columns),
+        "n_kept": len(keep),
+        "n_dropped": len(dropped_to_representative),
+    }
+
+
+def build_scaled_pipeline_with_collapsed_indicators_and_value_reduction(
+    numeric_no_indicator: list[str],
+    numeric_with_indicator: list[str],
+    categorical: list[str],
+    indicator_representatives: list[str],
+    value_keep_columns: list[str],
+) -> ColumnTransformer:
+    """Same structure as `build_scaled_pipeline_with_collapsed_indicators`,
+    with one addition: the numeric VALUE blocks (`numeric_plain`,
+    `collapsed_values`) are restricted to `value_keep_columns` -- the
+    output of `select_reduced_numeric_columns`.
+
+    Deliberately independent of `indicator_representatives`: a column can
+    be dropped from the VALUE side (its number is redundant with another
+    column's) while its MISSINGNESS INDICATOR stays exactly as the
+    approved Stage 6/7 collapse already decided -- these are two
+    different ColumnTransformer branches reading different projections
+    of the same source columns, and this function changes only one of
+    them. The approved indicator-collapse prototype itself
+    (`build_scaled_pipeline_with_collapsed_indicators`,
+    `src/feature_engineering.py`) is not modified.
+    """
+    kept_no_indicator = [c for c in numeric_no_indicator if c in value_keep_columns]
+    kept_with_indicator = [c for c in numeric_with_indicator if c in value_keep_columns]
+
+    numeric_plain = Pipeline([("impute", SimpleImputer(strategy="median")), ("scale", StandardScaler(with_mean=False))])
+    collapsed_values = Pipeline([("impute", SimpleImputer(strategy="median")), ("scale", StandardScaler(with_mean=False))])
+    collapsed_indicators = Pipeline([("indicator", MissingIndicator(features="missing-only"))])
+    categorical_pipe = Pipeline(
+        [
+            ("impute", SimpleImputer(strategy="constant", fill_value="missing")),
+            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=True)),
+        ]
+    )
+    return ColumnTransformer(
+        transformers=[
+            ("numeric_plain", numeric_plain, kept_no_indicator),
+            ("collapsed_values", collapsed_values, kept_with_indicator),
+            ("collapsed_indicators", collapsed_indicators, indicator_representatives),
+            ("categorical", categorical_pipe, categorical),
+        ],
+        sparse_threshold=1.0,
+    )

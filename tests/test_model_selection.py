@@ -25,17 +25,20 @@ from src.model_selection import (  # noqa: E402
     build_chronological_pilot_subset,
     build_engineered_feature_block,
     build_scaled_pipeline_with_collapsed_indicators,
+    build_scaled_pipeline_with_collapsed_indicators_and_value_reduction,
     build_scaled_preprocessing_pipeline,
     build_simple_baseline_pipeline,
     estimate_dense_memory_bytes,
     evaluate_predictions,
     find_duplicate_value_columns,
+    find_highly_correlated_value_groups,
     find_near_constant_columns,
     hstack_sparse,
     load_labels,
     max_pairwise_correlation,
     no_skill_baseline,
     precision_recall_at_k,
+    select_reduced_numeric_columns,
     sparse_magnitude_summary,
     track_saga_training_loss,
 )
@@ -478,3 +481,118 @@ def test_track_saga_training_loss_is_reproducible() -> None:
     trace_a = track_saga_training_loss(X, y, class_weight="balanced", n_steps=3, iters_per_step=50)
     trace_b = track_saga_training_loss(X, y, class_weight="balanced", n_steps=3, iters_per_step=50)
     assert trace_a == trace_b
+
+
+# --- Controlled numeric-redundancy reduction (conditioning verification) --
+
+def test_find_highly_correlated_value_groups_finds_connected_cluster() -> None:
+    rng = np.random.default_rng(1)
+    base = rng.random(500)
+    values = np.column_stack(
+        [
+            base,
+            base * 3.0 + 1e-6 * rng.random(500),  # near-perfect correlation with col 0
+            base * -2.0 + 1e-6 * rng.random(500),  # near-perfect NEGATIVE correlation with col 0 -> same cluster
+            rng.random(500),  # independent
+        ]
+    )
+    groups = find_highly_correlated_value_groups(values, ["a", "b", "c", "d"], threshold=0.99)
+    assert len(groups) == 1
+    (rep, members), = groups.items()
+    assert set(members) == {"a", "b", "c"}
+    assert "d" not in members
+    assert rep == "a"  # deterministic: first column by input order, not by any score
+
+
+def test_find_highly_correlated_value_groups_is_deterministic_regardless_of_row_order() -> None:
+    rng = np.random.default_rng(2)
+    base = rng.random(300)
+    values = np.column_stack([base, base * 2.0, rng.random(300)])
+    columns = ["a", "b", "c"]
+    groups_a = find_highly_correlated_value_groups(values, columns, threshold=0.99)
+
+    perm = rng.permutation(300)
+    groups_b = find_highly_correlated_value_groups(values[perm], columns, threshold=0.99)
+    assert groups_a == groups_b
+
+
+def test_select_reduced_numeric_columns_documents_full_drop_mapping() -> None:
+    columns = ["a", "b", "c", "d", "e"]
+    exact = {"a": ["a", "b"]}  # b is an exact duplicate of a
+    correlated = {"c": ["c", "d"]}  # d highly correlated with c
+    result = select_reduced_numeric_columns(columns, exact, correlated)
+    assert result["keep"] == ["a", "c", "e"]
+    assert result["dropped_to_representative"] == {"b": "a", "d": "c"}
+    assert result["n_original"] == 5
+    assert result["n_kept"] == 3
+    assert result["n_dropped"] == 2
+
+
+def test_select_reduced_numeric_columns_never_drops_a_column_not_in_any_group() -> None:
+    columns = ["a", "b", "c"]
+    result = select_reduced_numeric_columns(columns, {}, {})
+    assert result["keep"] == columns
+    assert result["dropped_to_representative"] == {}
+
+
+def test_value_reduction_pipeline_preserves_indicator_collapse_independently() -> None:
+    """The indicator representative list must be usable EVEN IF the
+    representative's own column was dropped from the value side -- proves
+    the two branches (value reduction, indicator collapse) really are
+    independent, not silently coupled."""
+    df = pd.DataFrame(
+        {
+            "num_plain": [1.0, 2.0, 3.0, 4.0],
+            "a": [1.0, np.nan, 3.0, np.nan],
+            "b": [10.0, np.nan, 30.0, np.nan],  # same missingness pattern AND highly correlated values to "a"
+            "cat": ["x", "y", "x", "y"],
+        }
+    )
+    # "a" is the indicator representative, but suppose the value-reduction step
+    # decided "b" (not "a") is the kept value representative -- "a"'s own value
+    # is dropped, while its indicator flag (as representative) must still work.
+    ct = build_scaled_pipeline_with_collapsed_indicators_and_value_reduction(
+        numeric_no_indicator=["num_plain"],
+        numeric_with_indicator=["a", "b"],
+        categorical=["cat"],
+        indicator_representatives=["a"],  # indicator collapse still points at "a"
+        value_keep_columns=["num_plain", "b"],  # but "a"'s VALUE is dropped here
+    )
+    output = ct.fit_transform(df)
+    dense = output.toarray() if hasattr(output, "toarray") else output
+    assert not np.isnan(dense).any()
+    # num_plain(1) + collapsed_values(1: only "b" kept) + collapsed_indicators(1: "a") + cat(2)
+    assert dense.shape[1] == 1 + 1 + 1 + 2
+
+
+def test_value_reduction_feature_names_stable_across_fit_and_transform() -> None:
+    df = pd.DataFrame(
+        {"num_plain": [1.0, 2.0, 3.0], "a": [1.0, np.nan, 3.0], "b": [10.0, np.nan, 30.0], "cat": ["x", "y", "x"]}
+    )
+    ct = build_scaled_pipeline_with_collapsed_indicators_and_value_reduction(
+        ["num_plain"], ["a", "b"], ["cat"], indicator_representatives=["a"], value_keep_columns=["num_plain", "b"]
+    )
+    ct.fit(df)
+    names_before = list(ct.get_feature_names_out())
+    ct.transform(pd.DataFrame({"num_plain": [9.0], "a": [9.0], "b": [9.0], "cat": ["y"]}))
+    assert list(ct.get_feature_names_out()) == names_before
+
+
+def test_value_reduction_label_alignment_uses_same_subset_builder(tmp_path) -> None:
+    """The value-reduction branch must be built from the SAME chronological
+    pilot subset as the baseline branch -- confirmed by reusing
+    build_chronological_pilot_subset and checking row-for-row TransactionID
+    equality, not a freshly (and possibly differently) sampled subset."""
+    assignment_path, transaction_path, _, _ = _write_pilot_fixture(tmp_path, n=20)
+    subset_a = build_chronological_pilot_subset(assignment_path, transaction_path, ["TransactionAmt"], n_rows=6)
+    subset_b = build_chronological_pilot_subset(assignment_path, transaction_path, ["TransactionAmt"], n_rows=6)
+    assert list(subset_a["TransactionID"]) == list(subset_b["TransactionID"])
+    assert list(subset_a["isFraud"]) == list(subset_b["isFraud"])
+
+
+def test_value_reduction_never_touches_final_test(tmp_path) -> None:
+    assignment_path, transaction_path, _, _ = _write_pilot_fixture(tmp_path, n=20)
+    subset = build_chronological_pilot_subset(assignment_path, transaction_path, ["TransactionAmt"], n_rows=20)
+    assignment = pd.read_csv(assignment_path)
+    final_test_ids = set(assignment.loc[assignment["partition"] == "final_test", "TransactionID"])
+    assert not (set(subset["TransactionID"]) & final_test_ids)
