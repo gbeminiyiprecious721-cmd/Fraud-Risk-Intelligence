@@ -609,3 +609,57 @@ def build_scaled_pipeline_with_collapsed_indicators_and_value_reduction(
         ],
         sparse_threshold=1.0,
     )
+
+
+# ---------------------------------------------------------------------------
+# Tree-based pilots (Random Forest, Gradient Boosting). These use the
+# APPROVED Stage 5 preprocessing (src/preprocessing.py::build_preprocessing_pipeline
+# -- unscaled, full per-column indicators), NOT the experimental
+# collapsed-indicator variant built for the Logistic Regression
+# convergence investigation. Trees don't need scaling (Stage 5's own
+# stated rationale for keeping it separate), and the multicollinearity
+# that blocked SAGA is not a known problem for tree splits, so there is
+# no reason to carry the LogReg-specific experimental representation
+# over here.
+# ---------------------------------------------------------------------------
+
+def build_bounded_random_forest(random_state: int = RANDOM_STATE):
+    """One simple, reproducible, computationally-bounded Random Forest
+    config -- not searched, not tuned. `max_depth`/`min_samples_leaf`
+    bound tree size (and therefore memory/time) given this is a pilot on
+    a 15,000-row subset, not the full 438,125-row `train`."""
+    from sklearn.ensemble import RandomForestClassifier
+
+    return RandomForestClassifier(
+        n_estimators=100, max_depth=10, min_samples_leaf=20, n_jobs=-1, random_state=random_state
+    )
+
+
+def build_bounded_gradient_boosting(random_state: int = RANDOM_STATE):
+    """One simple, reproducible, computationally-bounded sklearn
+    GradientBoostingClassifier config. Sparse-native (no densification
+    needed, unlike HistGradientBoostingClassifier -- Stage 5's own
+    finding). Known limitation, stated plainly: this implementation is
+    sequential and single-threaded (no `n_jobs`), unlike the Random
+    Forest above."""
+    from sklearn.ensemble import GradientBoostingClassifier
+
+    return GradientBoostingClassifier(n_estimators=100, max_depth=3, random_state=random_state)
+
+
+def run_basic_model_correctness_checks(model, X) -> dict:
+    """Minimal structural sanity checks on a fitted binary classifier's
+    `predict_proba` output -- used as the gate between the Random Forest
+    pilot and the Gradient Boosting pilot (per instruction: only proceed
+    if Random Forest "passes correctness checks"). Not a performance
+    check of any kind.
+    """
+    proba = model.predict_proba(X)
+    checks = {
+        "predict_proba_shape_correct": bool(proba.shape == (X.shape[0], 2)),
+        "probabilities_in_unit_range": bool(np.all((proba >= 0.0) & (proba <= 1.0))),
+        "no_nan_in_predictions": bool(not np.isnan(proba).any()),
+        "probabilities_sum_to_one": bool(np.allclose(proba.sum(axis=1), 1.0)),
+    }
+    checks["all_passed"] = all(checks.values())
+    return checks

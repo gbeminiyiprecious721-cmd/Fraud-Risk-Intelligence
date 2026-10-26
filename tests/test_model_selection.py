@@ -22,6 +22,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.model_selection import (  # noqa: E402
     RANDOM_STATE,
+    build_bounded_gradient_boosting,
+    build_bounded_random_forest,
     build_chronological_pilot_subset,
     build_engineered_feature_block,
     build_scaled_pipeline_with_collapsed_indicators,
@@ -38,6 +40,7 @@ from src.model_selection import (  # noqa: E402
     max_pairwise_correlation,
     no_skill_baseline,
     precision_recall_at_k,
+    run_basic_model_correctness_checks,
     select_reduced_numeric_columns,
     sparse_magnitude_summary,
     track_saga_training_loss,
@@ -596,3 +599,71 @@ def test_value_reduction_never_touches_final_test(tmp_path) -> None:
     assignment = pd.read_csv(assignment_path)
     final_test_ids = set(assignment.loc[assignment["partition"] == "final_test", "TransactionID"])
     assert not (set(subset["TransactionID"]) & final_test_ids)
+
+
+# --- Tree-based pilot configs (Random Forest, Gradient Boosting) ----------
+
+def test_build_bounded_random_forest_has_expected_bounded_config() -> None:
+    model = build_bounded_random_forest()
+    assert model.n_estimators == 100
+    assert model.max_depth == 10
+    assert model.min_samples_leaf == 20
+    assert model.random_state == RANDOM_STATE
+
+
+def test_build_bounded_random_forest_is_reproducible() -> None:
+    """`n_jobs=-1` means per-tree probabilities are summed in whatever
+    order threads finish, so bit-for-bit equality isn't the right bar --
+    sklearn's random_state still makes every TREE identical; only the
+    floating-point SUMMATION order across threads differs, at the
+    ~1e-16 (machine-epsilon) level. assert_allclose with a tight
+    tolerance confirms that distinction rather than demanding exact
+    bitwise equality a parallel reduction can't give."""
+    rng = np.random.default_rng(10)
+    X = sp.csr_matrix(rng.random((300, 6)))
+    y = rng.choice([0, 1], size=300, p=[0.85, 0.15])
+    model_a = build_bounded_random_forest().fit(X, y)
+    model_b = build_bounded_random_forest().fit(X, y)
+    np.testing.assert_allclose(model_a.predict_proba(X), model_b.predict_proba(X), rtol=1e-9, atol=1e-12)
+
+
+def test_build_bounded_gradient_boosting_has_expected_bounded_config() -> None:
+    model = build_bounded_gradient_boosting()
+    assert model.n_estimators == 100
+    assert model.max_depth == 3
+    assert model.random_state == RANDOM_STATE
+
+
+def test_build_bounded_gradient_boosting_is_reproducible() -> None:
+    rng = np.random.default_rng(11)
+    X = sp.csr_matrix(rng.random((300, 6)))
+    y = rng.choice([0, 1], size=300, p=[0.85, 0.15])
+    model_a = build_bounded_gradient_boosting().fit(X, y)
+    model_b = build_bounded_gradient_boosting().fit(X, y)
+    np.testing.assert_array_equal(model_a.predict_proba(X), model_b.predict_proba(X))
+
+
+def test_run_basic_model_correctness_checks_passes_for_a_well_behaved_model() -> None:
+    rng = np.random.default_rng(12)
+    X = sp.csr_matrix(rng.random((200, 4)))
+    y = rng.choice([0, 1], size=200, p=[0.8, 0.2])
+    model = build_bounded_random_forest().fit(X, y)
+    checks = run_basic_model_correctness_checks(model, X)
+    assert checks["all_passed"] is True
+    assert checks["predict_proba_shape_correct"] is True
+    assert checks["probabilities_sum_to_one"] is True
+
+
+def test_run_basic_model_correctness_checks_catches_a_broken_predict_proba() -> None:
+    """A deliberately broken stand-in model (wrong-shaped, non-probability
+    output) must make the checks fail, not silently pass -- proves the
+    checks actually check something, not just return True unconditionally."""
+
+    class BrokenModel:
+        def predict_proba(self, X):
+            return np.full((X.shape[0], 2), 5.0)  # not a valid probability
+
+    checks = run_basic_model_correctness_checks(BrokenModel(), sp.csr_matrix(np.ones((10, 3))))
+    assert checks["all_passed"] is False
+    assert checks["probabilities_in_unit_range"] is False
+    assert checks["probabilities_sum_to_one"] is False
