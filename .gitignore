@@ -14,6 +14,7 @@ docs/_stage9_*_raw.json
 docs/_stage10_*_raw.json
 docs/_stage11_*_raw.json
 docs/_stage12_*_raw.json
+docs/_stage13_*_raw.json
 .ipynb_checkpoints/
 .pytest_cache/
 .DS_Store
@@ -28,10 +29,15 @@ kaggle.json
 credentials.json
 secrets.json
 
-# Large generated model artifacts / matrices -- none exist yet (no model has
-# been saved anywhere in this project); excluded defensively ahead of Stage 7+
-# actually producing any, per the same "generated, not hand-authored" logic
-# already applied to the _stageN_*_raw.json evidence files above.
+# Large generated model artifacts / matrices. Stage 13 produced the first
+# real one (artifacts/frozen_rf_fraud_risk_v1.joblib, ~16MB) -- excluded
+# per the same "generated, not hand-authored" logic as the _stageN_*_raw.json
+# evidence files above, and because 16MB is large enough that git would
+# store it (and every future regenerated version) as a permanent binary
+# blob. The artifact's SIDECAR MANIFEST (artifacts/*.manifest.json) is
+# small, human-readable metadata and IS git-tracked -- it is the audit
+# trail; `scripts/build_stage13_artifact.py` is the reproducible local
+# command that regenerates the binary itself.
 *.pkl
 *.joblib
 *.npy
