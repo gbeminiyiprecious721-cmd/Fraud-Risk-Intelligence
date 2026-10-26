@@ -1,6 +1,6 @@
 # Stage 9 — Chronological Hyperparameter Tuning: Design and Feasibility Report
 
-**Status: design and feasibility phases complete and approved. The 20-candidate RandomizedSearchCV search has NOT been executed or approved.** This report presents the chronological CV design, the Random Forest search space, a bounded feasibility probe, a REAL full-scale five-fold feasibility experiment (§9), and the tracking-registry extension — all built against `train` only. `validation` and `final_test` were not accessed anywhere in either round.
+**Status: design, feasibility, AND the approved 20-candidate search are all complete.** This report presents the chronological CV design, the Random Forest search space, a bounded feasibility probe, a real full-scale five-fold feasibility experiment (§8), the tracking-registry extension, and the approved search's real results (§9) — all built against `train` only. `validation` and `final_test` were not accessed anywhere, in any round.
 
 ## 1. Chronological cross-validation design
 
@@ -127,9 +127,76 @@ Two scenarios, both using these REAL full-scale per-fold measurements (not the e
 
 **Proposed recovery strategy:** log every (candidate × fold) trial to `docs/experiment_registry.jsonl` via `track_run()` immediately on completion (append-only, crash-safe — already demonstrated working correctly by this round's own real fold-0 failure). If the search is interrupted (timeout, crash, or manual stop), resume by querying the registry for already-completed `(search_id, candidate_index, fold_index)` combinations and skipping them — never redoing completed work, never fabricating a result for a trial that didn't finish. This is the same pattern already proven in §4/§7 and re-confirmed by the real failure-then-recovery sequence in this section.
 
-## 9. Interview-defense questions
+## 9. Approved 20-candidate hyperparameter search — real results (third approval round)
+
+**Approved scope: ONE controlled RandomizedSearchCV-style search — 20 candidates × 5 chronological folds = 100 planned fits, selecting by mean fold Average Precision on `train`-internal folds only.** Candidates were declared and written to disk (`docs/_stage9_search_declaration_raw.json`) BEFORE any fit ran. The Stage 7 reference configuration (`n_estimators=100, max_depth=10, min_samples_leaf=20, max_features="sqrt"`) was **not** among the 20 sampled candidates (checked programmatically, not assumed).
+
+### Outcome: the hard 3,600-second budget was reached and the search stopped safely, exactly as designed
+
+| | Count |
+|---|---|
+| Candidates fully completed (all 5 folds) | **18** (indices 0–17) |
+| Candidates incomplete | **2** (index 18: 4 of 5 folds; index 19: never started) |
+| Individual fits completed successfully | **94** |
+| Individual fits that failed (exception) | **0** |
+| Individual fits not attempted (budget reached) | **6** |
+| Total wall-clock time | **3,602.8s** (stopped just past the 3,600s mark — the fit already in progress when the deadline was crossed was allowed to finish, never hard-killed, per the stated design) |
+
+**No fit-level exception occurred anywhere in the search** — every incomplete trial is incomplete purely because the budget was reached, not because anything crashed. This is a cleaner outcome than either feasibility round anticipated (which had each seen at least one real failure).
+
+**Why the budget bound the search, not a bug:** a few candidates proved dramatically more expensive than the Stage 7 reference config used for feasibility planning. Candidate 13 (`n_estimators=100, max_depth=12, min_samples_leaf=40, max_features=None`) took **379.57s for its fold-4 fit alone**; candidate 7 (`max_features=None`, 150 estimators) took 319.99s. `max_features=None` (considering every feature at every split, instead of a `sqrt`/`log2` subset) was consistently the dominant cost driver — confirmed directly: all 5 `max_features=None` candidates (6, 7, 12, 13, 18) rank among the slowest fits in the log. This is exactly the uncertainty §8's revised estimate flagged ("some candidates... will cost measurably more... others... less") — realized in practice, not merely theoretical.
+
+### Candidate ranking (mean fold AP, among the 18 candidates with all 5 folds complete)
+
+| Rank | Candidate | Config | Mean AP | Std AP |
+|---|---|---|---|---|
+| 0 | 4 | `n_estimators=100, max_depth=15, min_samples_leaf=5, max_features=sqrt` | **0.51236** | 0.04434 |
+| 1 | 8 | `n_estimators=150, max_depth=12, min_samples_leaf=10, max_features=sqrt` | 0.49451 | 0.04438 |
+| 2 | 13 | `n_estimators=100, max_depth=12, min_samples_leaf=40, max_features=None` | 0.48410 | 0.05094 |
+| 3 | 2 | `n_estimators=50, max_depth=15, min_samples_leaf=40, max_features=sqrt` | 0.47993 | 0.05096 |
+| 4 | 9 | `n_estimators=100, max_depth=12, min_samples_leaf=40, max_features=sqrt` | 0.47728 | 0.04962 |
+| ⋮ | | (13 more completed candidates, 0.409–0.475) | | |
+| — | 18 | `n_estimators=50, max_depth=10, min_samples_leaf=5, max_features=None` | **incomplete** (4/5 folds) — excluded from ranking | — |
+| — | 19 | *(never started — no record exists, nothing fabricated)* | **incomplete** (0/5 folds) — excluded from ranking | — |
+
+Full per-candidate, per-fold detail (all 94 real fits) is in `docs/experiment_registry.jsonl` under `search_id="stage9-rf-randomized-search-20x5"`, and in `docs/_stage9_hyperparameter_search_raw.json`.
+
+### Fold fraud prevalence and temporal variation (same 5 folds as §8, confirmed identical)
+
+| Fold | Val date range | Val fraud prevalence |
+|---|---|---|
+| 0 | 1,624,994–3,007,352 | 2.572% |
+| 1 | 3,007,361–5,134,060 | 3.988% |
+| 2 | 5,134,603–7,210,402 | 4.158% |
+| 3 | 7,210,556–9,064,152 | 3.474% |
+| 4 | 9,064,164–11,093,269 | 4.164% |
+
+Every candidate's fold-level AP tracks this same prevalence pattern (lowest on fold 0, highest on fold 2 or 4) regardless of hyperparameters — e.g. candidate 4's per-fold APs were approximately 0.47/0.52/0.55/0.45/0.57 across folds 0–4, the same low-fold-0/high-fold-2-and-4 shape every other candidate shows. **This means a meaningful share of the variance in reported AP is which chronological window a fold happens to cover, not which hyperparameters were used** — directly motivating why this report ranks by *mean* fold AP rather than any single fold's score.
+
+### Feature-representation differences (confirmed, same mechanism as every prior round)
+
+Feature counts matched §8's five-fold run exactly across every candidate (812 for fold 0, 813 for folds 1–4) — expected, since the fold definitions and the 15,000-fewer-row fold 0 are identical regardless of which RF hyperparameters are being fit; `OneHotEncoder`'s category count depends on the fold's row set, never on the model's hyperparameters.
+
+### Search-selection optimism, stated plainly
+
+The gap between rank 0 (0.51236) and rank 1 (0.49451) — 0.0178 — is **smaller than a single candidate's own fold-to-fold standard deviation (~0.044–0.051)**. This is the multiple-comparisons risk named in §6, now visible in real numbers: among the top several candidates, the ranking is not sharply distinguishable from fold-to-fold noise alone. The selected "best" configuration should be read as "among the strongest of 18 tried," not as a precisely-identified optimum.
+
+### Explicit non-claims
+
+- **The CV mean AP (0.51236 for the top candidate) is NOT comparable to Stage 7's external-`validation` AP (0.41101).** They are measured on different populations (chronological `train`-internal folds vs. the true held-out `validation` partition) with different prevalence — exactly the same non-comparability already noted for the §8 feasibility folds. The apparent "improvement" is not evidence this configuration would outperform the Stage 7 benchmark on `validation` or `final_test`.
+- **No claim of global optimality.** This search tried 18 complete, randomly-sampled configurations out of a much larger space; a configuration outside the declared `RF_SEARCH_SPACE` (§3) was never considered, and 2 declared candidates were never evaluated.
+- **No external-validation or final-test performance is claimed anywhere in this round** — `validation`/`final_test` were not accessed (confirmed: `validation_consulted=False` on every logged record, and the loading code path reads `train` exclusively).
+- **The Stage 7 full-training RF benchmark's evidence is unchanged and not overwritten** — `docs/_stage7_rf_full_train_raw.json` and its registry record are untouched; this search's results are additive, new records under a new `search_id`.
+
+### Connecting to your Notion Intermediate ML material
+
+Your `RandomizedSearchCV`/cross-validation notes describe exactly this mechanism — sample N random hyperparameter combinations, score each by CV, pick the best mean score — but assume ordinary k-fold CV over exchangeable rows. This search is that same algorithm with the CV *scheme* swapped for the time-respecting one Stage 9 built (§1), and with an explicit multiple-comparisons caveat your journal's material doesn't carry (since plain k-fold tutorials rarely dwell on "the winner's margin is smaller than the noise" the way this report's ranking table does above).
+
+## 10. Interview-defense questions
 
 1. "Your `TimeSeriesSplit` check passed for `n_splits=5` but failed for `n_splits=10` — why would adding more folds break something that worked with fewer?"
 2. "Why do you refit the missingness-indicator selection separately for every CV fold instead of reusing the one Stage 5 already computed over all of `train`?"
 3. "Your first feasibility estimate was 71.9 seconds from a bounded probe, but the real five-fold run's own numbers imply 20-37 minutes for the full search — which numbers should someone trust, and why did the first one undershoot so badly?"
 4. "Fold 0 failed with a `KeyError` on your first real attempt — walk me through what happened to that failed run's record, and why didn't it block folds 1-4 from running?"
+5. "Your top two candidates' mean AP differ by 0.018, but each candidate's own fold-to-fold standard deviation is around 0.045 — does that mean you actually found a better configuration, or not?"
+6. "Two of your 20 declared candidates never got evaluated at all — how does that affect whether you can trust the search's ranking?"
