@@ -1,6 +1,6 @@
 # Stage 10 — Model Evaluation: Readiness Gate Report
 
-**Status: the readiness gate is built and tested. `final_test` has NOT been accessed. The one-time evaluation has NOT been approved or run.** This report documents the frozen evaluation protocol (specified before any `final_test` row is ever read), the preflight rehearsal that proves it works, the access-control mechanism, and the remaining scientific limitations.
+**Status: the ONE-TIME `final_test` evaluation has been executed, approved by the user, exactly once.** This report documents the frozen evaluation protocol (specified before any `final_test` row was read), the preflight rehearsal, the access-control mechanism, the real results (§8), and the remaining scientific limitations. **Stage 10 is NOT marked complete** — the user's final scientific review is still pending, per explicit instruction.
 
 ## 1. The frozen evaluation protocol (declared before any `final_test` access)
 
@@ -98,9 +98,60 @@ Only past BOTH gates does `scripts/run_stage10_final_evaluation.py` import anyth
 - Anonymised-feature prediction-time availability remains unverified (carried forward since Stage 6/7).
 - This is an **offline ranking evaluation**, not a demonstrated live fraud-prevention outcome — the gap between "ranks well on historical data" and "prevents fraud in production" is not closed by Stage 10, and is explicitly out of this stage's scope (Stages 13+ territory, if ever pursued, consistent with the project's stated scope — a professional, reusable portfolio artifact, not a commercial MVP).
 
-## 7. What has NOT happened
+## 8. THE real final_test evaluation (executed once, approved)
 
-- `final_test` has not been read.
-- No prediction has been generated against `final_test`.
-- Stage 10 is not marked complete.
-- No hyperparameter, feature, or preprocessing decision was made or changed this round.
+**Run_id `stage10-c2f0f3fc017a4db3b495e5a6f62084fb`, `search_id="stage10-frozen-rf-final-test-evaluation"`, status `completed`.** `final_test`: 76,855 rows, 2,682 positives, prevalence 3.49% (close to `train`'s ~3.5% and Stage 7's `validation` prevalence 3.463% — unlike Stage 9's CV folds, which varied 2.57%–4.16% by chronological window, `final_test` is not an unusually different population in base rate). Fitted feature count 813 (matches every prior full-scale run). Preprocessing 13.9s, fit 40.0s, predict 0.24s, peak memory ~17.2GB.
+
+**Primary/secondary metrics:**
+
+| Metric | Value |
+|---|---|
+| Average Precision | **0.42784** |
+| ROC-AUC | 0.86637 |
+| Precision@1% / Recall@1% | 0.8583 / 0.2461 |
+| Precision@5% / Recall@5% | 0.3037 / 0.4351 |
+| No-skill baseline AP | 0.0349 |
+
+**Bootstrap 95% CI on AP:** **[0.40842, 0.44534]** (1,000 resamples, seed 42) — a tight interval given the sample size, but see §6's i.i.d.-row caveat.
+
+**Stage 1 success-criterion #2 (beat the no-skill baseline, margin reported honestly):** AP margin **+0.39294** (True), Recall@1% margin **+0.2398** (True), Recall@5% margin **+0.4094** (True). All three beat the baseline, by a wide margin — Stage 1's criterion #2 is satisfied for this frozen configuration on `final_test`.
+
+**`ProductCD` segment breakdown — large, important heterogeneity:**
+
+| Segment | n | n_pos | AP | ROC-AUC |
+|---|---|---|---|---|
+| C | 8,378 | 1,117 | 0.713 | 0.908 |
+| H | 2,289 | 130 | 0.525 | 0.884 |
+| R | 3,785 | 179 | 0.735 | 0.945 |
+| S | 2,757 | 123 | 0.368 | 0.611 |
+| **W** | **59,646 (78% of all rows)** | **1,133** | **0.096** | **0.800** |
+
+**The model performs dramatically worse on `ProductCD=W` (AP 0.096) than on any other category — and `W` is 78% of the entire `final_test` partition.** This single finding dominates the aggregate 0.428 AP: the strong-performing categories (C/H/R, AP 0.52–0.74) are a small minority of volume. `W`'s own AP is still ~5x its own no-skill floor (0.019 prevalence), so the model is not useless there, but this is the clearest, most consequential subgroup-variability finding in this evaluation.
+
+**`TransactionAmt` segment breakdown (boundaries from `train` only: 43.38 / 69.00 / 125.00) — non-monotonic:**
+
+| Segment | Range | n | AP |
+|---|---|---|---|
+| 0 | ≤43.38 | 19,241 | 0.616 |
+| 1 | 43.38–69.00 | 19,580 | 0.341 |
+| 2 | 69.00–125.00 | 19,449 | 0.340 |
+| 3 | >125.00 | 18,585 | 0.353 |
+
+The lowest-amount segment performs notably BETTER than the other three, which are roughly flat — not a simple "bigger transactions are harder" story.
+
+**Cost-sensitive threshold sweep — genuinely sensitive, not robust (an honest finding, not glossed over):**
+
+| Scenario \ unit-$ | $5 | $10 | $20 | $50 |
+|---|---|---|---|---|
+| A (conservative loss) | 0.05 | 0.11 | 0.32 | 0.53 |
+| B (full transaction value) | 0.04 | 0.05 | 0.11 | 0.40 |
+| C (capacity-constrained) | 0.11 | 0.40 | 0.53 | 0.71 |
+
+The cost-minimizing threshold ranges from **0.04 to 0.71** depending entirely on which labelled assumption is used. Per Stage 1's own framing ("robust across scenarios A–C" or "sensitive to assumption X"), this result is clearly the latter: **sensitive, not robust**. No single recommended threshold is asserted; the sensitivity itself is the finding.
+
+## 9. What has NOT happened
+
+- `final_test` was read exactly once, for this one evaluation, and has not been re-accessed.
+- No hyperparameter, feature, or preprocessing decision was made or changed in response to these results.
+- Stage 10 is not marked complete — awaiting the user's final scientific review.
+- No claim is made that this offline ranking evaluation demonstrates real-world fraud-loss reduction or production readiness.
