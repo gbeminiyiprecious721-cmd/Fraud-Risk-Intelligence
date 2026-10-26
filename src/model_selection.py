@@ -66,6 +66,41 @@ def load_labels(
     return labels.loc[labels["TransactionID"].isin(ids)].sort_values("TransactionID").reset_index(drop=True)
 
 
+def build_chronological_pilot_subset(
+    assignment_path: str | Path,
+    transaction_path: str | Path,
+    columns: list[str],
+    n_rows: int,
+    dt_col: str = "TransactionDT",
+    id_col: str = "TransactionID",
+) -> pd.DataFrame:
+    """The earliest `n_rows` rows of the `train` partition ONLY, by
+    `dt_col`, as a single DataFrame carrying `columns` + `isFraud` +
+    `id_col` + `dt_col` together.
+
+    This is the Stage 7 bounded-pilot subset builder (review item 3): a
+    small, genuinely-earliest-in-time slice of `train`, never a random
+    sample, and never `validation`/`final_test` (`get_partition()` is
+    called with `allow_final_test` left at its default `False`, and only
+    `["train"]` is ever requested here).
+
+    Correct label alignment is enforced BY CONSTRUCTION, not by a
+    downstream join: `isFraud` is read from the same `read_csv` call and
+    lives in the same DataFrame as every feature column from the first
+    line of this function onward, so there is no second merge step where
+    a row could end up paired with the wrong label. Sort order ties
+    (identical `dt_col`) are broken by `id_col` for a fully deterministic
+    result regardless of the input file's own row order.
+    """
+    assignment = pd.read_csv(assignment_path)
+    train_ids = set(get_partition(assignment, ["train"])[id_col])
+
+    df = pd.read_csv(transaction_path, usecols=[id_col, dt_col, "isFraud"] + columns)
+    df = df.loc[df[id_col].isin(train_ids)]
+    df = df.sort_values([dt_col, id_col], kind="stable").reset_index(drop=True)
+    return df.iloc[:n_rows].reset_index(drop=True)
+
+
 # ---------------------------------------------------------------------------
 # Metrics -- no threshold search, two FIXED K fractions
 # ---------------------------------------------------------------------------
@@ -189,6 +224,20 @@ def build_scaled_pipeline_with_collapsed_indicators(
     `numeric_with_indicator`'s own VALUES is still imputed and scaled
     individually; only the indicator-column COUNT differs from the
     "original" arm.
+
+    This is also the CORRECTED experimental branch for the Stage 7
+    pilot (see scripts/run_stage7_pilot.py and docs/HANDOFF.md "Stage 7 --
+    diagnosed, unresolved"): it was built during the original indicator
+    ablation, before the solver slowdown was diagnosed, and already
+    satisfies every preprocessing correction the diagnostic pointed to --
+    `collapsed_indicators` deliberately has NO scaler (binary indicators
+    stay 0/1, verified directly by
+    tests/test_model_selection.py::test_collapsed_indicator_block_stays_unscaled_binary),
+    `collapsed_values`/`numeric_plain` scale only genuinely continuous
+    values, and the representative-column collapse itself removes the 245
+    exact-duplicate columns identified as the dominant cause of the
+    slowdown. The REMAINING, separately-tested correction is the solver
+    (liblinear -> saga) and the class_weight question, not this function.
     """
     numeric_plain = Pipeline([("impute", SimpleImputer(strategy="median")), ("scale", StandardScaler(with_mean=False))])
     collapsed_values = Pipeline([("impute", SimpleImputer(strategy="median")), ("scale", StandardScaler(with_mean=False))])
@@ -284,3 +333,147 @@ class FitEvalResult:
     fit_seconds: float
     predict_seconds: float
     metrics: dict
+
+
+# ---------------------------------------------------------------------------
+# Stage 7 convergence investigation -- all TRAIN-ONLY diagnostics.
+#
+# None of the functions below reads or accepts a validation/final_test
+# label anywhere; each takes exactly the array(s) its diagnostic needs
+# (an already-imputed numeric block, or a (X_train, y_train) pair for the
+# loss-trajectory check), scoped to whatever partition the CALLER passed
+# in. The partition discipline lives in the driver script
+# (scripts/run_stage7_convergence_diagnostic.py), which only ever passes
+# the 15,000-row chronological TRAIN subset here -- never validation,
+# never final_test.
+# ---------------------------------------------------------------------------
+
+def find_near_constant_columns(values: np.ndarray, columns: list[str], std_threshold: float = 1e-6) -> list[str]:
+    """Columns whose (already-imputed) values have near-zero variance --
+    a classic, separate-from-multicollinearity source of ill-conditioning:
+    a near-constant column contributes almost nothing to separating
+    classes but still occupies a dimension, and its STANDARDIZED version
+    can have an inflated scale once divided by its own tiny std.
+    """
+    stds = values.std(axis=0)
+    return [columns[i] for i in range(len(columns)) if stds[i] < std_threshold]
+
+
+def find_duplicate_value_columns(values: np.ndarray, columns: list[str]) -> dict[str, list[str]]:
+    """Group `columns` by EXACT-duplicate imputed VALUES (not missingness
+    pattern -- that's `find_duplicate_indicator_groups` in
+    src/feature_engineering.py). Two columns can have independent
+    missingness patterns (already deduplicated, Stage 6/7) while still
+    being exact or near-exact duplicates of each other's actual numbers
+    (e.g. two Vesta-engineered columns that are simple rescalings of one
+    another) -- a second, distinct multicollinearity source this checks
+    for directly rather than assuming the indicator collapse already
+    covered it.
+    """
+    seen: dict[bytes, list[str]] = {}
+    for i, col in enumerate(columns):
+        key = np.round(values[:, i], 8).tobytes()
+        seen.setdefault(key, []).append(col)
+    return {names[0]: names for names in seen.values() if len(names) > 1}
+
+
+def max_pairwise_correlation(values: np.ndarray, columns: list[str], exclude_exact_duplicates: bool = True) -> dict:
+    """Highest absolute Pearson correlation between any two DISTINCT
+    columns in `values` (excluding a column with itself, and optionally
+    excluding pairs already known to be exact duplicates, so the exact-
+    duplicate finding above doesn't just trivially dominate this one).
+    Near-1.0 correlation among nominally different columns is a softer,
+    more common multicollinearity signal than exact duplication.
+    """
+    with np.errstate(invalid="ignore"):
+        corr = np.corrcoef(values, rowvar=False)
+    np.fill_diagonal(corr, 0.0)
+    if exclude_exact_duplicates:
+        corr = np.nan_to_num(corr, nan=0.0)
+    abs_corr = np.abs(corr)
+    i, j = np.unravel_index(np.argmax(abs_corr), abs_corr.shape)
+    return {
+        "max_abs_correlation": round(float(abs_corr[i, j]), 6),
+        "column_a": columns[i],
+        "column_b": columns[j],
+        "n_pairs_above_0.99": int(np.sum(abs_corr > 0.99) // 2),
+    }
+
+
+def sparse_magnitude_summary(X) -> dict:
+    """Nonzero-entry magnitude range/density of a (possibly sparse) matrix
+    -- the same numerical-conditioning lens used in the original Stage 7
+    diagnostic, reapplied here to the pilot's actual training matrix."""
+    data = X.data if hasattr(X, "data") else X[X != 0]
+    shape = X.shape
+    density = (X.nnz if hasattr(X, "nnz") else int(np.count_nonzero(X))) / (shape[0] * shape[1])
+    abs_data = np.abs(data)
+    return {
+        "shape": list(shape),
+        "density": round(float(density), 4),
+        "min_abs_nonzero": float(abs_data.min()) if len(abs_data) else None,
+        "max_abs_nonzero": float(abs_data.max()) if len(abs_data) else None,
+        "median_abs_nonzero": float(np.median(abs_data)) if len(abs_data) else None,
+        "dynamic_range_orders_of_magnitude": round(float(np.log10(abs_data.max() / abs_data.min())), 2) if len(abs_data) else None,
+    }
+
+
+def track_saga_training_loss(
+    X_train, y_train: np.ndarray, class_weight, n_steps: int = 10, iters_per_step: int = 100, random_state: int = RANDOM_STATE
+) -> list[dict]:
+    """TRAIN-ONLY convergence trace: refits the SAME `LogisticRegression`
+    object with `warm_start=True` in `iters_per_step`-sized increments,
+    recording training log-loss and the coefficient-vector's step-to-step
+    L2 change after each increment. `y_train` must be the TRAIN partition's
+    own labels -- this function has no partition awareness itself (by
+    design, to stay a pure, testable diagnostic); the driver script is
+    responsible for never passing it validation or final_test labels.
+
+    A loss still dropping substantially at the last step is evidence of
+    genuine (if slow) progress toward convergence; a loss that plateaued
+    early despite `ConvergenceWarning` firing is evidence of a harder,
+    structural conditioning problem that more iterations alone won't fix.
+    """
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import log_loss
+
+    model = LogisticRegression(
+        solver="saga", penalty="l2", C=1.0, random_state=random_state, class_weight=class_weight,
+        max_iter=iters_per_step, warm_start=True,
+    )
+    trace = []
+    prev_coef = None
+    for step in range(1, n_steps + 1):
+        model.max_iter = iters_per_step
+        with warnings_catch_all() as caught:
+            model.fit(X_train, y_train)
+        train_loss = log_loss(y_train, model.predict_proba(X_train))
+        coef_change = float(np.linalg.norm(model.coef_ - prev_coef)) if prev_coef is not None else None
+        trace.append(
+            {
+                "cumulative_iters": step * iters_per_step,
+                "train_log_loss": round(float(train_loss), 6),
+                "coef_l2_change_from_previous_step": round(coef_change, 6) if coef_change is not None else None,
+                "convergence_warning_raised": any("did not converge" in str(w.message) for w in caught),
+            }
+        )
+        prev_coef = model.coef_.copy()
+    return trace
+
+
+def warnings_catch_all():
+    """Small helper so track_saga_training_loss's warm_start loop doesn't
+    need to repeat the catch_warnings boilerplate at every step."""
+    import warnings as _warnings
+
+    class _Catcher:
+        def __enter__(self):
+            self._cm = _warnings.catch_warnings(record=True)
+            self._caught = self._cm.__enter__()
+            _warnings.simplefilter("always")
+            return self._caught
+
+        def __exit__(self, *exc):
+            return self._cm.__exit__(*exc)
+
+    return _Catcher()

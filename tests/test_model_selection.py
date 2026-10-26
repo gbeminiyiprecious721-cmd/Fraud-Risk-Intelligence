@@ -22,17 +22,24 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.model_selection import (  # noqa: E402
     RANDOM_STATE,
+    build_chronological_pilot_subset,
     build_engineered_feature_block,
     build_scaled_pipeline_with_collapsed_indicators,
     build_scaled_preprocessing_pipeline,
     build_simple_baseline_pipeline,
     estimate_dense_memory_bytes,
     evaluate_predictions,
+    find_duplicate_value_columns,
+    find_near_constant_columns,
     hstack_sparse,
     load_labels,
+    max_pairwise_correlation,
     no_skill_baseline,
     precision_recall_at_k,
+    sparse_magnitude_summary,
+    track_saga_training_loss,
 )
+from src.feature_engineering import collapsed_indicator_representatives, find_duplicate_indicator_groups  # noqa: E402
 from src.leakage_boundaries import FinalTestAccessError  # noqa: E402
 
 
@@ -235,3 +242,239 @@ def test_fixed_random_state_gives_identical_model_fits() -> None:
     model_a = LogisticRegression(random_state=RANDOM_STATE, max_iter=200).fit(X, y)
     model_b = LogisticRegression(random_state=RANDOM_STATE, max_iter=200).fit(X, y)
     np.testing.assert_array_equal(model_a.coef_, model_b.coef_)
+
+
+# --- Stage 7 bounded-pilot correction: review item 2/3/4 tests --------------
+
+def test_collapsed_indicator_block_stays_unscaled_binary() -> None:
+    """Direct proof (not inference from reading code) that the
+    'collapsed_indicators' block in build_scaled_pipeline_with_collapsed_indicators
+    is genuinely unscaled: every nonzero entry contributed by that block
+    must be exactly 1.0, never a scaled fraction."""
+    df = pd.DataFrame(
+        {
+            "num_plain": [1.0, 2.0, 3.0, 4.0, 5.0],
+            "a": [1.0, np.nan, 3.0, np.nan, 5.0],  # missing 40% of the time
+            "b": [10.0, np.nan, 30.0, np.nan, 50.0],  # same pattern as "a"
+            "cat": ["x", "y", "x", "y", "x"],
+        }
+    )
+    ct = build_scaled_pipeline_with_collapsed_indicators(["num_plain"], ["a", "b"], ["cat"], ["a"])
+    output = ct.fit_transform(df)
+    dense = output.toarray() if hasattr(output, "toarray") else output
+
+    # Layout: num_plain(1, scaled) + collapsed_values(2: a,b, scaled) +
+    # collapsed_indicators(1: representative "a") + cat one-hot(2)
+    indicator_col = dense[:, 3]
+    assert set(np.unique(indicator_col)) <= {0.0, 1.0}
+    # rows 1 and 3 (0-indexed) are the missing ones -> indicator must be exactly 1
+    assert indicator_col[1] == 1.0
+    assert indicator_col[3] == 1.0
+    assert indicator_col[0] == 0.0
+
+
+def test_collapsed_pipeline_values_are_scaled_not_left_raw() -> None:
+    """The continuous VALUE columns, unlike the indicators, ARE expected
+    to be scaled -- confirms the two blocks are genuinely treated
+    differently, not that scaling was accidentally dropped everywhere."""
+    df = pd.DataFrame(
+        {
+            "num_plain": [1.0, 2.0, 3.0, 1000.0],  # large spread -> scaling should compress this
+            "a": [1.0, 2.0, 3.0, np.nan],  # at least one missing value, matching real usage: a
+            "cat": ["x", "y", "x", "y"],  # representative column always has SOME missingness
+        }
+    )
+    ct = build_scaled_pipeline_with_collapsed_indicators(["num_plain"], ["a"], ["cat"], ["a"])
+    output = ct.fit_transform(df)
+    dense = output.toarray() if hasattr(output, "toarray") else output
+    raw_std = df["num_plain"].std()
+    # StandardScaler(with_mean=False) divides by std -- the scaled column's
+    # own std should differ from the raw column's std (not pass through raw).
+    assert not np.isclose(dense[:, 0].std(), raw_std)
+
+
+# --- build_chronological_pilot_subset: review item 3 ------------------------
+
+def _write_pilot_fixture(tmp_path, n=20):
+    rng = np.random.default_rng(7)
+    ids = list(range(1, n + 1))
+    dts = rng.permutation(np.arange(100, 100 + n * 10, 10))  # shuffled on purpose
+    fraud = rng.choice([0, 1], size=n, p=[0.9, 0.1])
+    amt = rng.random(n) * 100
+    assignment = pd.DataFrame(
+        {"TransactionID": ids, "TransactionDT": dts, "isFraud": fraud, "partition": ["train"] * (n - 3) + ["validation", "validation", "final_test"]}
+    )
+    transaction = pd.DataFrame({"TransactionID": ids, "TransactionDT": dts, "isFraud": fraud, "TransactionAmt": amt})
+    assignment_path = tmp_path / "assignment.csv"
+    transaction_path = tmp_path / "transaction.csv"
+    assignment.to_csv(assignment_path, index=False)
+    transaction.to_csv(transaction_path, index=False)
+    return assignment_path, transaction_path, assignment, transaction
+
+
+def test_chronological_pilot_subset_picks_genuinely_earliest_train_rows(tmp_path) -> None:
+    assignment_path, transaction_path, assignment, transaction = _write_pilot_fixture(tmp_path, n=20)
+    subset = build_chronological_pilot_subset(assignment_path, transaction_path, ["TransactionAmt"], n_rows=5)
+
+    train_ids = set(assignment.loc[assignment["partition"] == "train", "TransactionID"])
+    assert set(subset["TransactionID"]) <= train_ids  # never validation/final_test
+
+    # Independently recompute the 5 earliest TRAIN rows by TransactionDT and compare.
+    train_txn = transaction.loc[transaction["TransactionID"].isin(train_ids)].sort_values("TransactionDT")
+    expected_earliest_5 = set(train_txn.head(5)["TransactionID"])
+    assert set(subset["TransactionID"]) == expected_earliest_5
+    assert subset["TransactionDT"].is_monotonic_increasing
+
+
+def test_chronological_pilot_subset_label_alignment_is_correct(tmp_path) -> None:
+    """Review item 4: correct label alignment. Cross-check each selected
+    row's isFraud against an independent lookup from the raw transaction
+    file -- would fail if any join/sort step silently misaligned labels."""
+    assignment_path, transaction_path, assignment, transaction = _write_pilot_fixture(tmp_path, n=20)
+    subset = build_chronological_pilot_subset(assignment_path, transaction_path, ["TransactionAmt"], n_rows=8)
+
+    truth = transaction.set_index("TransactionID")["isFraud"]
+    for _, row in subset.iterrows():
+        assert row["isFraud"] == truth.loc[row["TransactionID"]]
+
+
+def test_chronological_pilot_subset_never_touches_final_test(tmp_path) -> None:
+    assignment_path, transaction_path, _, _ = _write_pilot_fixture(tmp_path, n=20)
+    subset = build_chronological_pilot_subset(assignment_path, transaction_path, ["TransactionAmt"], n_rows=20)
+    # n_rows=20 exceeds the train-only row count -- must still contain ONLY
+    # train rows, never spill into validation/final_test even when asked
+    # for "more rows than exist".
+    assignment = pd.read_csv(assignment_path)
+    final_test_ids = set(assignment.loc[assignment["partition"] == "final_test", "TransactionID"])
+    validation_ids = set(assignment.loc[assignment["partition"] == "validation", "TransactionID"])
+    assert not (set(subset["TransactionID"]) & final_test_ids)
+    assert not (set(subset["TransactionID"]) & validation_ids)
+
+
+def test_chronological_pilot_subset_is_deterministic_regardless_of_file_row_order(tmp_path) -> None:
+    assignment_path, transaction_path, assignment, transaction = _write_pilot_fixture(tmp_path, n=20)
+    subset_a = build_chronological_pilot_subset(assignment_path, transaction_path, ["TransactionAmt"], n_rows=6)
+
+    shuffled_transaction_path = tmp_path / "transaction_shuffled.csv"
+    transaction.sample(frac=1, random_state=99).to_csv(shuffled_transaction_path, index=False)
+    subset_b = build_chronological_pilot_subset(assignment_path, shuffled_transaction_path, ["TransactionAmt"], n_rows=6)
+
+    assert list(subset_a["TransactionID"]) == list(subset_b["TransactionID"])
+
+
+# --- Feature-name / column-order stability on the collapsed pipeline -------
+
+def test_collapsed_pipeline_feature_names_stable_across_fit_and_transform() -> None:
+    df = pd.DataFrame(
+        {"num_plain": [1.0, 2.0, 3.0], "a": [1.0, np.nan, 3.0], "cat": ["x", "y", "x"]}
+    )
+    ct = build_scaled_pipeline_with_collapsed_indicators(["num_plain"], ["a"], ["cat"], ["a"])
+    ct.fit(df)
+    names_before = list(ct.get_feature_names_out())
+    ct.transform(pd.DataFrame({"num_plain": [9.0], "a": [9.0], "cat": ["y"]}))
+    names_after = list(ct.get_feature_names_out())
+    assert names_before == names_after
+
+
+# --- Reproducibility of the saga + collapsed-indicator experimental config -
+
+def test_saga_solver_fit_is_reproducible_with_fixed_random_state() -> None:
+    """The specific solver/config combination this round's pilot uses
+    (saga, fixed random_state) -- not just LogisticRegression in general --
+    must be reproducible."""
+    rng = np.random.default_rng(5)
+    X = sp.csr_matrix(rng.random((300, 8)))
+    y = rng.choice([0, 1], size=300, p=[0.85, 0.15])
+
+    model_a = LogisticRegression(solver="saga", penalty="l2", random_state=RANDOM_STATE, max_iter=300).fit(X, y)
+    model_b = LogisticRegression(solver="saga", penalty="l2", random_state=RANDOM_STATE, max_iter=300).fit(X, y)
+    np.testing.assert_array_equal(model_a.coef_, model_b.coef_)
+
+
+# --- Stage 7 convergence investigation: new diagnostic functions ----------
+
+def test_find_near_constant_columns_detects_near_zero_variance() -> None:
+    values = np.column_stack(
+        [
+            np.array([1.0, 2.0, 3.0, 4.0, 5.0]),  # normal variance
+            np.array([1.0, 1.0, 1.0, 1.0, 1.0000001]),  # near-constant
+        ]
+    )
+    result = find_near_constant_columns(values, ["normal", "near_constant"], std_threshold=1e-4)
+    assert result == ["near_constant"]
+
+
+def test_find_duplicate_value_columns_detects_exact_duplicates_not_just_mask() -> None:
+    """Distinct from find_duplicate_indicator_groups (feature_engineering.py),
+    which only looks at missingness MASKS -- this checks the actual imputed
+    VALUES, which can be duplicated even when two columns' missingness
+    patterns were already deduplicated separately."""
+    values = np.column_stack(
+        [
+            np.array([1.0, 2.0, 3.0, 4.0]),
+            np.array([1.0, 2.0, 3.0, 4.0]),  # exact duplicate of column 0
+            np.array([9.0, 8.0, 7.0, 6.0]),  # distinct
+        ]
+    )
+    groups = find_duplicate_value_columns(values, ["a", "b", "c"])
+    assert len(groups) == 1
+    (rep, members), = groups.items()
+    assert set(members) == {"a", "b"}
+    assert "c" not in members
+
+
+def test_find_duplicate_value_columns_returns_empty_when_none_duplicate() -> None:
+    values = np.column_stack([np.array([1.0, 2.0, 3.0]), np.array([9.0, 1.0, 5.0])])
+    assert find_duplicate_value_columns(values, ["a", "b"]) == {}
+
+
+def test_max_pairwise_correlation_finds_the_known_correlated_pair() -> None:
+    rng = np.random.default_rng(0)
+    base = rng.random(500)
+    values = np.column_stack(
+        [
+            base,
+            base * 2.0 + 0.0001 * rng.random(500),  # near-perfectly correlated with column 0
+            rng.random(500),  # independent
+        ]
+    )
+    result = max_pairwise_correlation(values, ["a", "b", "c"])
+    assert result["max_abs_correlation"] > 0.99
+    assert {result["column_a"], result["column_b"]} == {"a", "b"}
+
+
+def test_sparse_magnitude_summary_matches_hand_computed_values() -> None:
+    X = sp.csr_matrix(np.array([[0.0, 2.0], [4.0, 0.0]]))
+    result = sparse_magnitude_summary(X)
+    assert result["shape"] == [2, 2]
+    assert result["density"] == pytest.approx(0.5)
+    assert result["min_abs_nonzero"] == pytest.approx(2.0)
+    assert result["max_abs_nonzero"] == pytest.approx(4.0)
+
+
+def test_track_saga_training_loss_reports_decreasing_or_stable_loss() -> None:
+    """Training-only diagnostic -- no validation/final_test label is ever
+    passed to this function; the driver script is responsible for that
+    partition discipline, but this test confirms the function itself
+    behaves correctly on a clearly-separable synthetic training set."""
+    rng = np.random.default_rng(6)
+    n = 400
+    X = rng.random((n, 4))
+    y = (X[:, 0] + X[:, 1] > 1.0).astype(int)  # clearly separable, should converge fast
+
+    trace = track_saga_training_loss(sp.csr_matrix(X), y, class_weight=None, n_steps=4, iters_per_step=50)
+    assert len(trace) == 4
+    assert all(t["cumulative_iters"] == (i + 1) * 50 for i, t in enumerate(trace))
+    # loss should not INCREASE step over step on this easy, separable problem
+    losses = [t["train_log_loss"] for t in trace]
+    assert losses[-1] <= losses[0] + 1e-6
+
+
+def test_track_saga_training_loss_is_reproducible() -> None:
+    rng = np.random.default_rng(8)
+    X = sp.csr_matrix(rng.random((200, 3)))
+    y = rng.choice([0, 1], size=200, p=[0.8, 0.2])
+
+    trace_a = track_saga_training_loss(X, y, class_weight="balanced", n_steps=3, iters_per_step=50)
+    trace_b = track_saga_training_loss(X, y, class_weight="balanced", n_steps=3, iters_per_step=50)
+    assert trace_a == trace_b
