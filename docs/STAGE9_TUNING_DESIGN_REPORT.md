@@ -192,7 +192,48 @@ The gap between rank 0 (0.51236) and rank 1 (0.49451) — 0.0178 — is **smalle
 
 Your `RandomizedSearchCV`/cross-validation notes describe exactly this mechanism — sample N random hyperparameter combinations, score each by CV, pick the best mean score — but assume ordinary k-fold CV over exchangeable rows. This search is that same algorithm with the CV *scheme* swapped for the time-respecting one Stage 9 built (§1), and with an explicit multiple-comparisons caveat your journal's material doesn't carry (since plain k-fold tutorials rarely dwell on "the winner's margin is smaller than the noise" the way this report's ranking table does above).
 
-## 10. Interview-defense questions
+## 10. Independent scientific audit and provisional selection (fourth round)
+
+**Read-only audit, no model retrained.** `scripts/audit_stage9_search_results.py` independently recomputed every claim in §9 directly from `docs/experiment_registry.jsonl` (the authoritative record, per Stage 8 requirement 1) rather than trusting the search's own printed console log — the same discipline Stage 7 applied when independently re-verifying the RF pilot.
+
+**1. Candidate/rank reconciliation — CONFIRMED.** Exactly one candidate's independently-recomputed mean AP matches 0.51236: **candidate_index=4**, rank 0. Exact hyperparameters, as actually passed to `RandomForestClassifier` (confirmed from the registry's own `hyperparameters` field, not reconstructed): `{n_estimators=100, max_depth=15, min_samples_leaf=5, max_features="sqrt", n_jobs=-1, random_state=42, class_weight=None}`.
+
+**2. Completeness/consistency — CONFIRMED.** All 18 eligible candidates have exactly 5 `status="completed"` fold records, each with matching hyperparameters across that candidate's own 5 folds (verified programmatically, not by inspection), and each with a non-empty `evidence_paths`. **Every fold's `(train_fold, val_fold)` row fingerprint is byte-identical across all 18-19 candidates that reached it** — direct, cryptographic-hash-based proof that the 5 chronological folds never drifted between candidates; every candidate really was scored on the exact same 5 train/validation splits.
+
+**3. Fit totals — CONFIRMED.** Recomputed directly from the registry: 94 completed, 0 failed, 6 unattempted (out of 100 planned) — matches §9's reported figures exactly.
+
+**4. Paired fold-by-fold comparison, rank 0 (candidate 4) vs. rank 1 (candidate 8) — a finding that CORRECTS §9's earlier framing:**
+
+| Fold | Candidate 4 AP | Candidate 8 AP | Paired difference |
+|---|---|---|---|
+| 0 | 0.47255 | 0.45130 | +0.02125 |
+| 1 | 0.51617 | 0.49993 | +0.01624 |
+| 2 | 0.55416 | 0.53682 | +0.01734 |
+| 3 | 0.45258 | 0.43678 | +0.01580 |
+| 4 | 0.56632 | 0.54771 | +0.01861 |
+
+**Candidate 4 beat candidate 8 on all 5 of 5 folds**, with a remarkably stable margin (mean +0.01785, standard deviation of the *paired differences* only ≈0.00196). §9 compared the gap between the two candidates' means (0.0178) against each candidate's own *unpaired* across-fold standard deviation (~0.044–0.051) and concluded the ranking "is not sharply distinguishable from fold-to-fold noise." **That comparison used the wrong baseline.** Because both candidates were scored on the identical 5 folds, the correct comparison is *paired*: fold-to-fold swings driven by shared factors (each fold's own fraud prevalence and difficulty, §9's temporal-variation finding) affect both candidates almost equally and cancel out in the paired difference — which is why the paired-difference spread (≈0.002) is more than 20x smaller than the unpaired spread (≈0.044–0.051) used for the earlier, overly cautious framing. **Correction: candidate 4's advantage over candidate 8 is real and consistent across every fold tried, not noise-level** — though this says nothing about candidates 18/19, which were never evaluated at all (see point 5).
+
+**5. Scope of the winner, stated precisely:** Candidate 4 is the highest-mean-AP configuration **among the 18 candidates that completed all 5 folds within the approved search's budget.** It is explicitly **not** established as the winner among all 20 originally-declared candidates — candidates 18 and 19 were never fully evaluated (candidate 18 reached 4 of 5 folds; candidate 19, zero), their true standing relative to candidate 4 is genuinely unknown, and no recovery run was approved to resolve that.
+
+**6. `validation`/`final_test` access — CONFIRMED never touched.** Every one of the 95 records for this search (94 fits + 1 summary) has `validation_consulted=False`; independently cross-checked against the module's own code paths (`src/hyperparameter_tuning.py`/`scripts/run_stage9_hyperparameter_search.py` read `train` exclusively).
+
+**7. Provisional tuned candidate, conditional on this audit (which passed in full):**
+
+```
+RandomForestClassifier(
+    n_estimators=100, max_depth=15, min_samples_leaf=5,
+    max_features="sqrt", n_jobs=-1, random_state=42, class_weight=None,
+)
+```
+**Selection rule:** highest mean Average Precision across 5 train-internal, time-respecting, expanding-window chronological folds, among candidates with all 5 folds successfully completed within the approved search's resource budget.
+
+**This is PROVISIONAL, not final.** Stage 9 is **not** marked complete by this audit. Carried-forward limitations, restated for the record:
+- **Incomplete-search limitation:** 2 of 20 declared candidates (18, 19) were never evaluated; this ranking covers only the 18 that were.
+- **Temporal-variation limitation:** fold-level AP is driven substantially by which chronological window a fold covers (§9), not purely by hyperparameters — every candidate shows the same low-fold-0/high-fold-2-and-4 pattern.
+- **Validation-selection caveat:** this candidate was selected using `train`-internal CV only; it has never been scored against the external `validation` partition, and that score (whenever it happens) would be the FIRST and only legitimate use of `validation` for this candidate — not a confirmation of something already known, and not interchangeable with the CV mean AP reported here.
+
+## 11. Interview-defense questions
 
 1. "Your `TimeSeriesSplit` check passed for `n_splits=5` but failed for `n_splits=10` — why would adding more folds break something that worked with fewer?"
 2. "Why do you refit the missingness-indicator selection separately for every CV fold instead of reusing the one Stage 5 already computed over all of `train`?"
@@ -200,3 +241,4 @@ Your `RandomizedSearchCV`/cross-validation notes describe exactly this mechanism
 4. "Fold 0 failed with a `KeyError` on your first real attempt — walk me through what happened to that failed run's record, and why didn't it block folds 1-4 from running?"
 5. "Your top two candidates' mean AP differ by 0.018, but each candidate's own fold-to-fold standard deviation is around 0.045 — does that mean you actually found a better configuration, or not?"
 6. "Two of your 20 declared candidates never got evaluated at all — how does that affect whether you can trust the search's ranking?"
+7. "You first said the top-two gap wasn't distinguishable from noise, then a paired comparison said the opposite — which is right, and what was wrong with the first analysis?"
