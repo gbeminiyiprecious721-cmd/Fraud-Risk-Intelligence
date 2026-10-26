@@ -1,6 +1,6 @@
 # Stage 9 — Chronological Hyperparameter Tuning: Design and Feasibility Report
 
-**Status: design and bounded feasibility phase only. No full-data search has been executed or approved.** This report presents the chronological CV design, the Random Forest search space, measured feasibility findings, and the tracking-registry extension — all built against `train` only. `validation` and `final_test` were not accessed anywhere in this round.
+**Status: design and feasibility phases complete and approved. The 20-candidate RandomizedSearchCV search has NOT been executed or approved.** This report presents the chronological CV design, the Random Forest search space, a bounded feasibility probe, a REAL full-scale five-fold feasibility experiment (§9), and the tracking-registry extension — all built against `train` only. `validation` and `final_test` were not accessed anywhere in either round.
 
 ## 1. Chronological cross-validation design
 
@@ -85,13 +85,51 @@ Average: **0.479s/fold.** Structural extrapolation for the proposed 20×5=100-fi
 
 ## 7. Limitations
 
-- The feasibility estimate is a lower bound from a small subset, not a full-scale measurement — stated in §4, not glossed over.
+- The §4 feasibility estimate (71.9s) was explicitly labeled a LOWER BOUND from a small, bounded subset, not a full-scale measurement — and §8's real full-scale five-fold run confirms it badly understated the real cost (by roughly 15-30x), exactly the risk that label was meant to flag. §8's revised estimate (18.6-37.1 minutes) supersedes it for planning purposes.
 - No embargo/gap is applied, for the explicit reason given in §1 — this could change if a label-maturity assumption is later established.
 - `TimeSeriesSplit`'s safety was checked only for the specific `n_splits` values tested (3–8, 10); a different `n_splits` not tested here would need its own check before use, via `assess_timeseries_split_compatibility()`.
 - No real hyperparameter search has been run — every number in §3/§4 above is a proposal or an extrapolation, not a result.
 
-## 8. Interview-defense questions
+## 8. Real, full-scale five-fold feasibility experiment (second approval round)
+
+**Approved scope: ONE fixed Random Forest configuration (the Stage 7 reference, unchanged) executed across all 5 real, full-scale expanding-window folds — a resource-feasibility measurement, not a hyperparameter search.** Each fold ran as its own process invocation (`scripts/run_stage9_five_fold_feasibility.py --fold_index N`), under its own `/usr/bin/time -l` measurement and the harness's 600-second-per-fold timeout, sequentially, stopping-on-failure rather than continuing automatically.
+
+**One real failure occurred and was handled exactly as designed, not glossed over:** fold 0's first attempt crashed with `KeyError: 'TransactionDT'` — a genuine bug in the new driver script (it tried to re-merge a column, `TransactionDT`, that turns out to already be a register-`include`-status column and was therefore already present in the loaded frame). `track_run()` correctly logged this as `status="failed"` with the exact exception before the process exited; the fold it never reached was not fabricated. The bug was fixed (removed the redundant merge) and fold 0 was re-run successfully. Both the failed attempt and the 5 successful runs are preserved in `docs/experiment_registry.jsonl` under `search_id="stage9-five-fold-full-scale-feasibility"` — nothing was deleted or silently corrected away.
+
+**Results, all 5 folds, fixed config (`n_estimators=100, max_depth=10, min_samples_leaf=20, random_state=42`), evaluated on each fold's OWN held-out rows (never the external `validation` partition):**
+
+| Fold | Train rows | Val rows | Preproc (s) | Fit (s) | Predict (s) | Total (s) | Peak RSS (GB) | Features | Train prev. | Val prev. | AP | ROC-AUC |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 73,020 | 73,020 | 2.994 | 1.662 | 0.203 | 4.859 | 6.16 | 812 | 2.684% | 2.572% | 0.42833 | 0.86513 |
+| 1 | 146,040 | 73,020 | 5.408 | 3.599 | 0.214 | 9.221 | 8.24 | 813 | 2.628% | 3.988% | 0.48054 | 0.85224 |
+| 2 | 219,060 | 73,020 | 7.810 | 6.473 | 0.220 | 14.502 | 10.77 | 813 | 3.081% | 4.158% | 0.51400 | 0.87677 |
+| 3 | 292,080 | 73,020 | 10.147 | 9.149 | 0.211 | 19.507 | 13.47 | 813 | 3.350% | 3.474% | 0.41720 | 0.84225 |
+| 4 | 365,100 | 73,025 | 12.502 | 13.374 | 0.212 | 26.088 | 16.24 | 813 | 3.375% | 4.164% | 0.53229 | 0.87631 |
+
+**Total measured cost, all 5 folds: 74.177s of actual compute (sum of preprocessing+fit+predict); 102.9s of wall-clock time including per-invocation process/import overhead (~5.6-5.9s per invocation, an artifact of deliberately running each fold as a separate process for clean memory measurement, not a cost a real single-process search would repeat 100 times).**
+
+**Feature-count difference confirmed and explained, exactly as predicted:** fold 0 (73,020 training rows, the smallest) fits 812 columns; every larger fold fits 813. This is the identical mechanism already reconciled in Stage 7 (the 790-vs-813 pilot-vs-full-train discrepancy): `OneHotEncoder` observed one fewer distinct category in fold 0's smaller training set. This is correct train-only-fit behavior, not a bug — each fold's preprocessing is refit from scratch, never reused from a global fit (confirmed directly: no code path in `fit_transform_fold` persists a fitted transformer across folds).
+
+**Peak memory scales with fold size, as expected, topping out at 16.24GB for fold 4 (the largest, 365,100 training rows — 83% of the complete 438,125-row `train` partition) — consistent with, and slightly below, Stage 5/7's historical ~16.2-16.6GB peak for fitting this same pipeline on the complete partition.** Since folds ran sequentially in separate processes, the experiment's peak memory exposure at any instant was bounded by the single largest fold, never a sum across folds. No timeout, no memory pressure, no leakage-safeguard violation occurred on any successful fold.
+
+### Revised, defensible resource estimate for the proposed 20-candidate × 5-fold search
+
+Two scenarios, both using these REAL full-scale per-fold measurements (not the earlier bounded-probe lower bound, which is now superseded):
+
+| Scenario | Basis | Raw estimate | With 1.5× safety margin |
+|---|---|---|---|
+| **Naive** (preprocessing refit for every candidate × fold — sklearn's `RandomizedSearchCV(Pipeline(...))` default behavior, no explicit caching) | 20 × 74.177s | 1,483.5s (≈24.7 min) | **2,225.3s (≈37.1 min)** |
+| **Optimized** (preprocessing fit ONCE per fold, cached; only the RF step refit per candidate — requires explicit `memory=` caching or an equivalent manual cache, not yet implemented) | 38.861s (preprocessing, once×5 folds) + 20×35.317s (RF fit+predict) | 745.2s (≈12.4 min) | **1,117.8s (≈18.6 min)** |
+
+**Uncertainty, stated explicitly:** both scenarios assume RF fit/predict time scales linearly with the search's own row counts the way these 5 folds did (a reasonable but unverified extrapolation across 20 *different* hyperparameter configurations — some candidates in the proposed search space, e.g. `n_estimators=150, max_depth=15`, will cost measurably more per fit than this round's fixed `n_estimators=100, max_depth=10` reference; others, e.g. `n_estimators=50`, less). Neither scenario includes the one-time cost of implementing and testing the caching optimization itself.
+
+**Proposed hard total search-time budget: 3,600 seconds (60 minutes),** comfortably above the naive scenario's margin-adjusted estimate (37.1 min), providing headroom for both scenario uncertainty and the slower, more-expensive candidates in the declared search space.
+
+**Proposed recovery strategy:** log every (candidate × fold) trial to `docs/experiment_registry.jsonl` via `track_run()` immediately on completion (append-only, crash-safe — already demonstrated working correctly by this round's own real fold-0 failure). If the search is interrupted (timeout, crash, or manual stop), resume by querying the registry for already-completed `(search_id, candidate_index, fold_index)` combinations and skipping them — never redoing completed work, never fabricating a result for a trial that didn't finish. This is the same pattern already proven in §4/§7 and re-confirmed by the real failure-then-recovery sequence in this section.
+
+## 9. Interview-defense questions
 
 1. "Your `TimeSeriesSplit` check passed for `n_splits=5` but failed for `n_splits=10` — why would adding more folds break something that worked with fewer?"
 2. "Why do you refit the missingness-indicator selection separately for every CV fold instead of reusing the one Stage 5 already computed over all of `train`?"
-3. "Your feasibility estimate is 71.9 seconds — how confident are you in that number, and what would make it wrong?"
+3. "Your first feasibility estimate was 71.9 seconds from a bounded probe, but the real five-fold run's own numbers imply 20-37 minutes for the full search — which numbers should someone trust, and why did the first one undershoot so badly?"
+4. "Fold 0 failed with a `KeyError` on your first real attempt — walk me through what happened to that failed run's record, and why didn't it block folds 1-4 from running?"
