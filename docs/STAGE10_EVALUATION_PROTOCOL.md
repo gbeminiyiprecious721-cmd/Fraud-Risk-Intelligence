@@ -1,6 +1,6 @@
 # Stage 10 — Model Evaluation: Readiness Gate Report
 
-**Status: the ONE-TIME `final_test` evaluation has been executed, approved by the user, exactly once.** This report documents the frozen evaluation protocol (specified before any `final_test` row was read), the preflight rehearsal, the access-control mechanism, the real results (§8), and the remaining scientific limitations. **Stage 10 is NOT marked complete** — the user's final scientific review is still pending, per explicit instruction.
+**Status: the ONE-TIME `final_test` evaluation has been executed, approved by the user, exactly once, and its interpretation has been independently audited (§9) and corrected where it overclaimed.** This report documents the frozen evaluation protocol (specified before any `final_test` row was read), the preflight rehearsal, the access-control mechanism, the real results (§7), the interpretation audit (§9), and the remaining scientific limitations. **Stage 10 is NOT marked complete** — the user's final approval for formal closure is still pending, per explicit instruction.
 
 ## 1. The frozen evaluation protocol (declared before any `final_test` access)
 
@@ -98,7 +98,7 @@ Only past BOTH gates does `scripts/run_stage10_final_evaluation.py` import anyth
 - Anonymised-feature prediction-time availability remains unverified (carried forward since Stage 6/7).
 - This is an **offline ranking evaluation**, not a demonstrated live fraud-prevention outcome — the gap between "ranks well on historical data" and "prevents fraud in production" is not closed by Stage 10, and is explicitly out of this stage's scope (Stages 13+ territory, if ever pursued, consistent with the project's stated scope — a professional, reusable portfolio artifact, not a commercial MVP).
 
-## 8. THE real final_test evaluation (executed once, approved)
+## 7. THE real final_test evaluation (executed once, approved)
 
 **Run_id `stage10-c2f0f3fc017a4db3b495e5a6f62084fb`, `search_id="stage10-frozen-rf-final-test-evaluation"`, status `completed`.** `final_test`: 76,855 rows, 2,682 positives, prevalence 3.49% (close to `train`'s ~3.5% and Stage 7's `validation` prevalence 3.463% — unlike Stage 9's CV folds, which varied 2.57%–4.16% by chronological window, `final_test` is not an unusually different population in base rate). Fitted feature count 813 (matches every prior full-scale run). Preprocessing 13.9s, fit 40.0s, predict 0.24s, peak memory ~17.2GB.
 
@@ -149,9 +149,52 @@ The lowest-amount segment performs notably BETTER than the other three, which ar
 
 The cost-minimizing threshold ranges from **0.04 to 0.71** depending entirely on which labelled assumption is used. Per Stage 1's own framing ("robust across scenarios A–C" or "sensitive to assumption X"), this result is clearly the latter: **sensitive, not robust**. No single recommended threshold is asserted; the sensitivity itself is the finding.
 
-## 9. What has NOT happened
+## 9. Scientific interpretation audit (read-only — corrects §7's framing, no retraining/rescoring)
 
-- `final_test` was read exactly once, for this one evaluation, and has not been re-accessed.
+This audit used ONLY already-saved evidence (`docs/_stage10_final_test_evaluation_raw.json`, `docs/experiment_registry.jsonl`). `final_test` was not reopened.
+
+**§7's measured numbers are preserved exactly as reported: AP 0.42784, ROC-AUC 0.86637, P@1%=0.8583/R@1%=0.2461, P@5%=0.3037/R@5%=0.4351, 95% bootstrap CI [0.40842, 0.44534]. Unchanged.**
+
+**ProductCD segment AP, correctly compared against each segment's OWN prevalence floor (available in saved evidence — `n_samples`, `n_positive`, `actual_prevalence` are all recorded per segment):**
+
+| Segment | n | Prevalence | AP | **AP ÷ own prevalence** |
+|---|---|---|---|---|
+| R | 3,785 | 4.73% | 0.735 | **15.54x** |
+| H | 2,289 | 5.68% | 0.525 | **9.24x** |
+| S | 2,757 | 4.46% | 0.368 | **8.24x** |
+| C | 8,378 | 13.33% | 0.713 | **5.34x** |
+| W | 59,646 | 1.90% | 0.096 | **5.05x** |
+
+**Correction: ranking segments by raw AP (R≈C > H > S > W) is misleading, because AP is mechanically bounded by each segment's own prevalence — a segment with a much lower base rate cannot reach the same absolute AP as a high-prevalence segment even with equally good ranking.** Normalized against each segment's own no-skill floor, **W and C are actually tied for the weakest relative performance (≈5x), not W uniquely so** — R (15.5x) and H (9.2x) are the strongest relative performers, S (8.2x) is mid-table. W's raw AP (0.096) looking dramatically worse than C's (0.713) is substantially an artifact of W's much lower prevalence (1.9% vs. 13.3%), not solely evidence of a uniquely broken sub-model for `ProductCD=W`. A real, more modest finding survives: W and C are the two segments ranking least-well relative to their own difficulty, and W is also 78% of all `final_test` volume — operationally the most consequential segment by sheer count, even though it is not uniquely catastrophic by this normalized measure.
+
+**Correction — the prior claim that `ProductCD=W` "caused" or "almost entirely explains" the aggregate AP (0.428) was unsupported and is withdrawn.** Average Precision is computed from ONE joint ranking across all `final_test` rows; each segment's reported AP is computed from a SEPARATE, segment-internal re-ranking (only that segment's own rows, re-sorted among themselves). These are not the same computation, and aggregate AP is **not** a sample-count-weighted (or any other weighted) average of the per-segment AP values — no such decomposition was computed in this evaluation, and attempting one (e.g. "what would aggregate AP be excluding `W`") would require the row-level scores, which were not persisted as evidence and cannot be reconstructed without re-scoring `final_test` — explicitly out of scope for this read-only audit. What CAN be said, supported by the saved evidence: `W` is both the largest segment (78% of rows) and among the weakest by the normalized measure above, which is *consistent with* `W` contributing substantially to pulling the joint ranking's aggregate AP down from what the stronger segments alone might suggest — but this is a plausible, unquantified contribution, not a proven causal/decomposed claim.
+
+**Correction — the prior claim that the CV-to-`final_test` AP gap (0.51236 vs. 0.42784) "proves" model-selection (CV-search) optimism was a categorical overclaim and is revised.** At least three distinct, co-plausible, UNDECOMPOSED explanations exist, and this evaluation does not distinguish between them:
+1. **Selection effects** — Stage 9's search ranked 18 candidates by CV mean AP and reported the best; a "best of 18" statistic is optimistic relative to a fresh draw, by the multiple-comparisons logic already on record since Stage 9.
+2. **Training-window/size differences** — Stage 9's 5 CV folds trained on expanding-window SUBSETS of `train` (73,020 to 365,100 rows), never the complete 438,125-row partition; the real Stage 10 evaluation trained on the complete partition. More training data can change a model's generalization behavior independent of any selection effect.
+3. **Temporal population change** — Stage 9's CV folds scored each fold's own chronologically-local validation window (all still inside `train`'s time range); `final_test` is a later, disjoint time period. If the underlying fraud patterns shifted across time, this alone could produce a gap with no selection bias involved at all.
+
+All three remain plausible; this audit does not rule any out or assign relative weight, and no further analysis was performed to decompose them (doing so would require, at minimum, scoring the exact CV-fold-trained models on `final_test`, which was not part of the approved protocol and has not been done).
+
+**Cost-sensitivity: re-confirmed, no single threshold recommended.** The sweep (§7) remains explicitly conditional on 4 labelled, un-validated dollar-value assumptions crossed with 3 labelled cost scenarios — a sensitivity table, not a recommendation. No credible real operational cost data exists in this project (Stage 1 never pinned one down), so no single deployment threshold is, or should be, asserted.
+
+**Stage 1's 4 success criteria, re-verified with demonstrated/conditional status made explicit:**
+
+| # | Criterion | Status |
+|---|---|---|
+| 1 | Trivial baseline established, reported alongside every model | **Demonstrated** (since Stage 7; reconfirmed on `final_test` this round) |
+| 2 | Candidate beats baseline on BOTH AP and recall@K, margin reported honestly | **Demonstrated** (AP +0.393, R@1% +0.240, R@5% +0.409, all on `final_test`) |
+| 3 | Final threshold justified by the cost-sensitive analysis across scenarios A–C | **Conditional / NOT fully met** — the sensitivity analysis exists and is complete, but no specific threshold has been chosen, because Stage 1 never pinned down a real dollar value for the FP cost unit; a "final chosen threshold" would require that real operational input, which does not currently exist |
+| 4 | Leakage-free, reproducible evaluation | **Demonstrated** (the entire readiness-gate architecture, fingerprint guards, access-control gates, and this audit itself) |
+
+**All known limitations preserved, verbatim, not weakened by anything in this audit:** unverified prediction-time availability of anonymised features; temporal distribution shift (now additionally implicated as one of three co-plausible explanations for the CV/`final_test` gap above, not merely a background caveat); potential dependence between transactions (the bootstrap CI's i.i.d.-row assumption remains a stated simplification); no model-calibration check has been performed; the offline-ranking-vs-live-fraud-prevention gap is not closed by this stage; no financial-loss reduction has been demonstrated, only ranking quality on historical, labelled data.
+
+**Registry and evidence verification:** exactly **one** `status="completed"` record exists under `search_id="stage10-frozen-rf-final-test-evaluation"` (`run_id=stage10-c2f0f3fc017a4db3b495e5a6f62084fb`) — confirmed by direct query, no second record created by this audit. **A genuine gap, caught by this audit and reported honestly rather than silently fixed:** that record's `evidence_checksums` field was never populated at evaluation time (`scripts/run_stage10_final_evaluation.py` set `evidence_paths` but did not call `compute_evidence_checksums`, unlike the Stage 7/9 backfill scripts' convention). The evidence file's sha256, computed now, read-only, for the permanent record: `021726fc9454e0b7e60406b36fcb8ae796df35dbc311bae14a89802058e3f3f5`. Per this project's append-only immutability discipline, the existing registry record was NOT retroactively edited to add this — the gap and the independently-computed checksum are both documented here instead, the same discipline already applied to the two self-caught Stage 7 git-commit-message errors.
+
+## 10. What has NOT happened
+
+- `final_test` was read exactly once, for the one evaluation, and has not been re-accessed — including during this audit, which used only already-saved evidence.
 - No hyperparameter, feature, or preprocessing decision was made or changed in response to these results.
-- Stage 10 is not marked complete — awaiting the user's final scientific review.
+- The trained model was not changed; no package was installed; no prediction was rerun.
+- Stage 10 is not marked complete — awaiting the user's final approval for formal closure.
 - No claim is made that this offline ranking evaluation demonstrates real-world fraud-loss reduction or production readiness.
