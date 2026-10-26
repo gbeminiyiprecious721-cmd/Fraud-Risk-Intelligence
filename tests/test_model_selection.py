@@ -22,6 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.model_selection import (  # noqa: E402
     RANDOM_STATE,
+    align_labels_to_partition_df,
     build_bounded_gradient_boosting,
     build_bounded_random_forest,
     build_chronological_pilot_subset,
@@ -667,3 +668,34 @@ def test_run_basic_model_correctness_checks_catches_a_broken_predict_proba() -> 
     assert checks["all_passed"] is False
     assert checks["probabilities_in_unit_range"] is False
     assert checks["probabilities_sum_to_one"] is False
+
+
+# --- align_labels_to_partition_df: explicit, verified label alignment -----
+
+def test_align_labels_to_partition_df_attaches_correct_labels_regardless_of_row_order() -> None:
+    """The exact failure mode this function exists to prevent: df and
+    labels_df in DIFFERENT row orders must still end up correctly paired,
+    by TransactionID, not by position."""
+    df = pd.DataFrame({"TransactionID": [3, 1, 2], "feature": [30.0, 10.0, 20.0]})  # out-of-order on purpose
+    labels_df = pd.DataFrame({"TransactionID": [1, 2, 3], "isFraud": [0, 1, 0]})  # sorted
+    result = align_labels_to_partition_df(df, labels_df)
+    # row for TransactionID=3 must get label 0, ID=1 -> 0, ID=2 -> 1 -- regardless of input order
+    lookup = dict(zip(result["TransactionID"], result["isFraud"]))
+    assert lookup == {1: 0, 2: 1, 3: 0}
+
+
+def test_align_labels_to_partition_df_raises_on_unmatched_row() -> None:
+    df = pd.DataFrame({"TransactionID": [1, 2, 999], "feature": [1.0, 2.0, 3.0]})  # 999 has no label
+    labels_df = pd.DataFrame({"TransactionID": [1, 2], "isFraud": [0, 1]})
+    with pytest.raises(ValueError, match="no matching label"):
+        align_labels_to_partition_df(df, labels_df)
+
+
+def test_align_labels_to_partition_df_raises_on_duplicate_id_in_labels() -> None:
+    """validate='one_to_one' must catch a labels_df with a duplicated ID
+    -- a real data-integrity problem, not something to silently average
+    or arbitrarily pick one of."""
+    df = pd.DataFrame({"TransactionID": [1, 2], "feature": [1.0, 2.0]})
+    labels_df = pd.DataFrame({"TransactionID": [1, 1, 2], "isFraud": [0, 1, 1]})  # ID=1 duplicated with conflicting labels
+    with pytest.raises(Exception):  # pandas raises MergeError, a ValueError subclass
+        align_labels_to_partition_df(df, labels_df)

@@ -663,3 +663,28 @@ def run_basic_model_correctness_checks(model, X) -> dict:
     }
     checks["all_passed"] = all(checks.values())
     return checks
+
+
+def align_labels_to_partition_df(
+    df: pd.DataFrame, labels_df: pd.DataFrame, id_col: str = "TransactionID", label_col: str = "isFraud"
+) -> pd.DataFrame:
+    """Attach `label_col` to `df` by an EXPLICIT merge on `id_col`, never
+    by assuming `df` and `labels_df` happen to share row order.
+
+    Why this exists: `load_partition_df()` returns rows in the source
+    CSV's own file order; `load_labels()` returns rows sorted by
+    `id_col`. For this project's actual data the two orders agree (the
+    raw file is itself monotonically increasing by `TransactionID`,
+    confirmed separately) -- but relying on that silently is exactly the
+    kind of fragile, unenforced assumption a "do the labels actually
+    align with these rows" review should catch. This function makes the
+    alignment explicit and verified instead of implicit: it raises if any
+    row fails to match (`validate="one_to_one"`) or if any row ends up
+    with a missing label after the merge, rather than silently producing
+    a mismatched or NaN-contaminated label column.
+    """
+    merged = df.merge(labels_df[[id_col, label_col]], on=id_col, how="left", validate="one_to_one")
+    if merged[label_col].isna().any():
+        missing = merged.loc[merged[label_col].isna(), id_col].tolist()
+        raise ValueError(f"{len(missing)} row(s) had no matching label after merge -- real alignment bug, e.g. {missing[:5]}")
+    return merged
