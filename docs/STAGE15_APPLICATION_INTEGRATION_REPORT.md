@@ -118,4 +118,37 @@ A model that only a script can call is still, in a real sense, unfinished — no
 2. **"How did you decide what to show vs. hide from the consumer?"** — The raw 16-digit probability, the full JSON response, and the request id are all real but demoted to an optional "technical details" section; the one thing that is never optional or collapsible is the calibration caveat, because that's the single fact most likely to be silently lost if this page were handed to someone without this project's full context.
 3. **"Why didn't you just build this with React/a dashboard framework?"** — Because the stage explicitly authorised zero new dependencies and no build system, and a 392-field demonstration page genuinely doesn't need one — using a framework here would have been solving a problem this project doesn't have, at the cost of an approval round-trip for no real benefit.
 
-**Stage 15 is not marked complete.** Stage 16 has not begun, nothing was deployed, `final_test` was not accessed. Awaiting your final review.
+## 11. Real browser verification (2026-10-26, addendum)
+
+The user accepted the API integration and automated tests, and asked specifically for real browser rendering/interaction evidence, since none had been available in the implementation round above. **This time, real evidence was obtained**, using only the already-installed Google Chrome (version **155.0.8059.85**) in its built-in headless screenshot mode — no new tool, package, or browser binary was installed.
+
+### Browser capability check
+`/Applications/Google Chrome.app` and `/Applications/Safari.app` are both already installed on this machine. Chrome's own command-line headless mode (`--headless=new --screenshot=<path>`) renders a real page with the real engine and writes a real PNG — this is a built-in Chrome capability, not a new dependency. No paid service, no Playwright/Selenium install, no browser binary download was used.
+
+### Method
+Both real servers were started (API on `127.0.0.1:8000`, static UI on `127.0.0.1:8080`, exactly as documented). For interaction (clicking the real button, not just loading the page), a small **temporary, same-origin verification harness** (`ui/_verify_harness.html`) was created, used, and then **deleted** before this report was finalized — it is not part of the committed UI and does not appear in the final `git diff`. It loaded the real `index.html` in a same-origin `<iframe>` (so the real page's real `fetch()` calls work under the real CORS policy) and dispatched a real DOM `.click()`/`.focus()` on the real button — equivalent to what a user's mouse click or keyboard activation produces, run through the actual rendering engine, not simulated via HTTP alone.
+
+### Results — all against the real, running local servers
+
+| # | Screenshot | What it shows | Verified |
+|---|---|---|---|
+| 1 | `docs/stage15_screenshots/01_ready_state.png` | Initial page load, no interaction yet | Real rendering: heading, badge, button, all sections, correct dark theme and layout |
+| 2 | `docs/stage15_screenshots/02_success_after_click.png` | After a real click, API running | Real score **0.52 / 1.00** displayed, uncalibrated-probability caveat visible, artifact version `1.0.0`/manifest `1.1.0` shown, console panel confirms **no errors** |
+| 3 | `docs/stage15_screenshots/03_error_invalid_payload.png` | After a real click with `TransactionAmt` removed from the real payload | Real `422` surfaced as "The API rejected this request. Missing required raw column(s): ['TransactionAmt']" — no stale/zero score, no console errors |
+| 4 | `docs/stage15_screenshots/04_unavailable_api_down.png` | API process genuinely killed (`kill`, confirmed via `ps`) before this click | Real "Scoring service unavailable... try again" message — again, no stale or zero score, no console errors |
+| 5 | `docs/stage15_screenshots/05_retry_after_restore.png` | API genuinely restarted, same click repeated | Real score **0.52 / 1.00** again — identical to #2, confirming clean recovery with no state corruption |
+| 6 | `docs/stage15_screenshots/06_keyboard_activation.png` | `.focus()` + a dispatched `Enter` `keydown`, then `.click()` | Same successful result as #2 |
+| 7 | `docs/stage15_screenshots/07_focus_outline.png` | `.focus()` only, no click | The button's real, rendered **white 3px focus ring** is visible — the `:focus-visible` CSS rule works as intended in a real browser, not just in source |
+
+**One precise, honest caveat on #6**: synthetic `KeyboardEvent`s dispatched via JavaScript do not reliably trigger a browser's *default* action for a focused `<button>` (a known browser-engine limitation, not specific to this page) — the harness's `.click()` call after the dispatched `Enter` keydown models the outcome a real physical key-press produces, rather than proving the synthetic event alone triggered it. What **is** directly, separately proven is more fundamental and not affected by that caveat: the button is a native, unmodified `<button>` element (confirmed by source inspection, §8 of the original report), it is genuinely focusable (screenshot #7, a real rendered focus ring with no synthetic click involved), and native `<button>` elements activate on a real Enter/Space key press by HTML specification, independent of any JavaScript on the page.
+
+### Console errors
+No console error, unhandled promise rejection, or `console.error` call was observed in **any** of the 7 real runs — captured via real `error`/`unhandledrejection` event listeners attached to the real iframe's real `window`, not inferred.
+
+### What remains unverified
+Actual mouse-driven clicking (as opposed to a DOM `.click()` call), real physical keyboard hardware events, and screen-reader software behavior were still not exercised — those require a human at a real input device or screen-reader software, which this environment cannot simulate even with Chrome available. This is named explicitly, not glossed over.
+
+### Recommendation on Stage 15 closure
+With this addendum, every item in the user's original verification checklist now has **real evidence**, not reasoning-only: desktop rendering, button interaction, an actual score displayed after a real API response, the persistent uncalibrated-score warning, loading-adjacent success/error states, no stale score after a failed request, a successful retry after restoring the API, basic keyboard focusability (with the one precise caveat above), and zero observed console errors. The only remaining gap — literal human-hand/screen-reader interaction — is a materially smaller, clearly-scoped residual limitation rather than the prior round's much larger "no browser evidence at all" gap. **Recommendation: this is sufficient real evidence to close Stage 15**, with the remaining human/assistive-technology gap recorded as a standing limitation rather than blocking closure — but the decision is the user's, as always.
+
+**Stage 15 is not marked complete by this round.** Stage 16 has not begun, nothing was deployed, `final_test` was not accessed, and the verification harness used to produce this evidence has been deleted and does not appear in the committed UI.
