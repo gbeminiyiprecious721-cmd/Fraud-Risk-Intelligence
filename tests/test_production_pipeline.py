@@ -9,6 +9,8 @@ import pytest
 from src.production_pipeline import (
     ArtifactIntegrityError,
     SchemaValidationError,
+    _REPO_ROOT,
+    _manifest_artifact_path,
     align_raw_columns,
     compute_ordered_schema_fingerprint,
     fit_production_pipeline,
@@ -197,6 +199,17 @@ def test_save_and_load_artifact_round_trip_predictions_match(tmp_path):
     assert list(loaded_artifact.schema.transformed_feature_names) == list(artifact.schema.transformed_feature_names)
 
 
+def test_manifest_artifact_path_is_repo_relative_when_under_repo_root():
+    under_repo = _REPO_ROOT / "artifacts" / "some_artifact.joblib"
+    assert _manifest_artifact_path(under_repo) == "artifacts/some_artifact.joblib"
+
+
+def test_manifest_artifact_path_falls_back_to_absolute_outside_repo_root(tmp_path):
+    outside_repo = tmp_path / "elsewhere" / "artifact.joblib"
+    result = _manifest_artifact_path(outside_repo)
+    assert result == str(outside_repo.resolve())
+
+
 def test_load_artifact_detects_checksum_tamper(tmp_path):
     _, artifact = fit_synthetic_artifact()
     artifact_path = tmp_path / "artifact.joblib"
@@ -306,5 +319,10 @@ def test_full_training_regression_against_independent_reference_procedure():
     # 4. Equivalent probability predictions, within a tolerance justified by this
     # project's own documented macOS n_jobs=-1 parallel-float-summation artifact
     # (Stage 7/10 precedent: differences at the ~1e-15 level between otherwise-
-    # identical fits/reloads).
+    # identical fits/reloads). Logged explicitly (added in the Stage 13
+    # portability audit, 2026-10-26) so a future run's actual observed
+    # magnitude is captured, not just the boolean pass/fail the original
+    # version of this test recorded.
+    max_abs_diff = float(np.max(np.abs(proba_reference - proba_new)))
+    print(f"Full-training regression: max |reference - new| = {max_abs_diff:.3e} (tolerance: rtol=1e-9, atol=1e-12)")
     assert np.allclose(proba_reference, proba_new, rtol=1e-9, atol=1e-12)

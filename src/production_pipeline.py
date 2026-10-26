@@ -40,6 +40,26 @@ import pandas as pd
 from src.experiment_tracking import compute_file_checksum, get_environment_versions, get_git_commit_and_dirty
 
 
+MANIFEST_SCHEMA_VERSION = "1.1.0"  # bumped 2026-10-26 (Stage 13 portability audit): artifact_path is now
+# stored repository-relative where possible, distinct from the fitted artifact's own `artifact_version`
+# (which this audit does not change) -- see docs/PRODUCTION_PIPELINE_REPORT.md's audit addendum.
+
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _manifest_artifact_path(path: Path) -> str:
+    """Repository-relative path string where the artifact lives under
+    this repo's root (so a future checkout at a different absolute
+    location can still match the manifest against the file it
+    describes); falls back to the absolute path otherwise, never
+    raises."""
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(_REPO_ROOT))
+    except ValueError:
+        return str(resolved)
+
+
 class SchemaValidationError(ValueError):
     """Raised when raw input to `predict_fraud_probability` (or the
     lower-level `predict_from_transformed`) does not match the fitted
@@ -192,7 +212,8 @@ def save_artifact(artifact: PipelineArtifact, path, metadata: dict) -> dict:
     joblib.dump({"preprocessor": artifact.preprocessor, "model": artifact.model, "schema": artifact.schema}, path)
     checksum = compute_file_checksum(path)
     manifest = dict(metadata)
-    manifest["artifact_path"] = str(path)
+    manifest["manifest_schema_version"] = MANIFEST_SCHEMA_VERSION
+    manifest["artifact_path"] = _manifest_artifact_path(path)
     manifest["artifact_sha256"] = checksum
     manifest["artifact_size_bytes"] = path.stat().st_size
     manifest["ordered_schema_fingerprint"] = compute_ordered_schema_fingerprint(artifact.schema.transformed_feature_names)

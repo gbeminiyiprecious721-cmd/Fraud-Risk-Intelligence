@@ -1620,8 +1620,12 @@
   "stage10_reference": "Stage 10 (docs/STAGE10_EVALUATION_PROTOCOL.md): the frozen configuration's one authorised final_test evaluation, AP 0.42784, ROC-AUC 0.86637, 95% CI [0.40842, 0.44534] -- NOT re-measured or re-claimed by this artifact.",
   "reconstruction_disclaimer": "This artifact is a RECONSTRUCTION of the frozen Stage 9/10 configuration, fit fresh on the same training partition -- NOT the identical historical Python object Stage 10 evaluated (that object was never serialized and no longer exists). Equivalence to an independently-fit reference is verified by tests/test_production_pipeline.py's full-training regression test, not assumed.",
   "final_test_accessed": false,
-  "artifact_path": "/Users/MicrosoftSurface2/Projects/data-science-lab/Fraud-Risk-Intelligence/artifacts/frozen_rf_fraud_risk_v1.joblib",
+  "artifact_path": "artifacts/frozen_rf_fraud_risk_v1.joblib",
   "artifact_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
   "artifact_size_bytes": 16799089,
-  "ordered_schema_fingerprint": "cba2e8082c5e96e60bcc87ed45b5231aebf023ff9357ebde95a66f5257a70ea8"
+  "ordered_schema_fingerprint": "cba2e8082c5e96e60bcc87ed45b5231aebf023ff9357ebde95a66f5257a70ea8",
+  "manifest_schema_version": "1.1.0",
+  "manifest_updated_at": "2026-10-26T18:01:49.221965+00:00",
+  "manifest_update_note": "Stage 13 final portability audit (2026-10-26): artifact_path changed from an absolute, machine-specific path to a repository-relative one, so a future checkout at a different location can still match this manifest to the artifact file it describes. The artifact binary itself (frozen_rf_fraud_risk_v1.joblib) and its sha256 checksum are UNCHANGED -- verified above before this edit, not assumed. created_at/git_commit/training_partition describe the original build and are left exactly as recorded.",
+  "artifact_path_before_this_fix": "/Users/MicrosoftSurface2/Projects/data-science-lab/Fraud-Risk-Intelligence/artifacts/frozen_rf_fraud_risk_v1.joblib"
 }
