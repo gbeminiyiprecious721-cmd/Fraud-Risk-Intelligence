@@ -22,6 +22,14 @@
 #                                sparse matrices are scikit-learn's own transitive need
 #   matplotlib               -- EDA notebook figures (Stage 3)
 #   pytest                   -- test suite (all stages)
+#   shap, slicer             -- Stage 11 (Explainability), TreeExplainer; EXPLICITLY
+#                                approved by the user before installation. Dry-run
+#                                checked first (`pip install --dry-run shap`): both
+#                                packages installed clean with ZERO version change to
+#                                any already-installed package (numpy 2.5.4, pandas
+#                                3.1.0, scikit-learn 1.9.1, scipy 1.18.1 all unchanged,
+#                                verified before and after). `slicer` is shap's own
+#                                transitive dependency.
 # Everything else below is Jupyter/notebook tooling (building and executing
 # the Stage 3 EDA notebook via nbformat/nbclient/jupyter) or its own
 # transitive dependencies, plus kagglehub/kagglesdk (Stage 0/2 dataset
@@ -128,7 +136,9 @@ rpds-py==2026.9.1
 scikit-learn==1.9.1
 scipy==1.18.1
 Send2Trash==2.1.0
+shap==0.54.1
 six==1.17.0
+slicer==0.0.8
 soupsieve==3.0.4
 stack-data==0.6.3
 terminado==0.18.1
