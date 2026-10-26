@@ -13,6 +13,7 @@ docs/_stage7_*_raw.json
 docs/_stage9_*_raw.json
 docs/_stage10_*_raw.json
 docs/_stage11_*_raw.json
+docs/_stage12_*_raw.json
 .ipynb_checkpoints/
 .pytest_cache/
 .DS_Store
