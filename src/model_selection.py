@@ -688,3 +688,38 @@ def align_labels_to_partition_df(
         missing = merged.loc[merged[label_col].isna(), id_col].tolist()
         raise ValueError(f"{len(missing)} row(s) had no matching label after merge -- real alignment bug, e.g. {missing[:5]}")
     return merged
+
+
+def build_preprocessing_pipeline_with_collapsed_indicators(
+    numeric_no_indicator: list[str],
+    numeric_with_indicator: list[str],
+    categorical: list[str],
+    representatives: list[str],
+) -> ColumnTransformer:
+    """UNSCALED analogue of
+    `build_scaled_pipeline_with_collapsed_indicators` -- same collapsed-
+    indicator structure, but matching the approved Stage 5
+    `build_preprocessing_pipeline`'s lack of scaling, for tree-based
+    candidates (Random Forest, Gradient Boosting) which don't need or
+    benefit from scaling. Used only for the missingness-indicator
+    ablation's "collapsed" arm; the approved Stage 5 pipeline itself
+    (`src/preprocessing.py`) is not modified.
+    """
+    numeric_plain = Pipeline([("impute", SimpleImputer(strategy="median"))])
+    collapsed_values = Pipeline([("impute", SimpleImputer(strategy="median"))])
+    collapsed_indicators = Pipeline([("indicator", MissingIndicator(features="missing-only"))])
+    categorical_pipe = Pipeline(
+        [
+            ("impute", SimpleImputer(strategy="constant", fill_value="missing")),
+            ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=True)),
+        ]
+    )
+    return ColumnTransformer(
+        transformers=[
+            ("numeric_plain", numeric_plain, numeric_no_indicator),
+            ("collapsed_values", collapsed_values, numeric_with_indicator),
+            ("collapsed_indicators", collapsed_indicators, representatives),
+            ("categorical", categorical_pipe, categorical),
+        ],
+        sparse_threshold=1.0,
+    )

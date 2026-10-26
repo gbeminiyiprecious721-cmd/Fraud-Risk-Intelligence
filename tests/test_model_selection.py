@@ -26,6 +26,7 @@ from src.model_selection import (  # noqa: E402
     build_bounded_gradient_boosting,
     build_bounded_random_forest,
     build_chronological_pilot_subset,
+    build_preprocessing_pipeline_with_collapsed_indicators,
     build_engineered_feature_block,
     build_scaled_pipeline_with_collapsed_indicators,
     build_scaled_pipeline_with_collapsed_indicators_and_value_reduction,
@@ -699,3 +700,24 @@ def test_align_labels_to_partition_df_raises_on_duplicate_id_in_labels() -> None
     labels_df = pd.DataFrame({"TransactionID": [1, 1, 2], "isFraud": [0, 1, 1]})  # ID=1 duplicated with conflicting labels
     with pytest.raises(Exception):  # pandas raises MergeError, a ValueError subclass
         align_labels_to_partition_df(df, labels_df)
+
+
+# --- Unscaled collapsed-indicator pipeline (for tree-based candidates) ----
+
+def test_unscaled_collapsed_indicator_pipeline_leaves_indicators_as_exact_binary() -> None:
+    df = pd.DataFrame(
+        {
+            "num_plain": [1.0, 2.0, 3.0, 4.0],
+            "a": [1.0, np.nan, 3.0, np.nan],
+            "b": [10.0, np.nan, 30.0, np.nan],
+            "cat": ["x", "y", "x", "y"],
+        }
+    )
+    ct = build_preprocessing_pipeline_with_collapsed_indicators(["num_plain"], ["a", "b"], ["cat"], ["a"])
+    output = ct.fit_transform(df)
+    dense = output.toarray() if hasattr(output, "toarray") else output
+    assert not np.isnan(dense).any()
+    # num_plain(1, unscaled) + collapsed_values(2: a,b, unscaled) + collapsed_indicators(1: "a") + cat(2)
+    assert dense.shape[1] == 1 + 2 + 1 + 2
+    # unscaled: num_plain's raw values must appear exactly, not divided by any std
+    np.testing.assert_array_equal(dense[:, 0], np.array([1.0, 2.0, 3.0, 4.0]))
