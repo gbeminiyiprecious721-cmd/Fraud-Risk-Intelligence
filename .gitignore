@@ -10,6 +10,7 @@ docs/_stage4_split_assignment.csv
 docs/_stage5_preprocessing_raw.json
 docs/_stage6_feature_engineering_raw.json
 docs/_stage7_*_raw.json
+docs/_stage9_*_raw.json
 .ipynb_checkpoints/
 .pytest_cache/
 .DS_Store

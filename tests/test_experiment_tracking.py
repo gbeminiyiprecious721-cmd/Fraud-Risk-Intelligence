@@ -306,6 +306,34 @@ def test_module_source_has_no_literal_final_test_reference():
     assert "test_transaction.csv" not in code_and_comments_lower
 
 
+def test_candidate_fold_fields_round_trip_for_a_search_trial(tmp_path):
+    """Stage 9 extension: a single CV-fold trial within a hyperparameter
+    search is identifiable by (search_id, candidate_index, fold_index),
+    all optional (None for every pre-Stage-9 record) but fully round-tripping
+    when a search actually sets them."""
+    registry = tmp_path / "registry.jsonl"
+    record = build_run_record(
+        run_id="search-trial-1", workflow_stage=9, experiment_name="rf_search_candidate_0_fold_0",
+        experiment_purpose="one CV fold's fit for one RF candidate", status="completed",
+        provenance="directly_verified", search_id="search-abc", candidate_index=0, fold_index=0,
+        metrics={"average_precision": 0.3},
+    )
+    append_run_record(record, registry)
+    [saved] = query_registry(registry, search_id="search-abc")
+    assert saved["candidate_index"] == 0
+    assert saved["fold_index"] == 0
+
+
+def test_candidate_fold_fields_default_to_none_for_pre_stage9_style_records():
+    record = build_run_record(
+        run_id="pre-stage9", workflow_stage=7, experiment_name="x", experiment_purpose="x",
+        status="completed", provenance="directly_verified",
+    )
+    assert record["search_id"] is None
+    assert record["candidate_index"] is None
+    assert record["fold_index"] is None
+
+
 def test_track_run_rejects_final_test_named_field(tmp_path):
     registry = tmp_path / "registry.jsonl"
     with pytest.raises(MalformedRecordError):

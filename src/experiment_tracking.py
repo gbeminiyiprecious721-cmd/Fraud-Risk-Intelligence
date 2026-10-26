@@ -73,6 +73,13 @@ KNOWN_FIELDS = [
     "validation_consulted", "validation_purpose", "influenced_subsequent_decisions",
     "provenance", "field_provenance", "missing_fields", "confidence", "source_description",
     "schema_version",
+    # Stage 9 extension (backward-compatible, additive only -- every Stage 7/8
+    # record predates these and correctly has them as None/missing): links a
+    # single hyperparameter-search trial to its parent search and CV fold,
+    # so a "search" (many candidates x many folds) is reconstructable from
+    # individual per-fold records without fabricating fold-level detail from
+    # an aggregate.
+    "search_id", "candidate_index", "fold_index",
 ]
 
 # Fields that are never expected to be populated for every record (e.g. a
@@ -85,6 +92,7 @@ OPTIONAL_EVEN_WHEN_APPLICABLE = {
     "runtime_settings", "training_time_seconds", "inference_time_seconds",
     "peak_memory_bytes", "evidence_checksums", "validation_purpose",
     "influenced_subsequent_decisions", "experiment_timestamp_provenance",
+    "search_id", "candidate_index", "fold_index",
 }
 
 VALID_STATUSES = {"completed", "failed", "interrupted", "infeasible_not_run", "diagnostic"}
