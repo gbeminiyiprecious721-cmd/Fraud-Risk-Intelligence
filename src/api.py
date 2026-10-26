@@ -29,6 +29,7 @@ from pathlib import Path
 
 import pandas as pd
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict
 
@@ -46,6 +47,18 @@ API_CONTRACT_VERSION = "v1"  # the HTTP contract's own version -- deliberately i
 
 EXPECTED_ARTIFACT_ID = "frozen-rf-fraud-risk"
 DEFAULT_ARTIFACT_PATH = Path(__file__).resolve().parent.parent / "artifacts" / "frozen_rf_fraud_risk_v1.joblib"
+
+# Stage 15 -- narrowly scoped CORS, explicitly approved, for the local static UI
+# ONLY. Both this API and the UI's own local static server are documented to
+# bind to 127.0.0.1 -- never 0.0.0.0, never a public interface. No wildcard
+# origin, no credentials (no cookies/auth exist to protect here), and only the
+# two HTTP methods the UI actually needs. `localhost` and `127.0.0.1` are
+# listed as SEPARATE origins deliberately -- browsers treat them as different
+# origins even though they resolve to the same host.
+ALLOWED_UI_ORIGINS = [
+    "http://127.0.0.1:8080",
+    "http://localhost:8080",
+]
 
 logger = logging.getLogger("fraud_risk_api")
 logger.setLevel(logging.INFO)
@@ -128,6 +141,14 @@ def create_app(artifact_path: Path | str = DEFAULT_ARTIFACT_PATH) -> FastAPI:
         title="Fraud Risk Scoring API (local demonstration only -- not deployed)",
         version=API_CONTRACT_VERSION,
         lifespan=lifespan,
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=ALLOWED_UI_ORIGINS,
+        allow_credentials=False,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type"],
     )
 
     @app.get("/health")

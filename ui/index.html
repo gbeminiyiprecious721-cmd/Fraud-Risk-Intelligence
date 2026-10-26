@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fraud Risk Scoring — Portfolio Demonstration</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #1a1d24;
+    --text: #e8e8e8;
+    --muted: #a9adb8;
+    --accent: #5aa9ff;
+    --ok: #4caf7d;
+    --warn: #e0a93e;
+    --err: #e05a5a;
+    --border: #30343d;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    line-height: 1.5;
+  }
+  header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { margin: 0 0 0.4rem 0; font-size: 1.4rem; }
+  .badge {
+    display: inline-block;
+    background: var(--warn);
+    color: #1a1d24;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.3rem;
+    margin: 0;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 1.5rem 2rem 3rem; }
+  section {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  h2 { margin-top: 0; font-size: 1.1rem; }
+  p { color: var(--text); }
+  .muted { color: var(--muted); font-size: 0.92rem; }
+  button {
+    background: var(--accent);
+    color: #0f1115;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.4rem;
+    cursor: pointer;
+  }
+  button:hover { filter: brightness(1.1); }
+  button:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+  }
+  #status { margin-top: 0.75rem; font-size: 0.95rem; color: var(--muted); min-height: 1.4em; }
+  #result { margin-top: 1rem; padding: 1rem; border: 1px solid var(--ok); border-radius: 0.4rem; background: rgba(76, 175, 125, 0.08); }
+  #error { margin-top: 1rem; padding: 1rem; border: 1px solid var(--err); border-radius: 0.4rem; background: rgba(224, 90, 90, 0.08); }
+  #unavailable { margin-top: 1rem; padding: 1rem; border: 1px solid var(--warn); border-radius: 0.4rem; background: rgba(224, 169, 62, 0.08); }
+  .score-value { font-size: 1.6rem; font-weight: 700; }
+  .caveat { color: var(--warn); font-weight: 600; }
+  details { margin-top: 0.75rem; }
+  summary { cursor: pointer; color: var(--accent); }
+  pre { background: #0b0d10; padding: 0.75rem; border-radius: 0.3rem; overflow-x: auto; font-size: 0.82rem; }
+  ul { margin: 0.5rem 0; padding-left: 1.4rem; }
+  .mockup { border: 2px dashed var(--muted); border-radius: 0.4rem; padding: 0.75rem 1rem; margin-top: 0.75rem; }
+  .mockup-label { font-weight: 700; color: var(--warn); font-size: 0.8rem; letter-spacing: 0.03em; margin: 0 0 0.5rem 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  th, td { text-align: left; padding: 0.3rem 0.5rem; border-bottom: 1px solid var(--border); }
+  code { background: #0b0d10; padding: 0.1rem 0.3rem; border-radius: 0.2rem; }
+  a { color: var(--accent); }
+  footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 1rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Fraud Risk Scoring API — Portfolio Demonstration</h1>
+  <p class="badge">Local demonstration only — not a production system</p>
+</header>
+
+<main>
+
+  <section id="about">
+    <h2>What this page is</h2>
+    <p>This page makes a <strong>real HTTP request</strong> to a fraud-risk scoring API running locally on this machine (Stage 14 of this project). It is a Stage 15 "Application Integration" exercise for an ML engineering portfolio — not a deployed service and not a commercial product.</p>
+    <p class="muted">The model, its preprocessing, and the API it is served behind were built, evaluated, explained, and assessed for responsible-AI concerns across the preceding stages of this project before any UI existed. This page adds nothing to the model's logic — it only presents, honestly, what the API already returns.</p>
+  </section>
+
+  <section id="demo">
+    <h2>Score a synthetic transaction</h2>
+    <p>Below is one fixed, <strong>synthetic</strong> transaction — illustrative values across all 392 input fields the model requires. It is not a real transaction and was not drawn from any dataset.</p>
+    <p class="muted">API endpoint: <code id="api-base-display"></code> &middot; request timeout: 5 seconds</p>
+    <button id="score-btn" type="button">Score this transaction</button>
+    <div id="status" role="status" aria-live="polite"></div>
+
+    <div id="result" hidden>
+      <p>Risk score: <span class="score-value" id="score-value"></span></p>
+      <p class="caveat">This is a relative risk ranking score — not a verified, calibrated probability of real-world fraud.</p>
+      <p class="muted">Model artifact version: <span id="artifact-version"></span> &middot; manifest schema version: <span id="manifest-version"></span></p>
+      <details>
+        <summary>Technical details (raw API response)</summary>
+        <pre id="raw-response"></pre>
+      </details>
+    </div>
+
+    <div id="error" hidden>
+      <p><strong>The API rejected this request.</strong></p>
+      <p id="error-detail"></p>
+    </div>
+
+    <div id="unavailable" hidden>
+      <p><strong>Scoring service unavailable.</strong></p>
+      <p>Could not reach the API within 5 seconds. Make sure it is running locally (see <a href="#architecture">below</a>), then try again.</p>
+    </div>
+  </section>
+
+  <section id="caveats">
+    <h2>Important: what this score is and is not</h2>
+    <ul>
+      <li>This is a model-generated <strong>relative risk ranking score</strong>, not a calibrated probability of fraud — no calibration check (reliability diagram, Brier score, recalibration) has been performed anywhere in this project.</li>
+      <li>This score alone must <strong>never</strong> trigger an automatic fraud accusation or a payment rejection. This project's own Stage 1 scoped the decision this model informs as <em>human investigation prioritisation only</em> — never an automated action.</li>
+      <li>No threshold is applied anywhere in this demonstration. The number shown is the model's raw output, unmodified.</li>
+    </ul>
+  </section>
+
+  <section id="investigator-context">
+    <h2>Who would actually use a score like this?</h2>
+    <p>The intended decision consumer, per this project's own business framing (Stage 1), is a <strong>human fraud investigator</strong> who uses the score to help decide which transactions to review first, under a limited review capacity — not an algorithm that decides anything on its own.</p>
+    <div class="mockup">
+      <p class="mockup-label">ILLUSTRATIVE MOCKUP — fabricated example, not real model output</p>
+      <table>
+        <thead><tr><th>Transaction (fabricated)</th><th>Score (fabricated)</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>TXN-00192 (example)</td><td>0.88</td><td>Awaiting review</td></tr>
+          <tr><td>TXN-00188 (example)</td><td>0.61</td><td>Awaiting review</td></tr>
+          <tr><td>TXN-00201 (example)</td><td>0.12</td><td>Reviewed — cleared</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="architecture">
+    <h2>Running this locally</h2>
+    <p class="muted">Start the API, then serve this page with a local HTTP server (not <code>file://</code>, so the browser applies real CORS rules):</p>
+    <pre>.venv/bin/uvicorn src.api:app --host 127.0.0.1 --port 8000
+python3 -m http.server 8080 --directory ui</pre>
+    <p class="muted">Then open <code>http://127.0.0.1:8080</code> in a browser.</p>
+  </section>
+
+</main>
+
+<footer>Fraud-Risk-Intelligence — Stage 15 portfolio demonstration. No real transaction data is used anywhere on this page.</footer>
+
+<script>
+  const API_BASE = "http://127.0.0.1:8000";
+  document.getElementById("api-base-display").textContent = API_BASE + "/v1/predict";
+
+  // A fixed, synthetic, illustrative transaction -- every field name below
+  // matches the real model's required raw-input schema exactly (Stage 13's
+  // FeatureSchema.raw_columns); the VALUES are simple placeholders, not
+  // drawn from any real transaction or dataset.
+  const SYNTHETIC_TRANSACTION = {
+    "C1": 100.0,
+    "C10": 100.0,
+    "C11": 100.0,
+    "C12": 100.0,
+    "C13": 100.0,
+    "C14": 100.0,
+    "C2": 100.0,
+    "C3": 100.0,
+    "C4": 100.0,
+    "C5": 100.0,
+    "C6": 100.0,
+    "C7": 100.0,
+    "C8": 100.0,
+    "C9": 100.0,
+    "D1": 100.0,
+    "D10": 100.0,
+    "D11": 100.0,
+    "D12": 100.0,
+    "D13": 100.0,
+    "D14": 100.0,
+    "D15": 100.0,
+    "D2": 100.0,
+    "D3": 100.0,
+    "D4": 100.0,
+    "D5": 100.0,
+    "D6": 100.0,
+    "D7": 100.0,
+    "D8": 100.0,
+    "D9": 100.0,
+    "M1": "unknown",
+    "M2": "unknown",
+    "M3": "unknown",
+    "M4": "unknown",
+    "M5": "unknown",
+    "M6": "unknown",
+    "M7": "unknown",
+    "M8": "unknown",
+    "M9": "unknown",
+    "P_emaildomain": "unknown",
+    "ProductCD": "W",
+    "R_emaildomain": "unknown",
+    "TransactionAmt": 125.0,
+    "TransactionDT": 100.0,
+    "V1": 100.0,
+    "V10": 100.0,
+    "V100": 100.0,
+    "V101": 100.0,
+    "V102": 100.0,
+    "V103": 100.0,
+    "V104": 100.0,
+    "V105": 100.0,
+    "V106": 100.0,
+    "V107": 100.0,
+    "V108": 100.0,
+    "V109": 100.0,
+    "V11": 100.0,
+    "V110": 100.0,
+    "V111": 100.0,
+    "V112": 100.0,
+    "V113": 100.0,
+    "V114": 100.0,
+    "V115": 100.0,
+    "V116": 100.0,
+    "V117": 100.0,
+    "V118": 100.0,
+    "V119": 100.0,
+    "V12": 100.0,
+    "V120": 100.0,
+    "V121": 100.0,
+    "V122": 100.0,
+    "V123": 100.0,
+    "V124": 100.0,
+    "V125": 100.0,
+    "V126": 100.0,
+    "V127": 100.0,
+    "V128": 100.0,
+    "V129": 100.0,
+    "V13": 100.0,
+    "V130": 100.0,
+    "V131": 100.0,
+    "V132": 100.0,
+    "V133": 100.0,
+    "V134": 100.0,
+    "V135": 100.0,
+    "V136": 100.0,
+    "V137": 100.0,
+    "V138": 100.0,
+    "V139": 100.0,
+    "V14": 100.0,
+    "V140": 100.0,
+    "V141": 100.0,
+    "V142": 100.0,
+    "V143": 100.0,
+    "V144": 100.0,
+    "V145": 100.0,
+    "V146": 100.0,
+    "V147": 100.0,
+    "V148": 100.0,
+    "V149": 100.0,
+    "V15": 100.0,
+    "V150": 100.0,
+    "V151": 100.0,
+    "V152": 100.0,
+    "V153": 100.0,
+    "V154": 100.0,
+    "V155": 100.0,
+    "V156": 100.0,
+    "V157": 100.0,
+    "V158": 100.0,
+    "V159": 100.0,
+    "V16": 100.0,
+    "V160": 100.0,
+    "V161": 100.0,
+    "V162": 100.0,
+    "V163": 100.0,
+    "V164": 100.0,
+    "V165": 100.0,
+    "V166": 100.0,
+    "V167": 100.0,
+    "V168": 100.0,
+    "V169": 100.0,
+    "V17": 100.0,
+    "V170": 100.0,
+    "V171": 100.0,
+    "V172": 100.0,
+    "V173": 100.0,
+    "V174": 100.0,
+    "V175": 100.0,
+    "V176": 100.0,
+    "V177": 100.0,
+    "V178": 100.0,
+    "V179": 100.0,
+    "V18": 100.0,
+    "V180": 100.0,
+    "V181": 100.0,
+    "V182": 100.0,
+    "V183": 100.0,
+    "V184": 100.0,
+    "V185": 100.0,
+    "V186": 100.0,
+    "V187": 100.0,
+    "V188": 100.0,
+    "V189": 100.0,
+    "V19": 100.0,
+    "V190": 100.0,
+    "V191": 100.0,
+    "V192": 100.0,
+    "V193": 100.0,
+    "V194": 100.0,
+    "V195": 100.0,
+    "V196": 100.0,
+    "V197": 100.0,
+    "V198": 100.0,
+    "V199": 100.0,
+    "V2": 100.0,
+    "V20": 100.0,
+    "V200": 100.0,
+    "V201": 100.0,
+    "V202": 100.0,
+    "V203": 100.0,
+    "V204": 100.0,
+    "V205": 100.0,
+    "V206": 100.0,
+    "V207": 100.0,
+    "V208": 100.0,
+    "V209": 100.0,
+    "V21": 100.0,
+    "V210": 100.0,
+    "V211": 100.0,
+    "V212": 100.0,
+    "V213": 100.0,
+    "V214": 100.0,
+    "V215": 100.0,
+    "V216": 100.0,
+    "V217": 100.0,
+    "V218": 100.0,
+    "V219": 100.0,
+    "V22": 100.0,
+    "V220": 100.0,
+    "V221": 100.0,
+    "V222": 100.0,
+    "V223": 100.0,
+    "V224": 100.0,
+    "V225": 100.0,
+    "V226": 100.0,
+    "V227": 100.0,
+    "V228": 100.0,
+    "V229": 100.0,
+    "V23": 100.0,
+    "V230": 100.0,
+    "V231": 100.0,
+    "V232": 100.0,
+    "V233": 100.0,
+    "V234": 100.0,
+    "V235": 100.0,
+    "V236": 100.0,
+    "V237": 100.0,
+    "V238": 100.0,
+    "V239": 100.0,
+    "V24": 100.0,
+    "V240": 100.0,
+    "V241": 100.0,
+    "V242": 100.0,
+    "V243": 100.0,
+    "V244": 100.0,
+    "V245": 100.0,
+    "V246": 100.0,
+    "V247": 100.0,
+    "V248": 100.0,
+    "V249": 100.0,
+    "V25": 100.0,
+    "V250": 100.0,
+    "V251": 100.0,
+    "V252": 100.0,
+    "V253": 100.0,
+    "V254": 100.0,
+    "V255": 100.0,
+    "V256": 100.0,
+    "V257": 100.0,
+    "V258": 100.0,
+    "V259": 100.0,
+    "V26": 100.0,
+    "V260": 100.0,
+    "V261": 100.0,
+    "V262": 100.0,
+    "V263": 100.0,
+    "V264": 100.0,
+    "V265": 100.0,
+    "V266": 100.0,
+    "V267": 100.0,
+    "V268": 100.0,
+    "V269": 100.0,
+    "V27": 100.0,
+    "V270": 100.0,
+    "V271": 100.0,
+    "V272": 100.0,
+    "V273": 100.0,
+    "V274": 100.0,
+    "V275": 100.0,
+    "V276": 100.0,
+    "V277": 100.0,
+    "V278": 100.0,
+    "V279": 100.0,
+    "V28": 100.0,
+    "V280": 100.0,
+    "V281": 100.0,
+    "V282": 100.0,
+    "V283": 100.0,
+    "V284": 100.0,
+    "V285": 100.0,
+    "V286": 100.0,
+    "V287": 100.0,
+    "V288": 100.0,
+    "V289": 100.0,
+    "V29": 100.0,
+    "V290": 100.0,
+    "V291": 100.0,
+    "V292": 100.0,
+    "V293": 100.0,
+    "V294": 100.0,
+    "V295": 100.0,
+    "V296": 100.0,
+    "V297": 100.0,
+    "V298": 100.0,
+    "V299": 100.0,
+    "V3": 100.0,
+    "V30": 100.0,
+    "V300": 100.0,
+    "V301": 100.0,
+    "V302": 100.0,
+    "V303": 100.0,
+    "V304": 100.0,
+    "V305": 100.0,
+    "V306": 100.0,
+    "V307": 100.0,
+    "V308": 100.0,
+    "V309": 100.0,
+    "V31": 100.0,
+    "V310": 100.0,
+    "V311": 100.0,
+    "V312": 100.0,
+    "V313": 100.0,
+    "V314": 100.0,
+    "V315": 100.0,
+    "V316": 100.0,
+    "V317": 100.0,
+    "V318": 100.0,
+    "V319": 100.0,
+    "V32": 100.0,
+    "V320": 100.0,
+    "V321": 100.0,
+    "V322": 100.0,
+    "V323": 100.0,
+    "V324": 100.0,
+    "V325": 100.0,
+    "V326": 100.0,
+    "V327": 100.0,
+    "V328": 100.0,
+    "V329": 100.0,
+    "V33": 100.0,
+    "V330": 100.0,
+    "V331": 100.0,
+    "V332": 100.0,
+    "V333": 100.0,
+    "V334": 100.0,
+    "V335": 100.0,
+    "V336": 100.0,
+    "V337": 100.0,
+    "V338": 100.0,
+    "V339": 100.0,
+    "V34": 100.0,
+    "V35": 100.0,
+    "V36": 100.0,
+    "V37": 100.0,
+    "V38": 100.0,
+    "V39": 100.0,
+    "V4": 100.0,
+    "V40": 100.0,
+    "V41": 100.0,
+    "V42": 100.0,
+    "V43": 100.0,
+    "V44": 100.0,
+    "V45": 100.0,
+    "V46": 100.0,
+    "V47": 100.0,
+    "V48": 100.0,
+    "V49": 100.0,
+    "V5": 100.0,
+    "V50": 100.0,
+    "V51": 100.0,
+    "V52": 100.0,
+    "V53": 100.0,
+    "V54": 100.0,
+    "V55": 100.0,
+    "V56": 100.0,
+    "V57": 100.0,
+    "V58": 100.0,
+    "V59": 100.0,
+    "V6": 100.0,
+    "V60": 100.0,
+    "V61": 100.0,
+    "V62": 100.0,
+    "V63": 100.0,
+    "V64": 100.0,
+    "V65": 100.0,
+    "V66": 100.0,
+    "V67": 100.0,
+    "V68": 100.0,
+    "V69": 100.0,
+    "V7": 100.0,
+    "V70": 100.0,
+    "V71": 100.0,
+    "V72": 100.0,
+    "V73": 100.0,
+    "V74": 100.0,
+    "V75": 100.0,
+    "V76": 100.0,
+    "V77": 100.0,
+    "V78": 100.0,
+    "V79": 100.0,
+    "V8": 100.0,
+    "V80": 100.0,
+    "V81": 100.0,
+    "V82": 100.0,
+    "V83": 100.0,
+    "V84": 100.0,
+    "V85": 100.0,
+    "V86": 100.0,
+    "V87": 100.0,
+    "V88": 100.0,
+    "V89": 100.0,
+    "V9": 100.0,
+    "V90": 100.0,
+    "V91": 100.0,
+    "V92": 100.0,
+    "V93": 100.0,
+    "V94": 100.0,
+    "V95": 100.0,
+    "V96": 100.0,
+    "V97": 100.0,
+    "V98": 100.0,
+    "V99": 100.0,
+    "addr1": 100.0,
+    "addr2": 100.0,
+    "card1": 100.0,
+    "card2": 100.0,
+    "card3": 100.0,
+    "card4": "visa",
+    "card5": 100.0,
+    "card6": "debit",
+    "dist1": 100.0,
+    "dist2": 100.0
+};
+
+  const el = {
+    button: document.getElementById("score-btn"),
+    status: document.getElementById("status"),
+    result: document.getElementById("result"),
+    error: document.getElementById("error"),
+    errorDetail: document.getElementById("error-detail"),
+    unavailable: document.getElementById("unavailable"),
+    scoreValue: document.getElementById("score-value"),
+    artifactVersion: document.getElementById("artifact-version"),
+    manifestVersion: document.getElementById("manifest-version"),
+    rawResponse: document.getElementById("raw-response"),
+  };
+
+  function hideAllOutcomePanels() {
+    // Clearing every outcome panel BEFORE a new request starts is what
+    // guarantees a failed request can never leave a PREVIOUS successful
+    // score visible on screen, misleadingly implying it is still current.
+    el.result.hidden = true;
+    el.error.hidden = true;
+    el.unavailable.hidden = true;
+  }
+
+  function setLoading() {
+    hideAllOutcomePanels();
+    el.status.textContent = "Scoring in progress…";
+    el.button.disabled = true;
+  }
+
+  function setIdle() {
+    el.status.textContent = "";
+    el.button.disabled = false;
+  }
+
+  function showResult(body) {
+    hideAllOutcomePanels();
+    el.scoreValue.textContent = body.fraud_probability.toFixed(2) + " / 1.00";
+    el.artifactVersion.textContent = body.artifact_version;
+    el.manifestVersion.textContent = body.manifest_schema_version;
+    el.rawResponse.textContent = JSON.stringify(body, null, 2);
+    el.result.hidden = false;
+  }
+
+  function showError(body) {
+    hideAllOutcomePanels();
+    el.errorDetail.textContent = (body && body.detail) ? body.detail : "The request was rejected.";
+    el.error.hidden = false;
+  }
+
+  function showUnavailable() {
+    hideAllOutcomePanels();
+    el.unavailable.hidden = false;
+  }
+
+  async function scoreTransaction() {
+    setLoading();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    try {
+      const resp = await fetch(API_BASE + "/v1/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(SYNTHETIC_TRANSACTION),
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      let body;
+      try {
+        body = await resp.json();
+      } catch (parseErr) {
+        showUnavailable();
+        setIdle();
+        return;
+      }
+      if (resp.ok) {
+        showResult(body);
+      } else {
+        showError(body);
+      }
+    } catch (err) {
+      clearTimeout(timeoutId);
+      // A network error or our own 5s abort both land here -- the service
+      // is being treated as unavailable either way, never as a score of 0.
+      showUnavailable();
+    }
+    setIdle();
+  }
+
+  el.button.addEventListener("click", scoreTransaction);
+</script>
+
+</body>
+</html>

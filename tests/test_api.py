@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from src.api import DEFAULT_ARTIFACT_PATH, EXPECTED_ARTIFACT_ID, API_CONTRACT_VERSION, create_app
+from src.api import ALLOWED_UI_ORIGINS, DEFAULT_ARTIFACT_PATH, EXPECTED_ARTIFACT_ID, API_CONTRACT_VERSION, create_app
 from src.production_pipeline import load_artifact
 
 MODULE_SOURCE_PATH = Path(__file__).resolve().parent.parent / "src" / "api.py"
@@ -288,3 +288,71 @@ def test_module_has_no_artifact_upload_endpoint():
     source = MODULE_SOURCE_PATH.read_text()
     assert "UploadFile" not in source
     assert "multipart" not in source.lower()
+
+
+# ---------------------------------------------------------------------------
+# Stage 15 -- narrowly scoped CORS for the local static UI only
+# ---------------------------------------------------------------------------
+
+def test_cors_allowed_origin_receives_the_allow_origin_header(client):
+    allowed = ALLOWED_UI_ORIGINS[0]
+    resp = client.post("/v1/predict", json=_valid_payload(), headers={"Origin": allowed})
+    assert resp.status_code == 200
+    assert resp.headers.get("access-control-allow-origin") == allowed
+
+
+def test_cors_disallowed_origin_does_not_receive_the_allow_origin_header(client):
+    resp = client.post(
+        "/v1/predict", json=_valid_payload(),
+        headers={"Origin": "http://evil.example.com"},
+    )
+    # The request itself still succeeds server-side (CORS is enforced by the
+    # BROWSER refusing to expose the response to the calling page, not by the
+    # server refusing to answer) -- what matters is the header's absence.
+    assert resp.status_code == 200
+    assert "access-control-allow-origin" not in {k.lower() for k in resp.headers.keys()}
+
+
+def test_cors_real_preflight_for_allowed_origin(client):
+    allowed = ALLOWED_UI_ORIGINS[0]
+    resp = client.options(
+        "/v1/predict",
+        headers={
+            "Origin": allowed,
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
+    assert resp.status_code == 200
+    assert resp.headers.get("access-control-allow-origin") == allowed
+    assert "POST" in resp.headers.get("access-control-allow-methods", "")
+
+
+def test_cors_real_preflight_for_disallowed_origin_is_not_approved(client):
+    resp = client.options(
+        "/v1/predict",
+        headers={
+            "Origin": "http://evil.example.com",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "content-type",
+        },
+    )
+    # Starlette's CORSMiddleware answers preflight with 400 for a disallowed
+    # origin rather than silently approving it -- verified directly, not assumed.
+    assert resp.status_code == 400
+    assert "access-control-allow-origin" not in {k.lower() for k in resp.headers.keys()}
+
+
+def test_cors_does_not_allow_credentials():
+    # allow_credentials=False is a deliberate choice (no cookies/auth exist to
+    # protect) -- re-read directly from the app's own middleware stack rather
+    # than inferring it from a single response header.
+    app = create_app()
+    cors_middlewares = [m for m in app.user_middleware if m.cls.__name__ == "CORSMiddleware"]
+    assert len(cors_middlewares) == 1
+    assert cors_middlewares[0].kwargs.get("allow_credentials") is False
+
+
+def test_cors_allowed_origins_are_127_0_0_1_and_localhost_only():
+    assert ALLOWED_UI_ORIGINS == ["http://127.0.0.1:8080", "http://localhost:8080"]
+    assert all("*" not in origin for origin in ALLOWED_UI_ORIGINS)
