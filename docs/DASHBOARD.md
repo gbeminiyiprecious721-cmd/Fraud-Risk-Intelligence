@@ -212,3 +212,133 @@ restricted to its one fixed fixture on that same service.
    unverified against a live deployment** (a pre-existing, disclosed
    limitation of `/v1/predict`'s rate limiting, inherited as-is by the
    dashboard's new rate limiter via the same `_client_key` helper).
+
+## Stage 3: visual refinement
+
+A visual pass toward a "premium dark fraud investigation command center"
+feel, against a reference mockup used as design inspiration only (not a
+source of factual metrics — its kanban "Review Capacity" KPI and
+period-over-period trend arrows were deliberately NOT copied, since this
+project has no real reviewer-capacity data and no real previous period to
+compare against).
+
+### What changed
+
+- **Responsive left navigation** (`ui/dashboard.html`/`.css`/`.js`):
+  anchor links to this single page's real sections only (Overview,
+  Investigation queue, Analytics, Workflow board, Responsible use, plus a
+  link to the single-transaction demo) — no fake multi-page items. Fixed
+  sidebar on desktop; an off-canvas, toggleable panel on narrow viewports.
+- **Header redesign**: a real, functional search box (promoted from the
+  filters panel) plus a "Demo batch" selector — 5 fixed, labeled
+  sequences replacing the old arbitrary-random "Refresh" button. These 5
+  seeds (101/202/303/404/505) are the exact same values
+  `src/render_demo.py`'s public endpoint already enforces as its bounded
+  allowlist, so the control behaves identically on both the local app and
+  the public Render deployment rather than implying more variety locally
+  than Render can actually provide. A deliberate, disclosed deviation
+  from the literal "date" control: a fake calendar date-range picker was
+  **not** added, since this batch has no real elapsed-time dimension
+  (only synthetic queue order) — adding one would have been an
+  interactive control with no real backing data.
+- **Historical model performance panel**: the real, already-approved
+  Stage 10 `final_test` metrics (AP 0.4278, ROC-AUC 0.8664, 95% CI,
+  Precision/Recall@1%, no-skill baseline) quoted verbatim from the
+  project's own published `README.md` — visually and structurally
+  separated (dashed border, its own heading, explicit "distinct from...
+  the live scores below" copy) from the live per-batch KPI grid, so the
+  two can never be read as the same kind of number. The raw
+  `docs/_stage10_final_test_evaluation_raw.json` artifact itself was
+  **not** opened — only the figures already public in `README.md`.
+- **7 KPI cards**, each with a small inline SVG icon and a distinct
+  accent-colored left border, for visual differentiation without
+  fabricating trend deltas (no previous period exists to compare against,
+  so none is shown).
+- **Click-to-filter charts**: clicking a slice of the risk-band doughnut
+  or a bar in the by-ProductCD chart sets the matching filter — real
+  wiring via Chart.js's own `onClick`, not decorative.
+- **Click-sortable table headers** (Transaction ID / Amount / Risk score)
+  with `aria-sort` and a caret indicator, replacing the old separate
+  "Sort by" dropdown.
+- **Read-only Kanban workflow board** (New / In Review / Escalated /
+  Resolved), grouping the SAME filtered batch by its existing synthetic
+  `status` field. Not drag-and-drop: there is no backend write path for
+  status changes, and a fake local-only reorder would misrepresent this
+  as a working update — the panel's own copy says so. Clicking a card
+  opens the same detail drawer as the table.
+- **Accessibility basics**: a skip-to-content link, `aria-sort` on
+  sortable headers, `aria-expanded`/`aria-controls` on the nav toggle,
+  a labeled search input, `aria-label` on every chart canvas, and
+  `:focus-visible` outlines already present project-wide.
+
+### Two real bugs found and fixed by actually testing in a browser
+
+1. **Chart.js re-entrancy exception.** Destroying and recreating a chart
+   synchronously from inside that same chart's own `onClick` handler (the
+   natural way to implement "click a slice to filter") threw a real,
+   reproducible `TypeError` from inside `chart.umd.min.js` — not a test
+   artifact, a bug any real user clicking a chart would have hit. Fixed by
+   deferring the re-render one tick (`setTimeout(fn, 0)`) so Chart.js
+   finishes its own event dispatch first.
+2. **Mobile horizontal overflow.** A real 390px-wide headless-Chrome
+   render showed `document.body.scrollWidth` at 742px against a 390px
+   viewport. Root-caused (not just patched) by walking the ancestor
+   chain: CSS Grid/flex items default to `min-width: auto`, so a
+   descendant's intrinsic content (`table.queue`'s `min-width: 620px`)
+   forced `.layout-grid`'s grid items wider than their track even though
+   that table scrolls internally — fixed with the standard `min-width: 0`
+   override on the grid items. A second contributor (the Kanban board's
+   mobile layout using `grid-auto-flow: column` with explicit item
+   widths) didn't reliably clip at its own container boundary; switched
+   to the standard `display: flex; overflow-x: auto` pattern for
+   horizontally-scrollable card rows. Verified fixed by re-measuring:
+   `bodyScrollWidth` now equals `windowInnerWidth` exactly (390 = 390)
+   with the mobile nav open.
+3. **(Backend) seed-dropdown misalignment.** The public endpoint's
+   `seed % 5` fallback mapped every one of the 5 dropdown values to a
+   *different* allowlist entry (e.g. sending `303` returned batch `404`)
+   — the exact-match behavior documented above was not actually true
+   until a real browser test against the live server caught the mismatch
+   (`health-row-seed` showing `404` after selecting "Sequence 3").
+   Fixed in `src/render_demo.py`: an allowlisted seed now passes through
+   unchanged; only a non-allowlisted value falls back to the modulo
+   mapping. Covered by a new regression test
+   (`test_public_queue_allowlisted_seeds_pass_through_unchanged`).
+
+### Verified this round
+
+- Full fast suite: **386 passed**, 0 failed (385 prior + 1 new seed-
+  alignment regression test). No backend/model files were touched except
+  the one-line `render_demo.py` seed-mapping fix above.
+- Real browser verification (Chrome DevTools Protocol, not just unit
+  tests) against **both** `src.api:app` (local split-origin) and
+  `src.render_demo:app` (single origin, mirroring Render): page load
+  sanity (7 KPI cards, Chart.js loaded, historical panel populated, 4
+  Kanban columns), a real click-sort on the Amount column header with
+  `aria-sort` verified, a real canvas click on the risk-band doughnut
+  that set the band filter, Kanban card total matching the filtered row
+  count, a real Kanban-card click opening the correct transaction in the
+  drawer, the header search box filtering to an exact match, the Demo
+  batch dropdown changing the displayed seed correctly (and, after the
+  fix above, to the *correct* seed), accessibility attribute checks, a
+  real 390px mobile render with the nav toggled open, and zero console
+  errors or exceptions throughout every pass on both servers. The
+  original single-transaction flow was re-verified with a real button
+  click on `src.render_demo:app`'s `/` page, returning a real score.
+- Not independently re-verified: the exact doughnut-chart click
+  coordinate used in automated testing lands reliably on the ring in
+  this environment, but click-to-filter on a doughnut is inherently
+  geometry-sensitive (a click near the hollow center won't hit any
+  slice) — real users have the same constraint Chart.js itself imposes,
+  this isn't a defect introduced here, just not independently
+  re-confirmed across every possible click position.
+
+### Remaining limitations (unchanged from the prior round)
+
+- Not pushed, merged, or deployed. `main` and the original
+  `render-demo-preparation` branch remain untouched.
+- The bounded-batch size and rate-limit thresholds are still reasoned
+  defaults, not load-tested against Render's actual free-tier CPU
+  budget.
+- `X-Forwarded-For` behavior behind Render's proxy remains unverified
+  against a live deployment.

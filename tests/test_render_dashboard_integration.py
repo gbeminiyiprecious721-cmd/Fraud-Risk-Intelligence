@@ -89,6 +89,16 @@ def test_public_queue_seed_is_always_from_the_fixed_allowlist(client):
     assert seen_seeds.issubset(set(render_demo.PUBLIC_DASHBOARD_SEED_ALLOWLIST))
 
 
+def test_public_queue_allowlisted_seeds_pass_through_unchanged(client):
+    """ui/dashboard.js's 'Demo batch' dropdown sends exactly these 5
+    values. They must map to themselves (not be shifted by the modulo
+    fallback), so the dropdown produces the SAME batch here as it does
+    against src/api.py's local, unrestricted route."""
+    for allowlisted_seed in render_demo.PUBLIC_DASHBOARD_SEED_ALLOWLIST:
+        resp = client.get("/v1/dashboard/queue", params={"seed": allowlisted_seed})
+        assert resp.json()["seed"] == allowlisted_seed
+
+
 def test_public_queue_is_deterministic_for_a_given_client_seed(client):
     first = client.get("/v1/dashboard/queue", params={"seed": 42}).json()
     second = client.get("/v1/dashboard/queue", params={"seed": 42}).json()

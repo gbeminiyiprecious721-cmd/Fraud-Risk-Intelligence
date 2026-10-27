@@ -2,10 +2,11 @@
  *
  * Fetches a batch of SYNTHETIC transactions, scored live through the real
  * frozen model artifact, from GET /v1/dashboard/queue -- an additive,
- * local-only endpoint on the existing Stage 14 API (src/api.py). This file
- * renders, filters, sorts, and charts that response; it computes nothing
- * about fraud risk itself. See ui/index.html for the single-transaction
- * demo this dashboard complements (not replaces).
+ * local-only endpoint on the existing Stage 14 API (src/api.py), or its
+ * deliberately bounded public counterpart on src/render_demo.py. This
+ * file renders, filters, sorts, and charts that response; it computes
+ * nothing about fraud risk itself. See ui/index.html for the
+ * single-transaction demo this dashboard complements (not replaces).
  */
 (() => {
   "use strict";
@@ -20,11 +21,25 @@
   const IS_LOCAL_DEV_SPLIT_ORIGIN =
     (location.hostname === "127.0.0.1" || location.hostname === "localhost") && location.port === "8080";
   const API_BASE = IS_LOCAL_DEV_SPLIT_ORIGIN ? "http://127.0.0.1:8000" : window.location.origin;
+
   const RISK_BAND_ORDER = ["Low", "Medium", "High", "Critical"];
+  const WORKFLOW_STATUSES = ["New", "In Review", "Escalated", "Resolved"];
+
+  // Fixed demo-batch seeds. These are the SAME values src/render_demo.py
+  // hard-codes as its public PUBLIC_DASHBOARD_SEED_ALLOWLIST -- chosen
+  // deliberately so this one dropdown behaves identically (not just
+  // similarly) whether this page is talking to the local, unrestricted
+  // /v1/dashboard/queue or the public, bounded one: on the public
+  // service, any seed this page could send is mapped into that same
+  // allowlist anyway, so sending these exact values means both backends
+  // compute the same underlying batch.
+  const DEMO_BATCH_SEEDS = [101, 202, 303, 404, 505];
 
   const state = {
     raw: null, // last full /v1/dashboard/queue response
-    seed: 2024,
+    seed: DEMO_BATCH_SEEDS[0],
+    sortKey: "risk_score",
+    sortDir: "desc",
     charts: {},
   };
 
@@ -100,6 +115,10 @@
     }
     state.raw = body;
     state.seed = body.seed;
+    const select = el("batch-select");
+    if ([...select.options].some((o) => Number(o.value) === body.seed)) {
+      select.value = String(body.seed);
+    }
     populateFilterOptions(body.transactions);
     renderHealthRow(body);
     applyFiltersAndRender();
@@ -148,8 +167,17 @@
       band: el("filter-band").value,
       maxAmount: Number(el("filter-amount-max").value),
       search: el("filter-search").value.trim().toLowerCase(),
-      sortBy: el("sort-by").value,
     };
+  }
+
+  function activeFilterCount(f) {
+    let n = 0;
+    if (f.product) n += 1;
+    if (f.cardNetwork) n += 1;
+    if (f.band) n += 1;
+    if (f.maxAmount < 5000) n += 1;
+    if (f.search) n += 1;
+    return n;
   }
 
   function filteredSorted() {
@@ -163,27 +191,51 @@
       if (f.search && !t.transaction_id.toLowerCase().includes(f.search)) return false;
       return true;
     });
-    const sorters = {
-      risk_score_desc: (a, b) => b.risk_score - a.risk_score,
-      risk_score_asc: (a, b) => a.risk_score - b.risk_score,
-      amount_desc: (a, b) => b.amount - a.amount,
-      amount_asc: (a, b) => a.amount - b.amount,
-      id_asc: (a, b) => a.transaction_id.localeCompare(b.transaction_id),
-    };
-    rows.sort(sorters[f.sortBy] || sorters.risk_score_desc);
+    const dir = state.sortDir === "asc" ? 1 : -1;
+    const key = state.sortKey;
+    rows.sort((a, b) => {
+      if (key === "transaction_id") return dir * a.transaction_id.localeCompare(b.transaction_id);
+      return dir * (a[key] - b[key]);
+    });
     return rows;
   }
 
   function applyFiltersAndRender() {
     const rows = filteredSorted();
+    const count = el("filter-count");
+    const n = activeFilterCount(currentFilters());
+    if (n > 0) {
+      count.hidden = false;
+      count.textContent = n + " active";
+    } else {
+      count.hidden = true;
+    }
     renderKpis(rows, state.raw);
     renderTable(rows);
     renderCharts(rows, state.raw);
+    renderKanban(rows);
   }
 
   // ---------------------------------------------------------------------
   // KPIs
   // ---------------------------------------------------------------------
+
+  const KPI_ICONS = {
+    database:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>',
+    alert:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3L2 20h20L12 3z"/><line x1="12" y1="10" x2="12" y2="15"/><circle cx="12" cy="18" r="0.1"/></svg>',
+    list:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="8" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>',
+    gauge:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 18a8 8 0 1116 0"/><line x1="12" y1="18" x2="15.5" y2="12.5"/></svg>',
+    flame:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3c2 3-2 4-2 7a4 4 0 008 0c0-2-1-3-1-3s1 4-2 4-1-3-3-4c0 0-2 2-2 5a4 4 0 008 0c0-5-4-6-6-9z"/></svg>',
+    tag:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l8-8h7v7l-8 8a2 2 0 01-3 0l-4-4a2 2 0 010-3z"/><circle cx="15" cy="9" r="1"/></svg>',
+    pulse:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l2-7 4 14 2-7h6"/></svg>',
+  };
 
   function renderKpis(filteredRows, raw) {
     const all = raw ? raw.transactions : [];
@@ -193,20 +245,27 @@
     const maxScore = all.length ? Math.max(...all.map((t) => t.risk_score)) : 0;
 
     const cards = [
-      { label: "Transactions scored", value: all.length, cls: "accent" },
-      { label: "High-risk transactions", value: highRisk, cls: "err", sub: highRisk ? Math.round((100 * highRisk) / all.length) + "% of batch" : "" },
-      { label: "Review queue size", value: reviewQueue, cls: "warn", sub: "status ≠ Resolved" },
-      { label: "Average risk score", value: fmtScore(avgScore), cls: "" },
-      { label: "Highest risk score", value: fmtScore(maxScore), cls: "err" },
-      { label: "Model artifact version", value: (raw && raw.model.artifact_version) || "–", cls: "" },
-      { label: "API / service status", value: raw ? "Online" : "Unknown", cls: raw ? "ok" : "warn" },
+      { label: "Transactions scored", value: all.length, cls: "accent", icon: "database", accent: "var(--accent)" },
+      {
+        label: "High-risk transactions",
+        value: highRisk,
+        cls: "err",
+        icon: "alert",
+        accent: "var(--err)",
+        sub: highRisk ? Math.round((100 * highRisk) / all.length) + "% of batch" : "",
+      },
+      { label: "Review queue size", value: reviewQueue, cls: "warn", icon: "list", accent: "var(--warn)", sub: "status ≠ Resolved" },
+      { label: "Average risk score", value: fmtScore(avgScore), cls: "", icon: "gauge", accent: "var(--accent-2)" },
+      { label: "Highest risk score", value: fmtScore(maxScore), cls: "err", icon: "flame", accent: "var(--critical)" },
+      { label: "Model artifact version", value: (raw && raw.model.artifact_version) || "–", cls: "", icon: "tag", accent: "var(--muted)" },
+      { label: "API / service status", value: raw ? "Online" : "Unknown", cls: raw ? "ok" : "warn", icon: "pulse", accent: raw ? "var(--ok)" : "var(--warn)" },
     ];
 
     el("kpi-grid").innerHTML = cards
       .map(
         (c) => `
-      <div class="kpi-card">
-        <p class="kpi-label">${c.label}</p>
+      <div class="kpi-card" style="--kpi-accent: ${c.accent};">
+        <div class="kpi-card-head">${KPI_ICONS[c.icon]}<p class="kpi-label">${c.label}</p></div>
         <p class="kpi-value ${c.cls}">${c.value}</p>
         ${c.sub ? `<p class="kpi-sub">${c.sub}</p>` : ""}
       </div>`
@@ -215,10 +274,21 @@
   }
 
   // ---------------------------------------------------------------------
-  // Table
+  // Table (click-sortable headers)
   // ---------------------------------------------------------------------
 
+  function updateSortHeaderIndicators() {
+    document.querySelectorAll("#queue-table th.sortable").forEach((th) => {
+      if (th.dataset.sortKey === state.sortKey) {
+        th.setAttribute("aria-sort", state.sortDir === "asc" ? "ascending" : "descending");
+      } else {
+        th.setAttribute("aria-sort", "none");
+      }
+    });
+  }
+
   function renderTable(rows) {
+    updateSortHeaderIndicators();
     const tbody = el("queue-tbody");
     if (!rows.length) {
       tbody.innerHTML = '<tr><td colspan="8" class="table-empty">No synthetic transactions match the current filters.</td></tr>';
@@ -249,6 +319,35 @@
     });
     tbody.querySelectorAll(".inspect-btn").forEach((btn) => {
       btn.addEventListener("click", () => openDrawer(btn.dataset.id));
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Kanban workflow board (read-only grouping of the same filtered rows)
+  // ---------------------------------------------------------------------
+
+  function renderKanban(rows) {
+    WORKFLOW_STATUSES.forEach((status) => {
+      const container = document.querySelector(`[data-cards="${status}"]`);
+      const countEl = document.querySelector(`[data-count="${status}"]`);
+      const inColumn = rows.filter((t) => t.status === status);
+      countEl.textContent = inColumn.length;
+      if (!inColumn.length) {
+        container.innerHTML = '<p class="kanban-empty">No matching transactions</p>';
+        return;
+      }
+      container.innerHTML = inColumn
+        .map(
+          (t) => `
+        <button type="button" class="kanban-card" data-id="${escapeHtml(t.transaction_id)}">
+          <span class="id">${escapeHtml(t.transaction_id)}</span>
+          <span class="meta"><span>${fmtMoney(t.amount)}</span><span class="risk-pill ${escapeHtml(t.risk_band)}">${escapeHtml(t.risk_band)}</span></span>
+        </button>`
+        )
+        .join("");
+      container.querySelectorAll(".kanban-card").forEach((card) => {
+        card.addEventListener("click", () => openDrawer(card.dataset.id));
+      });
     });
   }
 
@@ -335,7 +434,25 @@
         labels: RISK_BAND_ORDER,
         datasets: [{ data: counts, backgroundColor: RISK_BAND_ORDER.map((b) => CHART_COLORS[b]) }],
       },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom", labels: { color: "#a9adb8" } } } },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: "bottom", labels: { color: "#a9adb8" } } },
+        onClick: (evt, elements) => {
+          if (!elements.length) return;
+          const band = RISK_BAND_ORDER[elements[0].index];
+          const sel = el("filter-band");
+          sel.value = sel.value === band ? "" : band; // click again to clear
+          // Deferred: applyFiltersAndRender() destroys and recreates this
+          // very chart. Doing that synchronously, inside Chart.js's own
+          // click-event dispatch for this same chart, corrupts its
+          // internal event-handling state (observed as a real, reproducible
+          // "Cannot read properties of undefined (reading 'handleEvent')"
+          // exception from chart.umd.min.js). Deferring to the next tick
+          // lets Chart.js finish its own event handling first.
+          setTimeout(applyFiltersAndRender, 0);
+        },
+      },
     });
   }
 
@@ -346,7 +463,16 @@
     state.charts.byProduct = new Chart(el("chart-by-product"), {
       type: "bar",
       data: { labels: products, datasets: [{ label: "High + Critical", data: counts, backgroundColor: "#e05a5a" }] },
-      options: baseOptions({ plugins: { legend: { display: false } } }),
+      options: baseOptions({
+        plugins: { legend: { display: false } },
+        onClick: (evt, elements) => {
+          if (!elements.length) return;
+          const product = products[elements[0].index];
+          const sel = el("filter-product");
+          sel.value = sel.value === product ? "" : product;
+          setTimeout(applyFiltersAndRender, 0); // see the band-breakdown chart's onClick for why this is deferred
+        },
+      }),
     });
   }
 
@@ -437,11 +563,27 @@
   }
 
   // ---------------------------------------------------------------------
+  // Responsive left navigation
+  // ---------------------------------------------------------------------
+
+  function openNav() {
+    el("sidenav").classList.add("open");
+    el("nav-backdrop").classList.add("open");
+    el("nav-toggle").setAttribute("aria-expanded", "true");
+  }
+
+  function closeNav() {
+    el("sidenav").classList.remove("open");
+    el("nav-backdrop").classList.remove("open");
+    el("nav-toggle").setAttribute("aria-expanded", "false");
+  }
+
+  // ---------------------------------------------------------------------
   // Wiring
   // ---------------------------------------------------------------------
 
   function wireControls() {
-    ["filter-product", "filter-card-network", "filter-band", "sort-by"].forEach((id) => {
+    ["filter-product", "filter-card-network", "filter-band"].forEach((id) => {
       el(id).addEventListener("change", applyFiltersAndRender);
     });
     el("filter-amount-max").addEventListener("input", () => {
@@ -456,16 +598,43 @@
       el("filter-amount-max").value = 5000;
       el("filter-amount-max-value").textContent = "$5,000";
       el("filter-search").value = "";
-      el("sort-by").value = "risk_score_desc";
       applyFiltersAndRender();
     });
-    el("refresh-btn").addEventListener("click", () => {
-      loadQueue(Math.floor(Math.random() * 1_000_000));
+
+    document.querySelectorAll("#queue-table th.sortable button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const th = btn.closest("th");
+        const key = th.dataset.sortKey;
+        if (state.sortKey === key) {
+          state.sortDir = state.sortDir === "asc" ? "desc" : "asc";
+        } else {
+          state.sortKey = key;
+          state.sortDir = key === "transaction_id" ? "asc" : "desc";
+        }
+        applyFiltersAndRender();
+      });
     });
+
+    el("batch-select").addEventListener("change", (e) => {
+      loadQueue(Number(e.target.value));
+    });
+    el("reload-btn").addEventListener("click", () => {
+      loadQueue(state.seed);
+    });
+
     el("drawer-close").addEventListener("click", closeDrawer);
     el("drawer-backdrop").addEventListener("click", closeDrawer);
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeDrawer();
+      if (e.key !== "Escape") return;
+      closeDrawer();
+      closeNav();
+    });
+
+    el("nav-toggle").addEventListener("click", openNav);
+    el("sidenav-close").addEventListener("click", closeNav);
+    el("nav-backdrop").addEventListener("click", closeNav);
+    document.querySelectorAll(".sidenav-list a[href^='#']").forEach((link) => {
+      link.addEventListener("click", closeNav);
     });
   }
 

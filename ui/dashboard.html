@@ -9,149 +9,228 @@
 </head>
 <body>
 
-<header class="topbar">
-  <div class="topbar-titles">
-    <h1>Fraud Risk <span style="color: var(--accent);">Intelligence</span> Dashboard</h1>
-    <p class="subtitle">Portfolio demonstration of the Fraud-Risk-Intelligence model &mdash; an investigation-prioritization view, not a production fraud system.</p>
-  </div>
-  <div class="topbar-badges">
-    <span class="badge badge-synthetic" title="Every transaction shown here is fabricated for this demo, never a real or training record.">Synthetic / portfolio demonstration</span>
-    <span class="badge badge-uncalibrated" title="No calibration check (reliability diagram, Brier score) has been performed on this score anywhere in the project.">Not a calibrated probability</span>
-    <span class="badge badge-health" id="health-badge"><span class="dot" id="health-dot"></span><span id="health-text">Checking service&hellip;</span></span>
-  </div>
-</header>
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
-<main>
+<div class="app-shell">
 
-  <section class="kpi-grid" id="kpi-grid" aria-label="Key metrics">
-    <!-- populated by dashboard.js -->
-  </section>
-
-  <section class="controls" aria-label="Filters and controls">
-    <div class="control-field">
-      <label for="filter-product">ProductCD</label>
-      <select id="filter-product"><option value="">All products</option></select>
+  <div class="nav-backdrop" id="nav-backdrop"></div>
+  <nav class="sidenav" id="sidenav" aria-label="Dashboard sections">
+    <div class="sidenav-brand">
+      <span class="mark" aria-hidden="true"></span>
+      <span class="name">Fraud Risk<br>Intelligence</span>
+      <button type="button" class="sidenav-close" id="sidenav-close" aria-label="Close navigation">&times;</button>
     </div>
-    <div class="control-field">
-      <label for="filter-card-network">Card network</label>
-      <select id="filter-card-network"><option value="">All networks</option></select>
-    </div>
-    <div class="control-field">
-      <label for="filter-band">Risk band</label>
-      <select id="filter-band">
-        <option value="">All bands</option>
-        <option value="Critical">Critical</option>
-        <option value="High">High</option>
-        <option value="Medium">Medium</option>
-        <option value="Low">Low</option>
-      </select>
-    </div>
-    <div class="control-field amount-range">
-      <label for="filter-amount-max">Max transaction amount (<span id="filter-amount-max-value">$5,000</span>)</label>
-      <div class="amount-range-inputs">
-        <input type="range" id="filter-amount-max" min="5" max="5000" step="5" value="5000">
-      </div>
-    </div>
-    <div class="control-field">
-      <label for="filter-search">Search transaction ID</label>
-      <input type="search" id="filter-search" placeholder="TXN-DEMO-...">
-    </div>
-    <div class="control-field">
-      <label for="sort-by">Sort by</label>
-      <select id="sort-by">
-        <option value="risk_score_desc">Risk score (high → low)</option>
-        <option value="risk_score_asc">Risk score (low → high)</option>
-        <option value="amount_desc">Amount (high → low)</option>
-        <option value="amount_asc">Amount (low → high)</option>
-        <option value="id_asc">Transaction ID</option>
-      </select>
-    </div>
-    <button type="button" class="primary" id="refresh-btn">Refresh / score new batch</button>
-    <button type="button" class="ghost" id="reset-filters-btn">Reset filters</button>
-    <span id="controls-status" role="status" aria-live="polite"></span>
-  </section>
-
-  <section class="layout-grid">
-    <div class="queue-col">
-      <div class="panel">
-        <h2>Investigation Queue</h2>
-        <p class="panel-note">Each row is a synthetic transaction scored live, on request, by the real frozen model artifact. Click a row to inspect it.</p>
-        <div class="table-scroll">
-          <table class="queue" id="queue-table">
-            <thead>
-              <tr>
-                <th>Transaction ID</th>
-                <th>ProductCD</th>
-                <th>Amount</th>
-                <th>Risk score</th>
-                <th>Risk band</th>
-                <th>Status</th>
-                <th>Order</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody id="queue-tbody">
-              <tr><td colspan="8" class="table-empty">Loading&hellip;</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <div class="charts-col">
-      <div class="panel chart-card">
-        <h2>Risk score distribution</h2>
-        <p class="panel-note" id="distribution-note">Binned across this batch's own observed score range (not a fixed 0&ndash;1 axis) so the shape stays readable even when scores cluster narrowly.</p>
-        <canvas id="chart-distribution" role="img" aria-label="Histogram of risk scores across the current batch, binned across the batch's observed range"></canvas>
-      </div>
-      <div class="panel chart-card">
-        <div class="chart-grid-2">
-          <div>
-            <h2>Risk band breakdown</h2>
-            <canvas id="chart-band-breakdown" role="img" aria-label="Count of transactions per risk band"></canvas>
-          </div>
-          <div>
-            <h2>High-risk by ProductCD</h2>
-            <canvas id="chart-by-product" role="img" aria-label="Count of High and Critical transactions per ProductCD"></canvas>
-          </div>
-        </div>
-      </div>
-      <div class="panel chart-card">
-        <h2>Amount vs. risk score</h2>
-        <canvas id="chart-amount-vs-risk" role="img" aria-label="Scatter plot of transaction amount against risk score"></canvas>
-      </div>
-      <div class="panel chart-card">
-        <h2>Risk score by queue order</h2>
-        <p class="panel-note">Sequence in the scored batch, not real elapsed time.</p>
-        <canvas id="chart-sequence" role="img" aria-label="Risk score for each transaction in batch order"></canvas>
-      </div>
-      <div class="panel">
-        <h2>Model &amp; service health</h2>
-        <div class="health-rows" id="health-rows">
-          <div class="health-row"><span class="k">API status</span><span id="health-row-status">&ndash;</span></div>
-          <div class="health-row"><span class="k">Artifact version</span><span id="health-row-version">&ndash;</span></div>
-          <div class="health-row"><span class="k">Artifact checksum</span><span id="health-row-checksum">&ndash;</span></div>
-          <div class="health-row"><span class="k">API contract</span><span id="health-row-contract">&ndash;</span></div>
-          <div class="health-row"><span class="k">Batch generated</span><span id="health-row-generated">&ndash;</span></div>
-          <div class="health-row"><span class="k">Batch seed</span><span id="health-row-seed">&ndash;</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="responsible-ai" aria-label="Responsible AI and limitations">
-    <h2>Responsible use &amp; limitations</h2>
-    <ul>
-      <li>This score is an <strong>investigation-prioritization signal only</strong> &mdash; it ranks transactions relative to one another, for a human investigator to triage.</li>
-      <li>It must <strong>never</strong> be used to automatically decline, block, or flag a transaction as fraud without human review.</li>
-      <li>It is <strong>not a calibrated probability</strong> &mdash; no reliability diagram, Brier score, or recalibration has been performed anywhere in this project.</li>
-      <li>Every record shown on this page is <strong>synthetic and portfolio-safe</strong>, fabricated for this demo and scored on request &mdash; none are real or training transactions.</li>
-      <li>This project makes <strong>no demographic fairness claim</strong>; a Responsible AI assessment was performed on the model (Stage 12) but is not re-run or re-validated by this dashboard.</li>
-      <li>This is a <strong>portfolio demonstration</strong>, not production banking software, and was never evaluated, reviewed, or approved as one.</li>
+    <ul class="sidenav-list">
+      <li><a href="#overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg><span class="label">Overview</span></a></li>
+      <li><a href="#queue-section"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="0.1"/></svg><span class="label">Investigation queue</span></a></li>
+      <li><a href="#analytics-section"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="20" x2="5" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="14"/></svg><span class="label">Analytics</span></a></li>
+      <li><a href="#workflow-section"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="4.5" height="16" rx="1"/><rect x="9.75" y="4" width="4.5" height="10" rx="1"/><rect x="16.5" y="4" width="4.5" height="13" rx="1"/></svg><span class="label">Workflow board</span></a></li>
+      <li><a href="#responsible-ai-section"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg><span class="label">Responsible use</span></a></li>
+      <li><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg><span class="label">Single-transaction demo</span></a></li>
     </ul>
-  </section>
+  </nav>
 
-</main>
+  <div class="app-main">
+
+    <header class="topbar" id="overview">
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="sidenav">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+      <div class="topbar-titles">
+        <h1>Fraud Risk <span style="color: var(--accent);">Intelligence</span> Dashboard</h1>
+        <p class="subtitle">Portfolio demonstration of the Fraud-Risk-Intelligence model &mdash; an investigation-prioritization view, not a production fraud system.</p>
+      </div>
+      <div class="topbar-badges">
+        <span class="badge badge-synthetic" title="Every transaction shown here is fabricated for this demo, never a real or training record.">Synthetic / portfolio demonstration</span>
+        <span class="badge badge-uncalibrated" title="No calibration check (reliability diagram, Brier score) has been performed on this score anywhere in the project.">Not a calibrated probability</span>
+        <span class="badge badge-health" id="health-badge"><span class="dot" id="health-dot"></span><span id="health-text">Checking service&hellip;</span></span>
+      </div>
+      <div class="header-controls">
+        <div class="header-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <label for="filter-search" class="visually-hidden">Search transaction ID</label>
+          <input type="search" id="filter-search" placeholder="Search transaction ID (e.g. TXN-DEMO-...)">
+        </div>
+        <div class="header-batch-select-wrap">
+          <label for="batch-select">Demo batch</label>
+          <select id="batch-select">
+            <option value="101">Sequence 1</option>
+            <option value="202">Sequence 2</option>
+            <option value="303">Sequence 3</option>
+            <option value="404">Sequence 4</option>
+            <option value="505">Sequence 5</option>
+          </select>
+        </div>
+        <button type="button" class="icon-btn" id="reload-btn" title="Re-score the current demo sequence" aria-label="Reload current demo batch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h5"/><path d="M20 20v-5h-5"/><path d="M5.5 9A7 7 0 0118 8.5M18.5 15A7 7 0 016 15.5"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content">
+
+      <div class="historical-panel" aria-label="Historical model performance">
+        <h2>Model performance &mdash; historical, Stage 10 offline evaluation</h2>
+        <p class="panel-note">Scored exactly once on the held-out <code>final_test</code> split, before any UI existed. These numbers are <strong>fixed and historical</strong> &mdash; distinct from, and not comparable to, the live scores on this batch below. Source: <code>README.md</code> / <code>docs/STAGE10_EVALUATION_PROTOCOL.md</code>.</p>
+        <div class="historical-grid">
+          <div class="historical-stat"><div class="k">Average Precision</div><div class="v">0.4278</div></div>
+          <div class="historical-stat"><div class="k">ROC-AUC</div><div class="v">0.8664</div></div>
+          <div class="historical-stat"><div class="k">95% CI on AP</div><div class="v">[0.408, 0.445]</div></div>
+          <div class="historical-stat"><div class="k">Precision @ 1%</div><div class="v">0.858</div></div>
+          <div class="historical-stat"><div class="k">Recall @ 1%</div><div class="v">0.246</div></div>
+          <div class="historical-stat"><div class="k">No-skill baseline</div><div class="v">0.035</div></div>
+        </div>
+      </div>
+
+      <section class="kpi-grid" id="kpi-grid" aria-label="Key metrics for this batch">
+        <!-- populated by dashboard.js -->
+      </section>
+
+      <section class="controls" aria-label="Filters and controls">
+        <div class="controls-heading">
+          <h2>Filter the investigation queue</h2>
+          <span class="filter-count" id="filter-count" hidden></span>
+        </div>
+        <div class="control-field">
+          <label for="filter-product">ProductCD</label>
+          <select id="filter-product"><option value="">All products</option></select>
+        </div>
+        <div class="control-field">
+          <label for="filter-card-network">Card network</label>
+          <select id="filter-card-network"><option value="">All networks</option></select>
+        </div>
+        <div class="control-field">
+          <label for="filter-band">Risk band</label>
+          <select id="filter-band">
+            <option value="">All bands</option>
+            <option value="Critical">Critical</option>
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+        <div class="control-field amount-range">
+          <label for="filter-amount-max">Max transaction amount (<span id="filter-amount-max-value">$5,000</span>)</label>
+          <div class="amount-range-inputs">
+            <input type="range" id="filter-amount-max" min="5" max="5000" step="5" value="5000">
+          </div>
+        </div>
+        <button type="button" class="ghost" id="reset-filters-btn">Reset filters</button>
+        <span id="controls-status" role="status" aria-live="polite"></span>
+      </section>
+
+      <section class="layout-grid" id="queue-section">
+        <div class="queue-col">
+          <div class="panel">
+            <h2>Investigation Queue</h2>
+            <p class="panel-note">Each row is a synthetic transaction scored live, on request, by the real frozen model artifact. Click a row to inspect it, or click a column header to sort.</p>
+            <div class="table-scroll">
+              <table class="queue" id="queue-table">
+                <thead>
+                  <tr>
+                    <th class="sortable" data-sort-key="transaction_id" aria-sort="none"><button type="button">Transaction ID <span class="sort-caret">&#9662;</span></button></th>
+                    <th>ProductCD</th>
+                    <th class="sortable" data-sort-key="amount" aria-sort="none"><button type="button">Amount <span class="sort-caret">&#9662;</span></button></th>
+                    <th class="sortable" data-sort-key="risk_score" aria-sort="descending"><button type="button">Risk score <span class="sort-caret">&#9662;</span></button></th>
+                    <th>Risk band</th>
+                    <th>Status</th>
+                    <th>Order</th>
+                    <th><span class="visually-hidden">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody id="queue-tbody">
+                  <tr><td colspan="8" class="table-empty">Loading&hellip;</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="charts-col" id="analytics-section">
+          <div class="panel chart-card">
+            <h2>Risk score distribution</h2>
+            <p class="panel-note" id="distribution-note">Binned across this batch's own observed score range (not a fixed 0&ndash;1 axis) so the shape stays readable even when scores cluster narrowly.</p>
+            <canvas id="chart-distribution" role="img" aria-label="Histogram of risk scores across the current batch, binned across the batch's observed range"></canvas>
+          </div>
+          <div class="panel chart-card">
+            <div class="chart-grid-2">
+              <div>
+                <h2>Risk band breakdown</h2>
+                <p class="panel-note chart-clickable-hint">Click a slice to filter the queue.</p>
+                <canvas id="chart-band-breakdown" role="img" aria-label="Count of transactions per risk band. Clicking a slice filters the investigation queue to that band."></canvas>
+              </div>
+              <div>
+                <h2>High-risk by ProductCD</h2>
+                <p class="panel-note chart-clickable-hint">Click a bar to filter the queue.</p>
+                <canvas id="chart-by-product" role="img" aria-label="Count of High and Critical transactions per ProductCD. Clicking a bar filters the investigation queue to that product."></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="panel chart-card">
+            <h2>Amount vs. risk score</h2>
+            <canvas id="chart-amount-vs-risk" role="img" aria-label="Scatter plot of transaction amount against risk score"></canvas>
+          </div>
+          <div class="panel chart-card">
+            <h2>Risk score by queue order</h2>
+            <p class="panel-note">Sequence in the scored batch, not real elapsed time.</p>
+            <canvas id="chart-sequence" role="img" aria-label="Risk score for each transaction in batch order"></canvas>
+          </div>
+          <div class="panel">
+            <h2>Model &amp; service health</h2>
+            <div class="health-rows" id="health-rows">
+              <div class="health-row"><span class="k">API status</span><span id="health-row-status">&ndash;</span></div>
+              <div class="health-row"><span class="k">Artifact version</span><span id="health-row-version">&ndash;</span></div>
+              <div class="health-row"><span class="k">Artifact checksum</span><span id="health-row-checksum">&ndash;</span></div>
+              <div class="health-row"><span class="k">API contract</span><span id="health-row-contract">&ndash;</span></div>
+              <div class="health-row"><span class="k">Batch generated</span><span id="health-row-generated">&ndash;</span></div>
+              <div class="health-row"><span class="k">Batch seed</span><span id="health-row-seed">&ndash;</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="workflow-section" aria-label="Investigation workflow board">
+        <h2>Investigation Workflow</h2>
+        <p class="panel-note">Grouped by this batch's synthetic <code>status</code> field, filtered the same as the queue above. Read-only &mdash; there is no backend write path for status changes in this demo, so cards are not draggable; click one to inspect it in the same detail panel as the table.</p>
+        <div class="kanban-board" id="kanban-board">
+          <div class="kanban-column" data-status="New">
+            <div class="kanban-column-head"><span>New</span><span class="count" data-count="New">0</span></div>
+            <div class="kanban-cards" data-cards="New"></div>
+          </div>
+          <div class="kanban-column" data-status="In Review">
+            <div class="kanban-column-head"><span>In Review</span><span class="count" data-count="In Review">0</span></div>
+            <div class="kanban-cards" data-cards="In Review"></div>
+          </div>
+          <div class="kanban-column" data-status="Escalated">
+            <div class="kanban-column-head"><span>Escalated</span><span class="count" data-count="Escalated">0</span></div>
+            <div class="kanban-cards" data-cards="Escalated"></div>
+          </div>
+          <div class="kanban-column" data-status="Resolved">
+            <div class="kanban-column-head"><span>Resolved</span><span class="count" data-count="Resolved">0</span></div>
+            <div class="kanban-cards" data-cards="Resolved"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="responsible-ai" id="responsible-ai-section" aria-label="Responsible AI and limitations">
+        <h2>Responsible use &amp; limitations</h2>
+        <ul>
+          <li>This score is an <strong>investigation-prioritization signal only</strong> &mdash; it ranks transactions relative to one another, for a human investigator to triage.</li>
+          <li>It must <strong>never</strong> be used to automatically decline, block, or flag a transaction as fraud without human review.</li>
+          <li>It is <strong>not a calibrated probability</strong> &mdash; no reliability diagram, Brier score, or recalibration has been performed anywhere in this project.</li>
+          <li>Every record shown on this page is <strong>synthetic and portfolio-safe</strong>, fabricated for this demo and scored on request &mdash; none are real or training transactions.</li>
+          <li>The <strong>historical Stage 10 metrics</strong> above are a separate, fixed, one-time measurement on held-out data &mdash; they describe the model in general, not any specific prediction shown on this page, and must never be read as if they applied to an individual transaction.</li>
+          <li>This project makes <strong>no demographic fairness claim</strong>; a Responsible AI assessment was performed on the model (Stage 12) but is not re-run or re-validated by this dashboard.</li>
+          <li>This is a <strong>portfolio demonstration</strong>, not production banking software, and was never evaluated, reviewed, or approved as one.</li>
+        </ul>
+      </section>
+
+    </main>
+
+    <footer class="page-footer">Fraud-Risk-Intelligence &mdash; portfolio presentation layer. No real transaction data is used anywhere on this page. <a href="index.html">Single-transaction demo &rarr;</a></footer>
+
+  </div>
+</div>
 
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
 <aside class="drawer" id="detail-drawer" aria-label="Transaction detail" aria-hidden="true">
@@ -172,8 +251,6 @@
   <p class="panel-note" style="margin-top: 0.3rem;">These are the model's own globally most important features (Stage 11 explainability), shown for context &mdash; not a live, per-transaction explanation of this specific score.</p>
   <ol class="feature-list" id="drawer-features"></ol>
 </aside>
-
-<footer class="page-footer">Fraud-Risk-Intelligence &mdash; portfolio presentation layer. No real transaction data is used anywhere on this page. <a href="index.html">Single-transaction demo &rarr;</a></footer>
 
 <script src="dashboard.js"></script>
 </body>

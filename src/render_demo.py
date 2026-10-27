@@ -264,11 +264,15 @@ def public_dashboard_queue(n: int = 48, seed: int = 2024):
     parameter names (`n`, `seed`) so ui/dashboard.js needs no awareness of
     which backend it's talking to, but neither is used the way the local
     route uses them: `n` is ignored outright (always
-    PUBLIC_DASHBOARD_BATCH_SIZE), and `seed` only ever SELECTS an index
-    (via modulo) into the small, fixed PUBLIC_DASHBOARD_SEED_ALLOWLIST --
-    it is never passed through as the actual RNG seed. The set of possible
-    public responses is therefore small, fixed, and reviewable, regardless
-    of what a caller sends.
+    PUBLIC_DASHBOARD_BATCH_SIZE). `seed` is used directly ONLY when it is
+    already one of the fixed PUBLIC_DASHBOARD_SEED_ALLOWLIST values --
+    exactly the 5 values ui/dashboard.js's "Demo batch" dropdown sends --
+    so that control produces the SAME batch on this public service as it
+    would against the local, unrestricted route. Any other value (a
+    caller bypassing the dropdown) is mapped via modulo into that same
+    allowlist rather than used as the actual RNG seed. Either way, the
+    set of possible public responses is small, fixed, and reviewable,
+    regardless of what a caller sends.
     """
     artifact = getattr(app.state, "artifact", None)
     manifest = getattr(app.state, "manifest", None)
@@ -277,5 +281,8 @@ def public_dashboard_queue(n: int = 48, seed: int = 2024):
             status_code=503,
             content={"detail": "Model artifact is not available.", "error_category": "ArtifactUnavailable"},
         )
-    effective_seed = PUBLIC_DASHBOARD_SEED_ALLOWLIST[abs(seed) % len(PUBLIC_DASHBOARD_SEED_ALLOWLIST)]
+    if seed in PUBLIC_DASHBOARD_SEED_ALLOWLIST:
+        effective_seed = seed
+    else:
+        effective_seed = PUBLIC_DASHBOARD_SEED_ALLOWLIST[abs(seed) % len(PUBLIC_DASHBOARD_SEED_ALLOWLIST)]
     return build_dashboard_queue_payload(artifact, manifest, PUBLIC_DASHBOARD_BATCH_SIZE, effective_seed)
