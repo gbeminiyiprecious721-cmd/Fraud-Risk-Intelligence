@@ -30,6 +30,22 @@
 # This script never prints ARTIFACT_SOURCE_PAT and never passes it on the
 # command line (curl reads it from an env-populated header file instead,
 # so it cannot appear in `ps` output or shell history).
+#
+# A 403 from this endpoint is NOT necessarily a misconfigured token.
+# GitHub's own documented behavior: a 403 is also the exact status GitHub
+# returns for primary AND secondary rate limiting (the response carries a
+# `Retry-After` header, or `X-RateLimit-Remaining: 0` with an
+# `X-RateLimit-Reset` epoch time, and a JSON body `message` explaining
+# which case applies) -- this is plausible on a CI/build host like
+# Render, whose outbound IP is shared across many customers' builds. This
+# script detects that specific signal from the real HTTP response headers
+# and retries with GitHub's own recommended backoff before concluding
+# anything about the token itself; a non-rate-limit 403 (e.g. genuinely
+# insufficient "Contents: Read" permission or the repo not being in the
+# token's selected-repositories list) is NOT retried, since GitHub warns
+# that retrying a non-rate-limit failure risks the integration being
+# banned, and is reported immediately with GitHub's own sanitized error
+# message (never a token, header, or signed URL).
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -50,18 +66,80 @@ fi
 mkdir -p "$ARTIFACT_DIR"
 
 HEADER_FILE="$(mktemp)"
-trap 'rm -f "$HEADER_FILE"' EXIT
+RESPONSE_HEADERS_FILE="$(mktemp)"
+RESPONSE_BODY_FILE="$(mktemp)"
+trap 'rm -f "$HEADER_FILE" "$RESPONSE_HEADERS_FILE" "$RESPONSE_BODY_FILE"' EXIT
 printf 'Authorization: token %s\n' "$ARTIFACT_SOURCE_PAT" > "$HEADER_FILE"
 
-echo "Fetching trusted artifact from private repo (token not shown)..."
-HTTP_STATUS=$(curl -sS -w "%{http_code}" -o "$DEST" \
-  -H @"$HEADER_FILE" \
-  -H "Accept: application/vnd.github.raw+json" \
-  "https://api.github.com/repos/${ARTIFACT_SOURCE_REPO}/contents/${ARTIFACT_SOURCE_PATH}")
+# `_extract_sanitized_github_message FILE`: prints GitHub's own JSON error
+# `message` field (public, non-secret -- GitHub never echoes a submitted
+# token/header back in this body), truncated and defensively redacted of
+# anything token-shaped, for safe inclusion in build logs.
+_extract_sanitized_github_message() {
+  python3 -c "
+import json, re, sys
+try:
+    with open(sys.argv[1]) as f:
+        data = json.load(f)
+    msg = str(data.get('message', '(no message field)'))[:300]
+except Exception:
+    msg = '(non-JSON or unreadable error body)'
+msg = re.sub(r'(ghp_|github_pat_|gho_|ghs_|ghu_)[A-Za-z0-9_]+', '[REDACTED_TOKEN]', msg)
+print(msg)
+" "$1" 2>/dev/null || echo "(error body unavailable)"
+}
 
-if [[ "$HTTP_STATUS" != "200" ]]; then
-  echo "FATAL: artifact fetch failed (HTTP $HTTP_STATUS). Refusing to start with a missing/partial artifact." >&2
-  rm -f "$DEST"
+MAX_ATTEMPTS=3
+ATTEMPT=1
+FETCHED=0
+while [[ "$ATTEMPT" -le "$MAX_ATTEMPTS" ]]; do
+  echo "Fetching trusted artifact from private repo, attempt ${ATTEMPT}/${MAX_ATTEMPTS} (token not shown)..."
+  HTTP_STATUS=$(curl -sS -w "%{http_code}" -o "$RESPONSE_BODY_FILE" -D "$RESPONSE_HEADERS_FILE" \
+    -H @"$HEADER_FILE" \
+    -H "Accept: application/vnd.github.raw+json" \
+    "https://api.github.com/repos/${ARTIFACT_SOURCE_REPO}/contents/${ARTIFACT_SOURCE_PATH}")
+
+  if [[ "$HTTP_STATUS" == "200" ]]; then
+    mv "$RESPONSE_BODY_FILE" "$DEST"
+    FETCHED=1
+    break
+  fi
+
+  SAFE_MESSAGE="$(_extract_sanitized_github_message "$RESPONSE_BODY_FILE")"
+  RETRY_AFTER="$(grep -i '^retry-after:' "$RESPONSE_HEADERS_FILE" 2>/dev/null | awk '{print $2}' | tr -d '\r' || true)"
+  RATE_REMAINING="$(grep -i '^x-ratelimit-remaining:' "$RESPONSE_HEADERS_FILE" 2>/dev/null | awk '{print $2}' | tr -d '\r' || true)"
+  echo "GitHub API error on attempt ${ATTEMPT}/${MAX_ATTEMPTS}: HTTP ${HTTP_STATUS} -- ${SAFE_MESSAGE}" >&2
+
+  if [[ "$HTTP_STATUS" == "403" ]] && { [[ -n "$RETRY_AFTER" ]] || [[ "$RATE_REMAINING" == "0" ]]; }; then
+    WAIT_SECONDS="${RETRY_AFTER:-60}"
+    if ! [[ "$WAIT_SECONDS" =~ ^[0-9]+$ ]]; then
+      WAIT_SECONDS=60
+    fi
+    if [[ "$WAIT_SECONDS" -gt 90 ]]; then
+      # Capped deliberately: a Render build has its own time budget, and
+      # blindly sleeping for whatever GitHub asks (sometimes much longer)
+      # could exhaust that budget on a failure this script can't fix by
+      # waiting longer anyway. A capped, clearly-logged short wait plus a
+      # fast, honest failure beats a build that times out silently.
+      echo "GitHub asked us to wait ${WAIT_SECONDS}s; capping the in-build wait to 90s to avoid exhausting Render's own build-time budget. If this keeps failing, redeploy again in a few minutes." >&2
+      WAIT_SECONDS=90
+    fi
+    echo "Detected GitHub's rate-limit signal (Retry-After or X-RateLimit-Remaining: 0) -- this is NOT necessarily a token problem. Waiting ${WAIT_SECONDS}s per GitHub's documented guidance before retrying." >&2
+    sleep "$WAIT_SECONDS"
+    ATTEMPT=$((ATTEMPT + 1))
+    continue
+  fi
+
+  # Any other failure (including a non-rate-limited 403) is NOT retried:
+  # GitHub documents that repeated requests while not rate-limited risk
+  # the integration being banned, and retrying would not fix a genuine
+  # permission/not-found condition.
+  echo "FATAL: artifact fetch failed (HTTP ${HTTP_STATUS}), not a recognized rate-limit signal -- see the sanitized message above. Refusing to start with a missing/partial artifact." >&2
+  exit 1
+done
+
+if [[ "$FETCHED" != "1" ]]; then
+  echo "FATAL: artifact fetch still rate-limited after ${MAX_ATTEMPTS} attempts. Refusing to start with a missing/partial artifact." >&2
   exit 1
 fi
 

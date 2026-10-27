@@ -79,7 +79,67 @@ already-committed manifest before anything is allowed to start.**
   "Public-demo safeguards" below) -- free-plan compatible, no external
   store.
 
-### What the operator must still do (cannot be done from this session)
+### Investigated this round: HTTP 403 on an actual Render build
+
+A real Render build of this branch hit a 403 fetching the artifact. Per
+GitHub's own REST API documentation (verified directly against
+docs.github.com, not from memory), **403 from the Contents API is not
+unique to a misconfigured or insufficiently-scoped token** -- it is also
+the exact status GitHub returns for primary *and secondary* rate
+limiting, distinguishable only by response headers/body: a `Retry-After`
+header, or `X-RateLimit-Remaining: 0` with `X-RateLimit-Reset`, and a
+JSON `message` field stating which case applies. This is plausible on a
+CI/build host like Render, whose outbound IP is shared across many
+customers' builds.
+
+**Fix implemented in `deploy/render_fetch_artifact.sh`:** the fetch now
+inspects the real response headers and body on any non-200 result and
+distinguishes the two cases:
+- A detected rate-limit signal (`Retry-After` present, or
+  `X-RateLimit-Remaining: 0`) retries up to 3 attempts total, waiting
+  GitHub's own suggested duration (capped at 90s per attempt so a single
+  wait can't exhaust Render's build-time budget).
+- Any other failure (a genuine permission/scope/not-found problem) is
+  **not** retried -- GitHub's own docs warn that retrying while *not*
+  actually rate-limited risks the integration being banned -- and fails
+  immediately with GitHub's own sanitized `message` field logged (e.g.
+  `"Bad credentials"`, `"Resource not accessible by personal access
+  token"`), defensively redacted of anything token-shaped, never a
+  token/header/signed URL.
+
+**Verified this round, not merely written:**
+- Re-ran the real successful fetch against the real private repo
+  (`gh` OAuth token, isolated scratch copy) -- unaffected by the
+  refactor, exit 0, correct checksum, same as before.
+- Re-ran the real failure case against a nonexistent/unauthorized repo
+  -- single attempt (correctly not retried, since GitHub's real response
+  there was `401 Bad credentials`, not a rate-limit signal), that exact
+  sanitized message logged, completed in 0.24s.
+- Built a local mock server reproducing GitHub's documented secondary-
+  rate-limit response shape (403 + `Retry-After: 1` +
+  `X-RateLimit-Remaining: 0` + the real documented message text) to
+  verify the retry path itself, since deliberately triggering a real
+  GitHub rate limit against a live account for a test would be
+  irresponsible: confirmed 2 retries with real ~1s waits before a
+  3rd-attempt success, and separately confirmed exhausting all 3
+  attempts produces the correct "still rate-limited" failure. No token
+  ever appeared in any output in any of these tests.
+
+**Not yet confirmed:** this session has not reproduced the *original*
+403 directly (no fine-grained PAT available here), so which of the two
+documented causes actually applies has not been proven from a live
+Render build log. **Safe diagnostic procedure for the operator:**
+redeploy on Render with this fix in place and read the build log. It
+now prints, per attempt: the HTTP status and GitHub's own sanitized
+`message` text (never the token), and explicitly states whether a
+rate-limit signal was detected. If the log shows retries with the
+rate-limit message, the 403 was transient load-based and this fix
+should resolve it on its own. If it shows an immediate, non-retried
+failure with a message like `"Resource not accessible by personal
+access token"` or `"Not Found"`, that specific sanitized text (safe to
+paste anywhere -- it is GitHub's own public error text) identifies the
+real cause precisely and points at the fine-grained PAT's granted scope
+or selected-repository list, not at this script.
 
 1. ~~Create a separate private GitHub repository~~ **Done** --
    `gbeminiyiprecious721-cmd/fraud-risk-model-artifact` exists, is
