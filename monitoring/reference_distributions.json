@@ -1,0 +1,100 @@
+{
+  "TransactionAmt": {
+    "feature": "TransactionAmt",
+    "partition": "train",
+    "reference_sample_size_total": 438125,
+    "reference_sample_size_finite": 438125,
+    "n_missing_or_non_finite": 0,
+    "n_bins_requested": 10,
+    "population_fingerprint": "d2262f9e3e9016083f436678735c106854546e799386848818613aa6fe922832",
+    "status": "ok",
+    "constant_feature": false,
+    "bin_edges": [
+      0.251,
+      25.95,
+      35.95,
+      49.0,
+      57.95,
+      69.0,
+      100.0,
+      117.0,
+      160.5,
+      280.0,
+      31937.391
+    ],
+    "bin_proportions": [
+      0.09003366619115549,
+      0.10060599144079886,
+      0.09674179743223965,
+      0.09131868758915834,
+      0.12122567760342368,
+      0.08800228245363766,
+      0.10872239657631955,
+      0.10327646219686162,
+      0.09988245363766049,
+      0.10019058487874465
+    ]
+  },
+  "C1": {
+    "feature": "C1",
+    "partition": "train",
+    "reference_sample_size_total": 438125,
+    "reference_sample_size_finite": 438125,
+    "n_missing_or_non_finite": 0,
+    "n_bins_requested": 10,
+    "population_fingerprint": "1df3370af964d5f069b23390a503099eab8f5d3cca1e31cb495e555bdb9f79b6",
+    "status": "ok",
+    "constant_feature": false,
+    "bin_edges": [
+      0.0,
+      1.0,
+      2.0,
+      3.0,
+      7.0,
+      4685.0
+    ],
+    "bin_proportions": [
+      0.0008102710413694722,
+      0.5481289586305278,
+      0.17369928673323823,
+      0.1765888730385164,
+      0.10077261055634808
+    ]
+  },
+  "dist1": {
+    "feature": "dist1",
+    "partition": "train",
+    "reference_sample_size_total": 438125,
+    "reference_sample_size_finite": 168943,
+    "n_missing_or_non_finite": 269182,
+    "n_bins_requested": 10,
+    "population_fingerprint": "d2ac0b437ad30e9eeaae52310a3cf9614111a37f446adcc070c6c7a9a9ed5194",
+    "status": "ok",
+    "constant_feature": false,
+    "bin_edges": [
+      0.0,
+      1.0,
+      2.0,
+      4.0,
+      6.0,
+      9.0,
+      12.0,
+      19.0,
+      39.0,
+      303.0,
+      10286.0
+    ],
+    "bin_proportions": [
+      0.08183233398246746,
+      0.07569416903926177,
+      0.12298230764222252,
+      0.10434288487833175,
+      0.11236334148203832,
+      0.08315822496344921,
+      0.11390232208496356,
+      0.10545568623737,
+      0.10022907134358926,
+      0.10003965834630615
+    ]
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "config_version": "1.0.0",
+  "stage": 18,
+  "scope": "Local, free/local portfolio monitoring only -- not a commercial monitoring platform. No live customer telemetry, no paid service, no cloud infrastructure.",
+  "approved_artifact_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "rules": [
+    {
+      "rule_id": "input_drift_TransactionAmt",
+      "signal": "input_distribution::TransactionAmt",
+      "calculation": "Population Stability Index (PSI) between a batch's TransactionAmt decile distribution and the train-partition reference decile distribution.",
+      "required_sample_size": 50,
+      "reference_source": "train partition (438,125 rows), real values via src.preprocessing.load_partition_df -- never from an imputer median alone.",
+      "threshold": 0.25,
+      "threshold_rationale": "Conventional PSI literature heuristic (<0.1 no significant shift, 0.1-0.25 moderate, >0.25 significant). This is a statistical-adequacy convention, NOT derived from Stage 1's cost scenarios and NOT claimed to be economically optimal -- no operational evidence exists yet to justify a cost-optimal threshold.",
+      "expected_false_alert_limitations": "A real, legitimate seasonal or promotional shift in transaction amounts would also trigger this alert -- PSI cannot distinguish 'malicious/erroneous data change' from 'genuine population change'. Small batches (near the 50-row minimum) will have noisier bin proportions and a higher false-alert rate than large batches.",
+      "operator_response": "See docs/STAGE18_MONITORING_RUNBOOK.md -- investigate upstream source/schema change before trusting new predictions."
+    },
+    {
+      "rule_id": "input_drift_C1",
+      "signal": "input_distribution::C1",
+      "calculation": "PSI between a batch's C1 decile distribution and the train-partition reference decile distribution.",
+      "required_sample_size": 50,
+      "reference_source": "train partition, real values. C1 chosen because it is Stage 11's top-ranked SHAP feature -- a drift here is the single most consequential input-drift signal this project can monitor given existing evidence.",
+      "threshold": 0.25,
+      "threshold_rationale": "Same PSI convention as TransactionAmt -- a statistical heuristic, not a cost-derived figure.",
+      "expected_false_alert_limitations": "C1 is an anonymised Vesta-engineered count-like feature with unknown real-world units (Stage 2) -- a PSI alert can say THAT its distribution shifted, never WHY in business terms.",
+      "operator_response": "See docs/STAGE18_MONITORING_RUNBOOK.md."
+    },
+    {
+      "rule_id": "input_drift_dist1",
+      "signal": "input_distribution::dist1",
+      "calculation": "PSI between a batch's dist1 decile distribution (computed over FINITE values only) and the train-partition reference decile distribution.",
+      "required_sample_size": 50,
+      "reference_source": "train partition, real values. dist1 chosen deliberately for its real, legitimate ~61.44% missingness (Stage 16 finding) -- exercises missing-value handling against real data.",
+      "threshold": 0.25,
+      "threshold_rationale": "Same PSI convention. Missingness itself is tracked as a separate count (n_missing_or_non_finite), never folded into the PSI calculation or silently imputed.",
+      "expected_false_alert_limitations": "A change in the UPSTREAM MISSINGNESS RATE itself (e.g. a new data source that always populates dist1) would not be caught by this PSI rule, since PSI here is computed over finite values only -- a named, separate gap, not a claim of complete coverage.",
+      "operator_response": "See docs/STAGE18_MONITORING_RUNBOOK.md."
+    },
+    {
+      "rule_id": "prediction_score_drift",
+      "signal": "prediction_score_distribution::fraud_probability",
+      "calculation": "PSI between a batch's fraud_probability decile distribution (scored by the current trusted artifact, no refit) and a reference score distribution built the same way.",
+      "required_sample_size": 50,
+      "reference_source": "A reference batch sampled from the train partition and scored once by artifact sha256 2fb0cbc4... (Stage 13). Comparison is refused (status=provenance_mismatch) if the batch was scored by a different artifact checksum.",
+      "threshold": 0.25,
+      "threshold_rationale": "Same PSI convention, applied to scores instead of a raw feature. fraud_probability is explicitly NOT a calibrated real-world probability (Stage 10/14) -- this rule monitors distribution SHAPE only, never a classification-accuracy claim.",
+      "expected_false_alert_limitations": "A score-distribution shift can be caused by an input-distribution shift (check the input_drift_* rules for the same batch first), by the batch's own composition (e.g. an unusually fraud-heavy real batch), or by a genuine model-behavior change -- this rule alone cannot distinguish the three.",
+      "operator_response": "See docs/STAGE18_MONITORING_RUNBOOK.md -- cross-check input_drift_* alerts for the same batch before concluding the MODEL itself changed behavior."
+    },
+    {
+      "rule_id": "operational_server_error",
+      "signal": "operational::5xx_server_error_rate",
+      "calculation": "count(HTTP status in [500,599]) over log records carrying both a status and duration_seconds field.",
+      "required_sample_size": 1,
+      "reference_source": "The existing Stage 14 `_log_event` structured log lines (parsed from a log file; Uvicorn's own plain-text access-log lines are skipped, not parsed as records).",
+      "threshold": 0,
+      "threshold_rationale": "ANY observed 5xx is flagged, not a rate threshold. With the low request volume expected of a local portfolio API, waiting for a RATE to accumulate would hide the very first real outage -- deliberately more sensitive than a production-scale error-rate rule would need to be.",
+      "expected_false_alert_limitations": "A single transient 5xx (e.g. during an intentional redeploy, as in Stage 17's own Version B exercise) will always alert -- this rule cannot distinguish 'a real incident' from 'an expected, operator-initiated deployment transition'; the runbook's first step (observe and verify) exists specifically to make that distinction by hand.",
+      "operator_response": "See docs/STAGE18_MONITORING_RUNBOOK.md -- check /health and /version immediately; roll back per docs/STAGE17_ROLLBACK_RUNBOOK.md if the release is unready."
+    },
+    {
+      "rule_id": "operational_artifact_identity_mismatch",
+      "signal": "operational::artifact_identity",
+      "calculation": "set(artifact_sha256 values seen in successful-response log records) minus {approved_artifact_sha256}.",
+      "required_sample_size": 1,
+      "reference_source": "approved_artifact_sha256 above (Stage 13/17's approved value).",
+      "threshold": "any non-empty set",
+      "threshold_rationale": "Serving predictions from an unapproved artifact is always significant on this project's own terms (Stage 13's permanent checksum-identity contract) -- no rate threshold is appropriate.",
+      "expected_false_alert_limitations": "Only checked on SUCCESSFUL responses, because error responses never log artifact identity (a real, audited gap in the existing Stage 14 logging -- see docs/STAGE18_MONITORING_REPORT.md Section 2). A run of pure failures could theoretically be serving a bad artifact without this rule ever seeing it.",
+      "operator_response": "See docs/STAGE18_MONITORING_RUNBOOK.md -- verify which release is actually running; roll back if it is not the approved Version A."
+    },
+    {
+      "rule_id": "operational_latency_p95",
+      "signal": "operational::latency_p95",
+      "calculation": "95th percentile of duration_seconds over log records with a sufficient sample (>=20).",
+      "required_sample_size": 20,
+      "reference_source": "Stage 14's own measured warm p95 (0.0462s), from docs/STAGE14_API_REPORT.md.",
+      "threshold": 1.0,
+      "threshold_rationale": "Deliberately set far above (~20x) Stage 14's measured warm p95, so this fires only on a real, large regression, not routine jitter from a single-worker local process under this stage's own small demonstration batches.",
+      "expected_false_alert_limitations": "A single slow request immediately after a cold start would not by itself cross a 95th-percentile threshold with a reasonably sized batch, but could with a very small one -- hence the 20-record minimum sample size.",
+      "operator_response": "See docs/STAGE18_MONITORING_RUNBOOK.md -- not evidence of model correctness decay; investigate for resource contention."
+    }
+  ]
+}
