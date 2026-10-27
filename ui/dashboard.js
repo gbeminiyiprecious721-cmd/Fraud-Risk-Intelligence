@@ -40,6 +40,7 @@
     seed: DEMO_BATCH_SEEDS[0],
     sortKey: "risk_score",
     sortDir: "desc",
+    selectedId: null, // transaction_id currently shown in the detail drawer, kept in sync across the table AND the Kanban board
     charts: {},
   };
 
@@ -239,24 +240,40 @@
 
   function renderKpis(filteredRows, raw) {
     const all = raw ? raw.transactions : [];
-    const highRisk = all.filter((t) => t.risk_band === "High" || t.risk_band === "Critical").length;
-    const reviewQueue = all.filter((t) => t.status !== "Resolved").length;
-    const avgScore = all.length ? all.reduce((s, t) => s + t.risk_score, 0) / all.length : 0;
-    const maxScore = all.length ? Math.max(...all.map((t) => t.risk_score)) : 0;
+    // These four describe "what the investigator is currently looking
+    // at", so -- like the table, charts, and Kanban board -- they react
+    // to the active filters, not the full batch. "Transactions scored"
+    // stays batch-wide on purpose: it's a true, filter-independent fact
+    // about the real model inference that already happened, not a count
+    // of what's currently on screen.
+    const scope = filteredRows;
+    const isFiltered = scope.length !== all.length;
+    const scopeNote = isFiltered ? `of ${scope.length} filtered` : "of full batch";
+    const highRisk = scope.filter((t) => t.risk_band === "High" || t.risk_band === "Critical").length;
+    const reviewQueue = scope.filter((t) => t.status !== "Resolved").length;
+    const avgScore = scope.length ? scope.reduce((s, t) => s + t.risk_score, 0) / scope.length : 0;
+    const maxScore = scope.length ? Math.max(...scope.map((t) => t.risk_score)) : 0;
 
     const cards = [
-      { label: "Transactions scored", value: all.length, cls: "accent", icon: "database", accent: "var(--accent)" },
+      {
+        label: "Transactions scored",
+        value: all.length,
+        cls: "accent",
+        icon: "database",
+        accent: "var(--accent)",
+        sub: "real model inferences, this batch",
+      },
       {
         label: "High-risk transactions",
         value: highRisk,
         cls: "err",
         icon: "alert",
         accent: "var(--err)",
-        sub: highRisk ? Math.round((100 * highRisk) / all.length) + "% of batch" : "",
+        sub: scope.length ? Math.round((100 * highRisk) / scope.length) + "% " + scopeNote : scopeNote,
       },
-      { label: "Review queue size", value: reviewQueue, cls: "warn", icon: "list", accent: "var(--warn)", sub: "status ≠ Resolved" },
-      { label: "Average risk score", value: fmtScore(avgScore), cls: "", icon: "gauge", accent: "var(--accent-2)" },
-      { label: "Highest risk score", value: fmtScore(maxScore), cls: "err", icon: "flame", accent: "var(--critical)" },
+      { label: "Review queue size", value: reviewQueue, cls: "warn", icon: "list", accent: "var(--warn)", sub: "status ≠ Resolved, " + scopeNote },
+      { label: "Average risk score", value: fmtScore(avgScore), cls: "", icon: "gauge", accent: "var(--accent-2)", sub: scopeNote },
+      { label: "Highest risk score", value: fmtScore(maxScore), cls: "err", icon: "flame", accent: "var(--critical)", sub: scopeNote },
       { label: "Model artifact version", value: (raw && raw.model.artifact_version) || "–", cls: "", icon: "tag", accent: "var(--muted)" },
       { label: "API / service status", value: raw ? "Online" : "Unknown", cls: raw ? "ok" : "warn", icon: "pulse", accent: raw ? "var(--ok)" : "var(--warn)" },
     ];
@@ -277,6 +294,19 @@
   // Table (click-sortable headers)
   // ---------------------------------------------------------------------
 
+  // Applied after every table/Kanban re-render so the open drawer's
+  // transaction stays visually highlighted in BOTH views, consistently,
+  // even across a filter/sort change that rebuilds their markup from
+  // scratch.
+  function applySelectionVisuals() {
+    document.querySelectorAll("#queue-tbody tr[data-id]").forEach((tr) => {
+      tr.classList.toggle("selected", tr.dataset.id === state.selectedId);
+    });
+    document.querySelectorAll(".kanban-card").forEach((card) => {
+      card.classList.toggle("selected", card.dataset.id === state.selectedId);
+    });
+  }
+
   function updateSortHeaderIndicators() {
     document.querySelectorAll("#queue-table th.sortable").forEach((th) => {
       if (th.dataset.sortKey === state.sortKey) {
@@ -292,6 +322,7 @@
     const tbody = el("queue-tbody");
     if (!rows.length) {
       tbody.innerHTML = '<tr><td colspan="8" class="table-empty">No synthetic transactions match the current filters.</td></tr>';
+      applySelectionVisuals();
       return;
     }
     tbody.innerHTML = rows
@@ -320,6 +351,7 @@
     tbody.querySelectorAll(".inspect-btn").forEach((btn) => {
       btn.addEventListener("click", () => openDrawer(btn.dataset.id));
     });
+    applySelectionVisuals();
   }
 
   // ---------------------------------------------------------------------
@@ -349,6 +381,7 @@
         card.addEventListener("click", () => openDrawer(card.dataset.id));
       });
     });
+    applySelectionVisuals();
   }
 
   // ---------------------------------------------------------------------
@@ -425,6 +458,19 @@
     });
   }
 
+  function toggleBandFilter(band) {
+    const sel = el("filter-band");
+    sel.value = sel.value === band ? "" : band; // click again to clear
+    // Deferred: applyFiltersAndRender() destroys and recreates this chart.
+    // Doing that synchronously, inside Chart.js's own click-event dispatch
+    // for this same chart, corrupts its internal event-handling state
+    // (observed as a real, reproducible "Cannot read properties of
+    // undefined (reading 'handleEvent')" exception from chart.umd.min.js).
+    // Deferring to the next tick lets Chart.js finish its own event
+    // handling first.
+    setTimeout(applyFiltersAndRender, 0);
+  }
+
   function renderBandBreakdownChart(rows) {
     const counts = RISK_BAND_ORDER.map((band) => rows.filter((t) => t.risk_band === band).length);
     destroyChart("bandBreakdown");
@@ -437,20 +483,27 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: "bottom", labels: { color: "#a9adb8" } } },
+        plugins: {
+          legend: {
+            position: "bottom",
+            labels: { color: "#a9adb8" },
+            // A thin slice (e.g. 2 of 48 transactions, ~15 degrees of
+            // arc) is a genuinely hard target to click precisely -- this
+            // is standard doughnut-chart behavior, not specific to this
+            // page (confirmed by testing exact arc-geometry clicks: 3 of
+            // 4 bands landed reliably, the smallest did not). The legend
+            // swatch is a much larger, reliable target for exactly that
+            // case, so it's wired to the SAME filter action instead of
+            // Chart.js's default (hiding the slice, which would
+            // misrepresent this batch's true composition -- see the
+            // "accurately reflect scope" requirement this page follows
+            // throughout).
+            onClick: (evt, legendItem) => toggleBandFilter(RISK_BAND_ORDER[legendItem.index]),
+          },
+        },
         onClick: (evt, elements) => {
           if (!elements.length) return;
-          const band = RISK_BAND_ORDER[elements[0].index];
-          const sel = el("filter-band");
-          sel.value = sel.value === band ? "" : band; // click again to clear
-          // Deferred: applyFiltersAndRender() destroys and recreates this
-          // very chart. Doing that synchronously, inside Chart.js's own
-          // click-event dispatch for this same chart, corrupts its
-          // internal event-handling state (observed as a real, reproducible
-          // "Cannot read properties of undefined (reading 'handleEvent')"
-          // exception from chart.umd.min.js). Deferring to the next tick
-          // lets Chart.js finish its own event handling first.
-          setTimeout(applyFiltersAndRender, 0);
+          toggleBandFilter(RISK_BAND_ORDER[elements[0].index]);
         },
       },
     });
@@ -531,7 +584,8 @@
     const t = state.raw.transactions.find((x) => x.transaction_id === transactionId);
     if (!t) return;
 
-    document.querySelectorAll("#queue-tbody tr").forEach((tr) => tr.classList.toggle("selected", tr.dataset.id === transactionId));
+    state.selectedId = transactionId;
+    applySelectionVisuals();
 
     el("drawer-id").textContent = t.transaction_id;
     el("drawer-score").textContent = fmtScore(t.risk_score);
@@ -559,7 +613,8 @@
     el("detail-drawer").classList.remove("open");
     el("detail-drawer").setAttribute("aria-hidden", "true");
     el("drawer-backdrop").classList.remove("open");
-    document.querySelectorAll("#queue-tbody tr.selected").forEach((tr) => tr.classList.remove("selected"));
+    state.selectedId = null;
+    applySelectionVisuals();
   }
 
   // ---------------------------------------------------------------------

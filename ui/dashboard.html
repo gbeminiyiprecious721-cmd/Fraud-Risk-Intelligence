@@ -150,30 +150,30 @@
           <div class="panel chart-card">
             <h2>Risk score distribution</h2>
             <p class="panel-note" id="distribution-note">Binned across this batch's own observed score range (not a fixed 0&ndash;1 axis) so the shape stays readable even when scores cluster narrowly.</p>
-            <canvas id="chart-distribution" role="img" aria-label="Histogram of risk scores across the current batch, binned across the batch's observed range"></canvas>
+            <div class="chart-canvas-wrap"><canvas id="chart-distribution" role="img" aria-label="Histogram of risk scores across the current batch, binned across the batch's observed range"></canvas></div>
           </div>
           <div class="panel chart-card">
             <div class="chart-grid-2">
               <div>
                 <h2>Risk band breakdown</h2>
                 <p class="panel-note chart-clickable-hint">Click a slice to filter the queue.</p>
-                <canvas id="chart-band-breakdown" role="img" aria-label="Count of transactions per risk band. Clicking a slice filters the investigation queue to that band."></canvas>
+                <div class="chart-canvas-wrap"><canvas id="chart-band-breakdown" role="img" aria-label="Count of transactions per risk band. Clicking a slice filters the investigation queue to that band."></canvas></div>
               </div>
               <div>
                 <h2>High-risk by ProductCD</h2>
                 <p class="panel-note chart-clickable-hint">Click a bar to filter the queue.</p>
-                <canvas id="chart-by-product" role="img" aria-label="Count of High and Critical transactions per ProductCD. Clicking a bar filters the investigation queue to that product."></canvas>
+                <div class="chart-canvas-wrap"><canvas id="chart-by-product" role="img" aria-label="Count of High and Critical transactions per ProductCD. Clicking a bar filters the investigation queue to that product."></canvas></div>
               </div>
             </div>
           </div>
           <div class="panel chart-card">
             <h2>Amount vs. risk score</h2>
-            <canvas id="chart-amount-vs-risk" role="img" aria-label="Scatter plot of transaction amount against risk score"></canvas>
+            <div class="chart-canvas-wrap"><canvas id="chart-amount-vs-risk" role="img" aria-label="Scatter plot of transaction amount against risk score"></canvas></div>
           </div>
           <div class="panel chart-card">
             <h2>Risk score by queue order</h2>
             <p class="panel-note">Sequence in the scored batch, not real elapsed time.</p>
-            <canvas id="chart-sequence" role="img" aria-label="Risk score for each transaction in batch order"></canvas>
+            <div class="chart-canvas-wrap"><canvas id="chart-sequence" role="img" aria-label="Risk score for each transaction in batch order"></canvas></div>
           </div>
           <div class="panel">
             <h2>Model &amp; service health</h2>

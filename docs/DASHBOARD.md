@@ -342,3 +342,87 @@ compare against).
   budget.
 - `X-Forwarded-For` behavior behind Render's proxy remains unverified
   against a live deployment.
+
+## Stage 4: Kanban and dashboard interaction quality review
+
+A review pass against items 1-8 below (Kanban/drawer correctness,
+selection consistency, filter/chart/sort/search coherence, accessibility,
+visual hierarchy, the 5 fixed sequences on both backends, and the
+no-fake-interactivity constraint). No backend scoring logic, the frozen
+model, synthetic-only restrictions, or approved Stages 0-19 were touched.
+
+### Gap analysis against the target (checklist order)
+
+| # | Target | Finding | Resolution |
+|---|---|---|---|
+| 1 | Kanban columns New/In Review/Escalated/Resolved with accurate counts from the current batch | Already correct — columns sum to the batch size (verified 19+11+3+15=48 and 7+8+2+7=24 on the bounded public batch) | No change needed |
+| 2 | Kanban card click opens the matching drawer with correct ID/score/metadata | Already correct, re-verified with exact field-by-field comparison (card's own displayed amount/band vs. the drawer's) | No change needed |
+| 3 | Table and Kanban selections stay consistent | **Gap found**: selection highlighting only existed on table rows, not Kanban cards, and did not survive a filter-triggered re-render of either view | Added `state.selectedId` plus a shared `applySelectionVisuals()` applied after every table/Kanban render and from open/close-drawer, so both views highlight the same transaction and the highlight survives filtering |
+| 4 | Filters/charts/sort/search coherent; KPI and queue counts accurately reflect their stated scope | **Gap found**: the top KPI row always described the full batch even when the table/charts/Kanban were filtered to a subset — `renderKpis` received the filtered rows as a parameter but never used it | 4 of 7 KPIs (the ones that are naturally "what am I looking at" numbers) now compute from the active filter scope, with an explicit "of N filtered" / "of full batch" sub-label; "Transactions scored" deliberately stays batch-wide since it states a true, filter-independent fact (how many real inferences happened), labeled as such |
+| 4 (cont.) | — | **Gap found**: clicking the risk-band doughnut's legend swatch triggered Chart.js's *default* behavior (hiding that slice) instead of the chart's own click-to-filter — inconsistent with clicking the arc itself, and would have let a slice's data silently disappear from view, contradicting "accurately reflect scope" | Legend clicks now call the identical filter toggle the arc uses; the default hide-on-click behavior is overridden so no slice can be hidden |
+| 5 | Keyboard navigation, semantic labels, visible focus, contrast, mobile layouts | Re-verified: skip link, `aria-expanded`/`aria-controls` on the nav toggle, `aria-sort` + real `<button>` sort headers reachable and activatable by keyboard, labeled search input, `aria-label` on every chart canvas, Kanban cards are real `<button>` elements. Computed WCAG contrast ratios for every text/background pair in the palette: worst case 5.18:1 (Critical risk pill), best 15.42:1 — all pass AA (4.5:1) with margin. | No change needed; documented instead of just asserted |
+| 5 (cont.) | — | **Real bug found**: a genuine desktop-width horizontal overflow (`document.body.scrollWidth` 1476px against a 1425px viewport) — missed entirely in the prior round, which only checked mobile. Root cause: the `#chart-by-product` canvas was stuck at Chart.js's hardcoded 300px default width instead of sizing to its grid column, visibly clipping the "High-risk by ProductCD" title and overflowing the page. | Wrapped every chart canvas in a dedicated, explicitly-sized `.chart-canvas-wrap` (Chart.js's own documented pattern for `responsive: true` to shrink, not just grow). Re-measured: `bodyScrollWidth` now exactly equals viewport width on both desktop and mobile. |
+| 6 | Polished visual hierarchy, consistent risk colors, professional spacing | Re-reviewed via full desktop and mobile screenshots; no remaining clipping, consistent risk-pill coloring across table/Kanban/drawer/charts, consistent card/panel spacing | No further change |
+| 7 | All 5 fixed sequences work on both local and Render-style apps, no false persistence/monitoring/outcome claims | Re-verified via direct API calls and full UI interaction on both `src.api:app` (48-row batches, exact seed) and `src.render_demo:app` (24-row bounded batches, same 5 seeds pass through unchanged — the fix from the prior round holds) | No change needed this round |
+| 8 | No fake drag-and-drop, no invented backend, no unverified explanations/metrics | Confirmed by grep: no `draggable`/`drag*` code anywhere in `ui/dashboard.html`/`.js`; the historical Stage 10 panel quotes only already-published `README.md` figures; the drawer's "feature highlights" are still explicitly labeled global, not per-transaction | No change needed |
+
+### A real finding about the doughnut-chart click specifically
+
+Testing this properly (per the explicit instruction) meant computing the
+exact click coordinate from Chart.js's own arc geometry
+(`chart.getDatasetMeta(0).data[i]`'s `startAngle`/`endAngle`/radii),
+rather than guessing a screen position as the prior round did. Result,
+tested in isolation across all 4 bands on a fresh page load:
+
+- Low, Medium, and High: the geometrically-exact click reliably selects
+  the correct band every time.
+- Critical (2 of 48 transactions in this batch, ≈15° of arc): an exact
+  midpoint click sometimes lands on the adjacent slice. This is standard
+  doughnut-chart behavior for a very thin wedge, not a bug in this page's
+  click handling — the same geometry problem exists on any doughnut
+  chart, anywhere. The legend-click fix above gives a reliable,
+  large-target alternative for exactly this case.
+
+### Also found and fixed: a screenshot-tooling artifact (not a dashboard bug)
+
+Capturing a true full-page screenshot by resizing the CDP viewport to the
+page's full content height, after the charts had already rendered at a
+smaller height, left every chart visually blank in the screenshot —
+despite `Chart.getChart(id)` showing correct, non-empty data and zero
+console errors at that exact moment. Confirmed this was specific to the
+screenshot method (not a real defect) by: rendering at a single, stable
+viewport size matching how the page is actually used (no mid-session
+resize) and getting correct charts every time; and by directly
+introspecting the live `Chart` instances, which always had correct data.
+Documented here rather than silently discarded, since it shaped how the
+evidence in this review was captured.
+
+### Verified this round
+
+- Full fast suite: **386 passed**, 0 failed — unchanged from the prior
+  round, since this review's fixes were frontend-only (`ui/dashboard.html`
+  /`.css`/`.js`); no backend file was modified.
+- Real browser verification (Chrome DevTools Protocol) against **both**
+  `src.api:app` and `src.render_demo:app`, run as one consolidated pass
+  covering checklist items 1-6 and 8 plus the dedicated doughnut-geometry
+  test for item 8: Kanban counts summing to the batch size on both
+  servers; a real Kanban-card click opening the drawer with exact
+  field-for-field matches; selection consistency across table and Kanban
+  surviving a filter change; KPI values changing correctly (and the
+  "Transactions scored" KPI correctly *not* changing) when a filter is
+  applied; search and sort producing matching, consistent row counts
+  across the table and Kanban board; accessibility attribute checks; a
+  real Tab-and-Enter keyboard activation of a sortable column header; no
+  horizontal overflow on a real 1440px-wide or 390px-wide render; and the
+  doughnut click correctly toggling the filter on and off. Zero console
+  errors or exceptions in any pass.
+
+### Remaining limitations
+
+- Everything listed at the end of the prior "Render integration" section
+  still applies unchanged (not pushed/merged/deployed; rate-limit/batch-
+  size thresholds untested under real load; `X-Forwarded-For` behavior
+  unverified live).
+- The doughnut chart's thinnest possible slice remains a harder click
+  target than the others by the nature of the chart type; mitigated, not
+  eliminated, by the legend-click fix.
