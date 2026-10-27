@@ -334,21 +334,18 @@ def _risk_bands_for(scores: list[float]) -> list[str]:
     return [RISK_BAND_LABELS[sum(1 for c in cutoffs if s > c)] for s in scores]
 
 
-@app.get("/v1/dashboard/queue")
-def dashboard_queue(n: int = 48, seed: int = 2024):
-    """Synthetic, schema-valid transactions scored through the real frozen
-    artifact (via the same `predict_fraud_probability` the single-
-    transaction endpoint uses -- no separate/duplicated inference logic),
-    for the portfolio investigation-queue dashboard."""
-    artifact = getattr(app.state, "artifact", None)
-    manifest = getattr(app.state, "manifest", None)
-    if artifact is None:
-        return JSONResponse(
-            status_code=503,
-            content={"detail": "Model artifact is not available.", "error_category": "ArtifactUnavailable"},
-        )
+MAX_DASHBOARD_BATCH_SIZE = 200  # hard ceiling regardless of caller -- see build_dashboard_queue_payload
 
-    n = max(1, min(n, 200))
+
+def build_dashboard_queue_payload(artifact, manifest: dict | None, n: int, seed: int) -> dict:
+    """Shared batch-generation/scoring/banding logic for the investigation
+    dashboard. Used by BOTH this module's own (locally-unrestricted)
+    `/v1/dashboard/queue` route below AND `src/render_demo.py`'s separate,
+    deliberately bounded public route -- a single source of truth so the
+    two surfaces can never silently diverge in how a score or risk band is
+    computed. Callers are responsible for checking `artifact is not None`
+    first; this function assumes a loaded artifact."""
+    n = max(1, min(n, MAX_DASHBOARD_BATCH_SIZE))
     rng = random.Random(seed)
     rows = [_synthetic_dashboard_row(artifact.schema, rng) for _ in range(n)]
     statuses = [rng.choices(_DASHBOARD_STATUSES, weights=_DASHBOARD_STATUS_WEIGHTS)[0] for _ in range(n)]
@@ -388,3 +385,23 @@ def dashboard_queue(n: int = 48, seed: int = 2024):
         ],
         "transactions": transactions,
     }
+
+
+@app.get("/v1/dashboard/queue")
+def dashboard_queue(n: int = 48, seed: int = 2024):
+    """Synthetic, schema-valid transactions scored through the real frozen
+    artifact (via the same `predict_fraud_probability` the single-
+    transaction endpoint uses -- no separate/duplicated inference logic),
+    for the portfolio investigation-queue dashboard. Local-only: `n` and
+    `seed` are caller-controlled here (bounded only by
+    MAX_DASHBOARD_BATCH_SIZE). `src/render_demo.py` exposes its OWN,
+    separately bounded version of this path for the public deployment --
+    see that module's `dashboard_queue` for why."""
+    artifact = getattr(app.state, "artifact", None)
+    manifest = getattr(app.state, "manifest", None)
+    if artifact is None:
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "Model artifact is not available.", "error_category": "ArtifactUnavailable"},
+        )
+    return build_dashboard_queue_payload(artifact, manifest, n, seed)

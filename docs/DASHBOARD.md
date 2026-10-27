@@ -111,3 +111,104 @@ Then open `http://127.0.0.1:8080/dashboard.html`.
 - Not independently re-verified: Subresource Integrity protects against a
   compromised cdnjs response, but the hash was fetched from cdnjs's own
   API rather than verified against an independent source.
+
+## Render integration (public-facing variant)
+
+`src/render_demo.py` now also serves the dashboard, at the same hosted
+HTTPS origin as the single-transaction demo. It is **not** the same
+endpoint behavior as the local-only version above — the public version is
+deliberately more restricted, mirroring how `/v1/predict` is already
+restricted to its one fixed fixture on that same service.
+
+### What's different on the public deployment
+
+- **`GET /v1/dashboard/queue` is bounded and deterministic.** It accepts
+  the same `n`/`seed` query parameters the local version does (so
+  `ui/dashboard.js` needs no awareness of which backend it's talking to),
+  but neither is used the way the local route uses them:
+  - `n` is **ignored outright** — the public batch is always exactly
+    `PUBLIC_DASHBOARD_BATCH_SIZE` (24) transactions, never caller-chosen,
+    to bound the inference cost of every public request.
+  - `seed` only ever **selects an index** (via modulo) into the small,
+    fixed `PUBLIC_DASHBOARD_SEED_ALLOWLIST` (5 values) — it is never
+    passed through as the actual RNG seed. The full set of possible
+    public responses is therefore finite, fixed, and reviewable ahead of
+    time, regardless of what a caller sends. The Refresh button still
+    works (cycles through those 5 fixed batches) but will not produce
+    arbitrary-looking output the way the local dashboard's arbitrary-seed
+    version can.
+- **It has its own rate limiting**, separate from `/v1/predict`'s
+  (`_dashboard_rate_limit_by_client`/`_dashboard_rate_limit_global`, 30
+  per client / 180 global per 60s window) — generous enough for one page
+  load plus a few Refresh clicks, but independent so a burst of dashboard
+  traffic can never starve the single-transaction demo's budget, or vice
+  versa.
+- **Static assets are served from the same origin.** `GET /dashboard.html`,
+  `/dashboard.css`, and `/dashboard.js` are new routes on the Render app.
+  `/index.html` is now also a route (alias for `/`), so the two pages'
+  existing relative links to each other (`dashboard.html` ↔ `index.html`)
+  resolve correctly once both are hosted. `ui/dashboard.js` itself needed
+  one change to work unmodified in both contexts: it now resolves its API
+  base from `window.location.origin` whenever it is *not* running on the
+  documented local dev split-origin setup (`127.0.0.1:8080`), rather than
+  hardcoding the local API port — the same problem `render_demo.py`
+  already solved for `index.html`'s inlined `API_BASE`, solved here
+  without server-side text injection since `dashboard.js` is a plain
+  static file.
+
+### What's unchanged
+
+- `/v1/predict`'s fixed-fixture restriction, rate limiting, and
+  request-body size cap (`src/render_demo.py`'s existing
+  `synthetic_only_public_demo` middleware) — untouched, and re-verified by
+  the full existing `tests/test_render_demo.py` suite (19/19 passing,
+  unmodified).
+- `deploy/render_fetch_artifact.sh`'s verified artifact-fetch/checksum
+  process — not touched by this integration at all.
+- The model, the frozen artifact, and the Stage 11 global importances
+  used by the dashboard — same ones described above; the public batch is
+  real inference against the real artifact, just bounded in cardinality.
+
+### Verified this round
+
+- Both branches (`investigation-dashboard`, `render-demo-preparation`)
+  were confirmed to touch disjoint files before merging; the merge into
+  a new `render-dashboard-integration` branch (based on
+  `origin/render-demo-preparation`, not `main`) was clean, with no
+  conflicts.
+- Full fast suite on the integration branch: **385 passed**, 0 failed
+  (340 original + 10 local dashboard-endpoint tests + 19 pre-existing
+  `render_demo` tests, unmodified + 16 new integration tests covering the
+  bounded/deterministic public endpoint, its separate rate limiting, and
+  static asset serving).
+- Real end-to-end verification against `src.render_demo:app` run as a
+  single server on one port (mirroring how Render hosts it) — not just
+  `src.api:app` locally: `curl` confirmed `n` is ignored and `seed` maps
+  into the fixed allowlist; a real headless-Chrome session (via the
+  Chrome DevTools Protocol) loaded `/dashboard.html` from that single
+  origin, confirmed Chart.js loaded, performed a real DOM click that
+  opened the detail drawer, exercised the risk-band filter, clicked
+  Refresh and confirmed the seed cycled within the allowlist, captured a
+  390px-wide mobile screenshot to confirm the responsive layout holds,
+  and — separately — performed a real click on the *original*
+  single-transaction demo's "Score this transaction" button at that same
+  origin and confirmed it still returns a real score, with zero console
+  errors or exceptions across all of it.
+- `main` and `render-demo-preparation` (both local and `origin/`) were
+  not touched by any of this — confirmed via `git status`/`git diff`
+  against both before committing.
+
+### Deployment blockers before this reaches the live service
+
+1. **This branch has not been pushed or merged**, and no Render config
+   was changed — per instructions, nothing here goes live until you
+   decide to merge `render-dashboard-integration` and Render redeploys
+   from it.
+2. **The bounded/deterministic design choices above (24 rows, 5 fixed
+   seeds, the specific rate-limit numbers) are reasoned defaults, not
+   load-tested against Render's actual free-tier CPU budget.** Worth a
+   first real deployment check before calling this final.
+3. **`X-Forwarded-For` attribution behind Render's proxy remains
+   unverified against a live deployment** (a pre-existing, disclosed
+   limitation of `/v1/predict`'s rate limiting, inherited as-is by the
+   dashboard's new rate limiter via the same `_client_key` helper).

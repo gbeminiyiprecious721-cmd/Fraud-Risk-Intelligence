@@ -10,7 +10,16 @@
 (() => {
   "use strict";
 
-  const API_BASE = "http://127.0.0.1:8000";
+  // Local dev serves the UI (python3 -m http.server 8080) and the API
+  // (uvicorn, port 8000) from two different origins, so the API base must
+  // be hardcoded there. Anywhere else (e.g. a Render deployment serving
+  // both the static files and the API from one app) the API is simply
+  // "this same origin" -- no build step or server-side text injection
+  // needed, unlike ui/index.html's API_BASE, which render_demo.py rewrites
+  // at serve time because it is inlined directly in the HTML.
+  const IS_LOCAL_DEV_SPLIT_ORIGIN =
+    (location.hostname === "127.0.0.1" || location.hostname === "localhost") && location.port === "8080";
+  const API_BASE = IS_LOCAL_DEV_SPLIT_ORIGIN ? "http://127.0.0.1:8000" : window.location.origin;
   const RISK_BAND_ORDER = ["Low", "Medium", "High", "Critical"];
 
   const state = {
@@ -81,7 +90,9 @@
       el("queue-tbody").innerHTML =
         '<tr><td colspan="8" class="table-empty">' +
         (networkError
-          ? "Could not reach the API. Start it with <code>.venv/bin/uvicorn src.api:app --host 127.0.0.1 --port 8000</code>, then refresh."
+          ? IS_LOCAL_DEV_SPLIT_ORIGIN
+            ? "Could not reach the API. Start it with <code>.venv/bin/uvicorn src.api:app --host 127.0.0.1 --port 8000</code>, then refresh."
+            : "Could not reach the scoring service right now. Please try refreshing in a moment."
           : "The API could not score a batch right now (model artifact unavailable).") +
         "</td></tr>";
       el("controls-status").textContent = "";

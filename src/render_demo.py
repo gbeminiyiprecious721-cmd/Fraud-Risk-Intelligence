@@ -13,12 +13,16 @@ import time
 from pathlib import Path
 
 from fastapi import Request
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 
-from src.api import DEFAULT_ARTIFACT_PATH, create_app
+from src.api import DEFAULT_ARTIFACT_PATH, build_dashboard_queue_payload, create_app
 
 _ROOT = Path(__file__).resolve().parent.parent
-_UI = _ROOT / "ui" / "index.html"
+_UI_DIR = _ROOT / "ui"
+_UI = _UI_DIR / "index.html"
+_DASHBOARD_HTML = _UI_DIR / "dashboard.html"
+_DASHBOARD_CSS = _UI_DIR / "dashboard.css"
+_DASHBOARD_JS = _UI_DIR / "dashboard.js"
 _MARKER = re.compile(r"const SYNTHETIC_TRANSACTION\s*=\s*(\{.*?\})\s*;", re.S)
 
 # The real fixture is ~5.8KB of JSON; 16KB leaves generous margin for a
@@ -36,6 +40,30 @@ _RATE_LIMIT_MAX_PER_CLIENT = 20   # generous for a human manually re-clicking th
 _RATE_LIMIT_MAX_GLOBAL = 120      # backstop regardless of per-client attribution (see _client_key)
 _rate_limit_by_client: dict[str, list[float]] = {}
 _rate_limit_global: list[float] = []
+
+# Separate, independent rate-limit state for the dashboard's batch-scoring
+# endpoint (GET /v1/dashboard/queue). Kept apart from the /v1/predict
+# buckets above so loading the dashboard page can never starve, or be
+# starved by, the single-transaction demo's own budget. The per-client
+# limit is more generous than /v1/predict's because a single dashboard
+# page load legitimately fires one fetch on load plus one per Refresh
+# click, not one deliberate user action per request.
+_DASHBOARD_RATE_LIMIT_MAX_PER_CLIENT = 30
+_DASHBOARD_RATE_LIMIT_MAX_GLOBAL = 180
+_dashboard_rate_limit_by_client: dict[str, list[float]] = {}
+_dashboard_rate_limit_global: list[float] = []
+
+# The public dashboard batch is deliberately BOUNDED and DETERMINISTIC --
+# unlike the local-only /v1/dashboard/queue in src/api.py (which accepts
+# arbitrary caller-supplied `n`/`seed`), the public version never accepts
+# either. `n` is fixed to a small constant, well under
+# api.MAX_DASHBOARD_BATCH_SIZE, to bound the inference cost of every
+# request on Render's free tier; the seed is chosen from a small, fixed,
+# enumerable allow-list via a `variant` index (not a raw seed), so the
+# full set of possible public responses is finite and reviewable -- never
+# an attacker-chosen seed driving arbitrary-looking "model output".
+PUBLIC_DASHBOARD_BATCH_SIZE = 24
+PUBLIC_DASHBOARD_SEED_ALLOWLIST = (101, 202, 303, 404, 505)
 
 
 def _client_key(request: Request) -> str:
@@ -82,6 +110,26 @@ def _is_rate_limited(request: Request) -> bool:
     return False
 
 
+def _is_dashboard_rate_limited(request: Request) -> bool:
+    """Same sliding-window algorithm as `_is_rate_limited`, against the
+    dashboard's own, separate counters/thresholds (see their definitions
+    above for why they're kept apart from the /v1/predict ones)."""
+    now = time.monotonic()
+    _prune_expired(_dashboard_rate_limit_global, now)
+    if len(_dashboard_rate_limit_global) >= _DASHBOARD_RATE_LIMIT_MAX_GLOBAL:
+        return True
+    key = _client_key(request)
+    bucket = _dashboard_rate_limit_by_client.setdefault(key, [])
+    _prune_expired(bucket, now)
+    if len(bucket) >= _DASHBOARD_RATE_LIMIT_MAX_PER_CLIENT:
+        return True
+    bucket.append(now)
+    _dashboard_rate_limit_global.append(now)
+    if len(_dashboard_rate_limit_by_client) > 10_000:  # bound worst-case memory growth
+        _dashboard_rate_limit_by_client.clear()
+    return False
+
+
 def _demo_payload() -> dict:
     page = _UI.read_text(encoding="utf-8")
     match = _MARKER.search(page)
@@ -104,8 +152,13 @@ app = create_app(Path(_artifact_override) if _artifact_override else DEFAULT_ART
 async def synthetic_only_public_demo(request: Request, call_next):
     """Forbid arbitrary public scoring: only the fixed UI synthetic fixture.
 
-    Also enforces (public-demo-only) rate limiting and a request-body size
-    cap. Body size is checked both via the declared Content-Length (fast
+    Also rate-limits GET /v1/dashboard/queue (its own, separate counters --
+    see `_is_dashboard_rate_limited`); that route itself is what bounds
+    `n`/the seed, so no body/payload check is needed here for it.
+
+    For /v1/predict: enforces (public-demo-only) rate limiting and a
+    request-body size cap. Body size is checked both via the declared
+    Content-Length (fast
     path, rejects before any read) and against the actually-buffered body
     (catches a Content-Length that understates the real size). This
     deliberately still uses `request.body()` -- not `request.stream()` --
@@ -120,6 +173,14 @@ async def synthetic_only_public_demo(request: Request, call_next):
     as a known, disclosed limitation rather than solved with unverified
     stream-interception code that risks breaking real browser requests.
     """
+    if request.url.path == "/v1/dashboard/queue" and request.method == "GET":
+        if _is_dashboard_rate_limited(request):
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Too many dashboard requests. Please slow down."},
+            )
+        return await call_next(request)
+
     if request.url.path == "/v1/predict" and request.method == "POST":
         if _is_rate_limited(request):
             return JSONResponse(
@@ -155,6 +216,7 @@ async def synthetic_only_public_demo(request: Request, call_next):
 
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+@app.get("/index.html", response_class=HTMLResponse, include_in_schema=False)
 def home():
     html = _UI.read_text(encoding="utf-8")
     html = html.replace(
@@ -172,3 +234,48 @@ def home():
         "a hosted portfolio demonstration, not a commercial production system",
     )
     return HTMLResponse(html, headers={"Cache-Control": "no-store"})
+
+
+@app.get("/dashboard.html", response_class=HTMLResponse, include_in_schema=False)
+def dashboard_page():
+    """No local-vs-hosted text rewriting needed here (unlike `home()`
+    above): ui/dashboard.html's own copy never claims to be a local-only
+    demonstration, and ui/dashboard.js resolves its own API base from
+    `window.location.origin` directly (see that file) rather than needing
+    a build-time/serve-time string replacement."""
+    html = _DASHBOARD_HTML.read_text(encoding="utf-8")
+    return HTMLResponse(html, headers={"Cache-Control": "no-store"})
+
+
+@app.get("/dashboard.css", include_in_schema=False)
+def dashboard_css():
+    return FileResponse(_DASHBOARD_CSS, media_type="text/css", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/dashboard.js", include_in_schema=False)
+def dashboard_js():
+    return FileResponse(_DASHBOARD_JS, media_type="application/javascript", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/v1/dashboard/queue")
+def public_dashboard_queue(n: int = 48, seed: int = 2024):
+    """Bounded, deterministic public counterpart to src/api.py's
+    locally-unrestricted `/v1/dashboard/queue`. Accepts the SAME query
+    parameter names (`n`, `seed`) so ui/dashboard.js needs no awareness of
+    which backend it's talking to, but neither is used the way the local
+    route uses them: `n` is ignored outright (always
+    PUBLIC_DASHBOARD_BATCH_SIZE), and `seed` only ever SELECTS an index
+    (via modulo) into the small, fixed PUBLIC_DASHBOARD_SEED_ALLOWLIST --
+    it is never passed through as the actual RNG seed. The set of possible
+    public responses is therefore small, fixed, and reviewable, regardless
+    of what a caller sends.
+    """
+    artifact = getattr(app.state, "artifact", None)
+    manifest = getattr(app.state, "manifest", None)
+    if artifact is None:
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "Model artifact is not available.", "error_category": "ArtifactUnavailable"},
+        )
+    effective_seed = PUBLIC_DASHBOARD_SEED_ALLOWLIST[abs(seed) % len(PUBLIC_DASHBOARD_SEED_ALLOWLIST)]
+    return build_dashboard_queue_payload(artifact, manifest, PUBLIC_DASHBOARD_BATCH_SIZE, effective_seed)
