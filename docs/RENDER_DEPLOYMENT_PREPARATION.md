@@ -54,34 +54,97 @@ already-committed manifest before anything is allowed to start.**
 - `src/render_demo.py` now reuses the exact same `FRAUD_API_ARTIFACT_PATH`
   override Stage 17's `deploy/asgi_launcher.py` already established --
   zero new prediction pathway, zero change to `src/api.py`.
+- **Done, verified this round:** the private artifact repository
+  (`gbeminiyiprecious721-cmd/fraud-risk-model-artifact`, confirmed
+  `PRIVATE`) now holds the exact trusted binary -- local, committed, and
+  re-downloaded-and-rehashed copies all matched sha256
+  `2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+- **Done, verified this round:** ran `deploy/render_fetch_artifact.sh`
+  for real against that real private repo (in an isolated scratch copy,
+  never against the real local artifact), authenticated with this
+  session's own already-authorized `gh` OAuth token (not a fine-grained
+  PAT -- none exists yet; see below). It fetched the full 16,799,089-byte
+  file via `curl` + the GitHub raw-content Accept header and verified its
+  checksum, exit 0. This proves the curl-based raw fetch works correctly
+  for a file this size; an earlier attempt at the same thing via `gh api`
+  (not this script, not `curl`) failed with a client-side buffering error
+  on a response this large -- the script deliberately uses plain `curl`,
+  which does not have that problem.
+- **Fixed this round:** the script's own checksum step used `shasum`,
+  a macOS/Perl tool not guaranteed present on Render's Linux build image;
+  replaced with a `python3`/`hashlib` computation (python3 is already a
+  hard requirement of this service, so this adds no new dependency).
+- **Added this round:** a 16KB request-body size cap and lightweight
+  per-client + global in-memory rate limiting on `POST /v1/predict` (see
+  "Public-demo safeguards" below) -- free-plan compatible, no external
+  store.
 
 ### What the operator must still do (cannot be done from this session)
 
-1. Create a **separate private** GitHub repository containing only the
-   trusted `frozen_rf_fraud_risk_v1.joblib` (e.g.
-   `gbeminiyiprecious721-cmd/fraud-risk-artifact-private`). This is a new
-   piece of infrastructure under the operator's own account and requires
-   their own GitHub action (and 2FA) -- it is not something this agent
-   session creates or has credentials for.
+1. ~~Create a separate private GitHub repository~~ **Done** --
+   `gbeminiyiprecious721-cmd/fraud-risk-model-artifact` exists, is
+   private, and holds the verified artifact.
 2. Generate a **fine-grained** GitHub PAT scoped to **read-only Contents
    access on that one private repo only** (never a classic/all-repo
-   token).
+   token). **Still pending** -- this session verified the fetch mechanism
+   using its own `gh` session token, not a fine-grained PAT; the exact
+   token type used in production has not been separately tested.
 3. In the Render dashboard, set three environment variables on the
-   service: `ARTIFACT_SOURCE_REPO`, `ARTIFACT_SOURCE_PATH`,
+   service: `ARTIFACT_SOURCE_REPO=gbeminiyiprecious721-cmd/fraud-risk-model-artifact`,
+   `ARTIFACT_SOURCE_PATH=frozen_rf_fraud_risk_v1.joblib`,
    `ARTIFACT_SOURCE_PAT` (values never committed anywhere).
 4. Set the Render **Build Command** to run the fetch script before
    installing dependencies (see below).
 
+## Public-demo safeguards (added this round)
+
+Scoped only to `POST /v1/predict`; `GET /health`, `GET /version`, and
+`GET /` are never rate-limited or body-size-checked, so Render's own
+health checks (and casual browsing) can't be caught by this.
+
+- **Body size cap:** 16KB (`MAX_PREDICT_BODY_BYTES` in
+  `src/render_demo.py`). The real fixture is ~5.8KB, so there's generous
+  margin. Checked twice: the declared `Content-Length` header (rejects
+  before any read) and the actually-buffered body (catches an
+  understated `Content-Length`). **Disclosed limitation:** a
+  chunked-transfer body with no `Content-Length` is still fully buffered
+  by Starlette's `request.body()` before our second check runs --
+  switching to a raw stream read to close this gap was deliberately
+  avoided because it would exhaust the ASGI receive channel before the
+  real `/v1/predict` handler downstream gets to read it, which would
+  break legitimate browser predictions. Verified live against a real
+  running server: the real fixture POST succeeds (200); a real oversized
+  POST is rejected (413) without affecting the next legitimate request.
+- **Rate limiting:** in-memory sliding window, 20 requests/60s per
+  attributed client plus a 120 requests/60s global backstop. No
+  external store (Render free has none). **Disclosed limitation:**
+  per-client attribution behind a reverse proxy uses the right-most
+  `X-Forwarded-For` entry if present, falling back to the direct TCP
+  peer -- Render's exact `X-Forwarded-For` semantics are not officially
+  documented and community reports conflict on whether Render replaces
+  or appends to it, so this attribution is **not verified against a
+  live Render deployment**. The global backstop exists specifically so
+  the service is still protected even if every request is ever
+  attributed to the same key. Verified live against a real running
+  server with 22 real sequential requests: the 21st (first to exceed the
+  20/60s limit, after 2 already consumed earlier in the same test
+  session) returned 429, `/health`/`/version` remained unaffected even
+  after the limit was exhausted.
+
 ## Pending deployment checks
-1. ~~Run local tests for the new adapter~~ **Done this round** -- see
-   `tests/test_render_demo.py` (10 tests: fixed fixture accepted and
+1. ~~Run local tests for the new adapter~~ **Done** -- see
+   `tests/test_render_demo.py` (19 tests: fixed fixture accepted and
    scored, arbitrary/empty payload rejected with 403, malformed JSON
-   rejected with 422 not 500, `/health`+`/version` unaffected, UI
-   same-origin rewrite, demo fixture matches the real model's raw
-   schema). All pass locally against the real artifact.
+   rejected with 422 not 500, oversized body rejected with 413,
+   per-client and global rate-limit 429s, `/health`+`/version` never
+   rate-limited, UI same-origin rewrite, demo fixture matches the real
+   model's raw schema, artifact-path override honored/fails closed). All
+   19 pass locally against the real artifact; also verified live against
+   a real running `uvicorn` process with real `curl` requests, not only
+   via the ASGI TestClient.
 2. Validate Python 3.12.15 or compatible Python and frozen scikit-learn/pandas/numpy/scipy/joblib versions using a disposable deployment environment. **Still pending** -- requires an actual Render build, not reproducible locally.
-3. Verify trusted artifact delivery and checksum on Render itself, then test `/health` says `artifact_loaded: true`, `/version`, and a real browser-triggered POST against the live hosted URL. **Still pending** -- requires the operator steps above plus an actual deploy.
-4. Add public rate limiting, request-body size restrictions, service resource tests, and appropriate HTTP caching/security policies before exposing the inference endpoint. **Still pending.**
+3. Verify trusted artifact delivery and checksum on Render itself, then test `/health` says `artifact_loaded: true`, `/version`, and a real browser-triggered POST against the live hosted URL. **Still pending** -- requires a fine-grained PAT (see above) plus an actual deploy.
+4. ~~Add public rate limiting, request-body size restrictions~~ **Done** -- see "Public-demo safeguards" above. Service resource tests and HTTP caching/security policies beyond this are **still pending** and require an actual Render deployment to measure against.
 5. Do not auto-deploy unreviewed changes to the public portfolio demo.
 
 ## Proposed Render free service (only after blockers)

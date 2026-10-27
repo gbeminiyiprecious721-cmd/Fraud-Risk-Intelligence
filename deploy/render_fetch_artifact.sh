@@ -66,7 +66,17 @@ if [[ "$HTTP_STATUS" != "200" ]]; then
 fi
 
 EXPECTED_SHA256=$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['artifact_sha256'])" "$MANIFEST")
-ACTUAL_SHA256=$(shasum -a 256 "$DEST" | awk '{print $1}')
+# python3's hashlib (not `shasum`/`sha256sum`) is used here deliberately:
+# `shasum` is a macOS/Perl tool not guaranteed present on Render's Linux
+# build image, and this project already requires python3 as the runtime.
+ACTUAL_SHA256=$(python3 -c "
+import hashlib, sys
+h = hashlib.sha256()
+with open(sys.argv[1], 'rb') as f:
+    for chunk in iter(lambda: f.read(1024 * 1024), b''):
+        h.update(chunk)
+print(h.hexdigest())
+" "$DEST")
 
 if [[ "$ACTUAL_SHA256" != "$EXPECTED_SHA256" ]]; then
   echo "FATAL: checksum mismatch. Manifest expects $EXPECTED_SHA256, fetched file is $ACTUAL_SHA256. Refusing to serve an unverified artifact." >&2
