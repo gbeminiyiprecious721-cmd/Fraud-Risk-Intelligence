@@ -17,7 +17,7 @@ from src.api import create_app
 
 _ROOT = Path(__file__).resolve().parent.parent
 _UI = _ROOT / "ui" / "index.html"
-_MARKER = re.compile(r"const SYNTHETIC_TRANSACTION\\s*=\\s*(\\{.*?\\})\\s*;", re.S)
+_MARKER = re.compile(r"const SYNTHETIC_TRANSACTION\s*=\s*(\{.*?\})\s*;", re.S)
 
 
 def _demo_payload() -> dict:
