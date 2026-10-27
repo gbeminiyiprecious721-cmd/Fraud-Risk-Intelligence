@@ -7,13 +7,14 @@ and external security/resource checks pass.
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 
 from fastapi import Request
 from fastapi.responses import HTMLResponse, JSONResponse
 
-from src.api import create_app
+from src.api import DEFAULT_ARTIFACT_PATH, create_app
 
 _ROOT = Path(__file__).resolve().parent.parent
 _UI = _ROOT / "ui" / "index.html"
@@ -29,7 +30,13 @@ def _demo_payload() -> dict:
 
 
 DEMO_TRANSACTION = _demo_payload()
-app = create_app()
+
+# Reuses the same FRAUD_API_ARTIFACT_PATH override Stage 17's
+# deploy/asgi_launcher.py already established, so the hosted artifact's
+# location (delivered out-of-band -- see docs/RENDER_DEPLOYMENT_PREPARATION.md)
+# can be configured without a second prediction pathway or code change.
+_artifact_override = os.environ.get("FRAUD_API_ARTIFACT_PATH")
+app = create_app(Path(_artifact_override) if _artifact_override else DEFAULT_ARTIFACT_PATH)
 
 
 @app.middleware("http")
