@@ -215,9 +215,13 @@ async def synthetic_only_public_demo(request: Request, call_next):
     return await call_next(request)
 
 
-@app.get("/", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/index.html", response_class=HTMLResponse, include_in_schema=False)
 def home():
+    """The single-transaction demo -- a separate, secondary route as of
+    Stage 5. `/` and `/dashboard.html` now serve the investigation
+    dashboard (see `dashboard_page()` below), which is the primary public
+    demo as of this stage; this page remains reachable at this exact path
+    and is still linked from the dashboard's nav and footer."""
     html = _UI.read_text(encoding="utf-8")
     html = html.replace(
         'const API_BASE = "http://127.0.0.1:8000";',
@@ -236,13 +240,17 @@ def home():
     return HTMLResponse(html, headers={"Cache-Control": "no-store"})
 
 
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
 @app.get("/dashboard.html", response_class=HTMLResponse, include_in_schema=False)
 def dashboard_page():
-    """No local-vs-hosted text rewriting needed here (unlike `home()`
-    above): ui/dashboard.html's own copy never claims to be a local-only
-    demonstration, and ui/dashboard.js resolves its own API base from
-    `window.location.origin` directly (see that file) rather than needing
-    a build-time/serve-time string replacement."""
+    """The investigation dashboard -- the homepage as of Stage 5, also
+    reachable at its own `/dashboard.html` path (kept as an alias so
+    existing links/bookmarks/tests referencing that exact path continue
+    to work). No local-vs-hosted text rewriting needed here (unlike
+    `home()` above): ui/dashboard.html's own copy never claims to be a
+    local-only demonstration, and ui/dashboard.js resolves its own API
+    base from `window.location.origin` directly (see that file) rather
+    than needing a build-time/serve-time string replacement."""
     html = _DASHBOARD_HTML.read_text(encoding="utf-8")
     return HTMLResponse(html, headers={"Cache-Control": "no-store"})
 

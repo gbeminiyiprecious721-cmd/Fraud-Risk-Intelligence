@@ -54,17 +54,30 @@ def test_dashboard_js_served_with_correct_content_type_and_unmodified(client):
     assert resp.text == source.read_text(encoding="utf-8")
 
 
-def test_index_html_alias_matches_root(client):
+def test_root_and_dashboard_html_both_serve_the_dashboard(client):
+    """As of Stage 5, the dashboard is the homepage: / and /dashboard.html
+    are aliases of the same page."""
     root = client.get("/")
-    alias = client.get("/index.html")
+    alias = client.get("/dashboard.html")
+    assert root.status_code == 200
     assert alias.status_code == 200
-    assert alias.text == root.text
+    assert root.text == alias.text
+    assert "Fraud Risk Intelligence Dashboard" in root.text
+
+
+def test_index_html_is_the_separate_single_transaction_route(client):
+    """The single-transaction demo is no longer the homepage, but remains
+    reachable at its own path, distinct from the dashboard."""
+    index_resp = client.get("/index.html")
+    assert index_resp.status_code == 200
+    assert index_resp.text != client.get("/").text
+    assert "Score a synthetic transaction" in index_resp.text
 
 
 def test_index_page_links_to_dashboard_and_vice_versa(client):
-    index_resp = client.get("/")
+    index_resp = client.get("/index.html")
     assert 'href="dashboard.html"' in index_resp.text
-    dashboard_resp = client.get("/dashboard.html")
+    dashboard_resp = client.get("/")
     assert 'href="index.html"' in dashboard_resp.text
 
 
