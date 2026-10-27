@@ -16,6 +16,7 @@ docs/_stage11_*_raw.json
 docs/_stage12_*_raw.json
 docs/_stage13_*_raw.json
 docs/_stage14_*_raw.json
+docs/_stage17_*_raw.json
 .ipynb_checkpoints/
 .pytest_cache/
 .DS_Store
@@ -44,3 +45,10 @@ secrets.json
 *.npy
 *.npz
 *.h5
+
+# Stage 17 -- local deployment runtime state (pidfiles/logs) and disposable
+# release candidates (e.g. the deliberately-corrupted Version B artifact
+# copy used only for the rollback exercise). Never anything to track --
+# regenerated fresh by deploy/start_release.sh / scripts/run_stage17_*.py.
+deploy/run/
+deploy/release_candidates/
