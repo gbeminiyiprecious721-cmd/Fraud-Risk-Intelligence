@@ -426,3 +426,177 @@ evidence in this review was captured.
 - The doughnut chart's thinnest possible slice remains a harder click
   target than the others by the nature of the chart type; mitigated, not
   eliminated, by the legend-click fix.
+
+## Stage 8: multi-page redesign (branch: dashboard-multiview-redesign)
+
+Built on a new local branch off `d413486` (the then-currently-deployed
+integration commit), **not pushed, merged, or deployed** — this stage
+delivers and documents the redesign; it does not ship it. The long
+scrolling single page with anchor links was replaced with a real
+multi-view application: a hash-based client-side router
+(`#/overview`, `#/queue`, `#/analytics`, `#/workflow`, `#/insights`,
+`#/responsible-ai`) across six views, sharing one JS `state` object as
+the single source of truth for the current demo batch, the selected
+transaction, and all filters.
+
+### Why hash routing, not path-based routing (confirmed decision)
+
+Path-based routes (`/queue`, not `/#/queue`) look cleaner but require a
+new FastAPI catch-all on Render so a hard refresh/direct link resolves
+server-side — something local dev's plain `python3 -m http.server`
+cannot replicate, which would make direct-link behavior differ between
+local dev and Render. Hash routing needs zero new server routes and
+behaves identically in both environments; confirmed with the project
+owner before implementing.
+
+### Why filters are global, not per-view (confirmed decision)
+
+The detailed filter panel lives on the Investigation Queue view, but its
+*state* affects every view: Overview's preview, Analytics' charts, and
+the Workflow board all read the same `filteredSorted()` result the Queue
+table does. Confirmed with the project owner specifically to satisfy
+"avoid inconsistent KPI, chart and queue counts" literally — every view
+is always looking at the same scope, never a silently different one.
+
+### View-by-view content redistribution
+
+- **Overview** — compact 7-card KPI grid, two small non-interactive
+  preview charts (risk band breakdown, risk score distribution), and an
+  8-row investigation preview with a link to the full queue. The large
+  historical Stage 10 panel was removed from here per the explicit
+  instruction and relocated to Model Insights.
+- **Investigation Queue** — the full filter panel + the complete,
+  sortable, searchable table (unchanged logic from Stage 4).
+- **Analytics** — all 5 full-size charts in a dedicated 2-column grid
+  with real room to breathe, instead of being squeezed into a narrow
+  column beside the table.
+- **Workflow Board** — the 4-column Kanban board, now filling most of
+  the viewport instead of a fixed 520px box.
+- **Model Insights** (new) — the relocated Stage 10 historical panel,
+  plus a new "Top model-level risk drivers" list built from the same
+  `global_feature_importance` data the detail drawer already used
+  (genuinely derived from the batch response, not invented), plus the
+  relocated Model & service health panel.
+- **Responsible Use & Limitations** — unchanged content, now its own
+  standalone view instead of the page's last scrollable section.
+- **`/index.html`** (single-transaction demo) — untouched, still a
+  separate page outside the SPA, linked from the sidenav and footer
+  exactly as before.
+
+### Desktop viewport-fit shell, with a mobile fallback
+
+At `min-width: 901px`, the app shell is fixed to `100vh`: the header
+stays compact and visible, and only `.view-container` scrolls
+internally (confirmed via `document.body.scrollWidth`/computed overflow
+checks — `overflow: hidden` on `body`, `overflow-y: auto` on
+`.view-container`). Below that width, the base (mobile-first) rules
+apply instead: the whole document scrolls normally, matching the
+already-proven mobile pattern from Stages 3-4, satisfying the explicit
+"don't clip essential content on narrow screens" requirement.
+
+### Real bugs found and fixed while building this
+
+1. **A visible focus-outline box appeared on the view heading after every
+   navigation.** Each route change moves keyboard focus to the new
+   view's `<h2>` (for screen-reader announcement), and the browser's
+   default `:focus-visible` outline rendered a stark white box around
+   it — correct for an interactive control, wrong for a heading a mouse
+   user just watched get swapped in. Fixed by removing the outline
+   specifically on `.view-heading`, while leaving it in place on every
+   genuinely interactive control.
+2. **My own test harness's port choice broke every data-dependent
+   browser test.** `ui/dashboard.js`'s local-dev origin detection
+   (`IS_LOCAL_DEV_SPLIT_ORIGIN`) hardcodes "static server on 8080, API
+   on 8000" — the project's own documented convention. The first version
+   of the new committed browser-test fixture used dynamically-assigned
+   random ports instead, so the browser's own fetch silently went to the
+   wrong origin and the dashboard never loaded any data — not a
+   dashboard bug, a test-harness bug, root-caused by checking exactly
+   what the browser actually fetched rather than assuming the test
+   infrastructure was correct. Fixed by using the project's real
+   documented ports, with a clear skip if they're already occupied.
+3. **A test helper's URL fragment was silently dropped.** `requests.put(f"{base}/json/new?{url}")` strips everything after `#` before
+   the HTTP request is even sent (a URL fragment is a client-side-only
+   concept) — so a direct-hash-navigation test was never actually
+   testing a hash URL. Fixed by opening `about:blank` first and using
+   `Page.navigate` with the full URL as a JSON body value instead, which
+   has no such stripping problem.
+
+None of these were dashboard defects that would affect a real user —
+items 2 and 3 were bugs in the new test code written to verify the
+dashboard, caught by checking actual behavior rather than trusting the
+test's own first result.
+
+### Automated tests: routing and shared state (new)
+
+`tests/test_dashboard_routing_browser.py` — a real, committed,
+pytest-discoverable browser-integration suite (12 tests), using only
+already-pinned project dependencies (`requests`, `websocket-client`;
+see `requirements.txt`) to drive a real headless Chrome instance via the
+Chrome DevTools Protocol. No new test framework (Selenium/Playwright/
+Jest) was introduced. Marked `@pytest.mark.browser` (registered in
+`pytest.ini`, alongside the project's existing `heavy`/
+`data_contract_full` markers) and skips cleanly via `pytest.skip` if
+Chrome isn't found or its required ports are occupied, rather than
+failing a run on a machine without Chrome.
+
+Covers: default route with no hash; each of the 6 nav links updating the
+hash, active view, and `aria-current`; a direct hash navigation on a
+*fresh* page load resolving the correct view (the literal "direct link"
+requirement); real `history.back()`/`forward()` restoring the correct
+prior views; the core shared-state contract — selecting a transaction,
+then navigating to a different view, and confirming the drawer stays
+open on the *same* transaction; global filter state propagating from the
+Queue view to the Overview preview and the Workflow board's card counts;
+and a full navigation sweep asserting zero console exceptions.
+
+### Verified this round
+
+- Full suite: **399 passed**, 0 failed (387 prior + 12 new browser
+  tests). No backend, model, or `src/` Python file was touched this
+  stage — confirmed via `git diff --stat` — only `ui/dashboard.{html,css,js}`,
+  `pytest.ini` (new marker), and the new test file.
+- Real browser verification beyond the committed suite: desktop
+  screenshots at **1440px and 1280px**, tablet at **768px**, and mobile
+  at **390px**, for every one of the 6 views — zero horizontal overflow
+  at any width (`document.body.scrollWidth` exactly equals
+  `document.documentElement.clientWidth` at all four), confirmed by
+  direct measurement, not visual inspection alone.
+- The original single-transaction demo (`/index.html`) re-verified with
+  a real button click at the end of this stage, returning a real score —
+  confirmed unaffected by the SPA restructuring.
+
+### Visual fidelity vs. the approved target mockup
+
+Present and matching: dark navy/charcoal theme with cyan/purple/amber/
+teal/red accents; colorful icon-coded KPI cards; a left sidebar nav
+(now routing to real views, not scrolling to anchors); coordinated,
+globally-consistent filters; linked/clickable charts; a transaction
+detail drawer; a 4-column Kanban board; a compact, professional header.
+
+Intentionally different, listed plainly (carried over from Stage 5's
+same honest accounting, now re-confirmed against the restructured page):
+no fabricated date-range picker (no real elapsed-time dimension to
+support one — the Demo batch selector is the real, functional
+header control instead); no invented reviewer-capacity KPI; no
+period-over-period trend arrows (no real previous period exists); the
+Kanban board is explicitly read-only, not drag-and-drop; the detail
+drawer's "feature highlights" are the model's global importance ranking,
+not fabricated live SHAP.
+
+### Deployment blockers
+
+- This branch is local-only (`dashboard-multiview-redesign`), not
+  pushed, not merged into `render-dashboard-integration` or PR #2, and
+  not deployed. The live dashboard (deployed separately, if/when PR #2
+  is merged) is unaffected by any of this work.
+- Everything listed in the Stage 5 readiness report's "remaining risks"
+  section still applies unchanged (the real Render build environment has
+  never been exercised; `X-Forwarded-For` behind Render's proxy remains
+  unverified live).
+- The new browser-integration test suite has only been run on this
+  machine (macOS, a specific Chrome version); it has not been exercised
+  in a CI environment, and its `CHROME_PATH` override / common-path
+  detection has not been tested on Linux (the likely CI/Render build
+  platform) — it is designed to skip cleanly there, not fail, but that
+  skip path itself has not been independently verified on Linux.

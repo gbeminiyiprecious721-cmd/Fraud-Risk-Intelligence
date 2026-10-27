@@ -81,6 +81,8 @@ code { background: #0b0d10; padding: 0.1rem 0.3rem; border-radius: 0.2rem; font-
 }
 .sidenav-list a:hover,
 .sidenav-list a:focus-visible { background: var(--panel-2); color: var(--text); }
+.sidenav-list a.active { background: rgba(90, 169, 255, 0.14); color: var(--accent); }
+.sidenav-list a.active svg { opacity: 1; }
 .sidenav-list a svg { width: 1.05rem; height: 1.05rem; flex: 0 0 auto; opacity: 0.85; }
 .sidenav-close { display: none; }
 
@@ -201,7 +203,59 @@ code { background: #0b0d10; padding: 0.1rem 0.3rem; border-radius: 0.2rem; font-
 .icon-btn svg { width: 1.05rem; height: 1.05rem; }
 .icon-btn:hover { filter: brightness(1.2); }
 
-main { max-width: 1400px; margin: 0 auto; padding: 1.25rem 1.5rem 3rem; }
+/* ---------- view container / router (Stage 8) ---------- */
+.view-container { max-width: 1400px; width: 100%; margin: 0 auto; padding: 1.25rem 1.5rem 2rem; }
+.view { display: none; }
+.view.active { display: block; }
+/* Focus is moved here programmatically on every route change so screen
+   readers announce the new view -- but a heavy visible outline box on a
+   heading (as opposed to an interactive control) reads as a visual bug,
+   not a feature, to sighted users who just watched the content swap.
+   The nav link's own .active highlight is the sighted wayfinding signal;
+   this focus move is for assistive tech, so it stays outline-free. */
+.view-heading { margin: 0 0 1rem 0; font-size: 1.2rem; outline: none !important; }
+.view[data-view="responsible-ai"] .view-heading { color: var(--warn); }
+.view-intro { margin-top: -0.6rem; margin-bottom: 1.1rem; }
+.panel-head-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.2rem; }
+.panel-head-row h3 { margin: 0; }
+.ghost-link { font-size: 0.82rem; font-weight: 600; white-space: nowrap; }
+
+@media (min-width: 901px) {
+  /* Desktop: a fixed-height app shell where the view area scrolls
+     internally, so switching views never requires scrolling through
+     several dashboard sections stacked on one long page (the explicit
+     problem with the pre-Stage-8 layout). Narrower/zoomed viewports fall
+     back to normal document scrolling via the base rules above/below,
+     per the "don't clip essential content" requirement. */
+  html, body { height: 100%; }
+  body { overflow: hidden; }
+  .app-shell { height: 100vh; }
+  .app-main { height: 100vh; display: flex; flex-direction: column; }
+  .topbar, footer.page-footer { flex: 0 0 auto; }
+  .view-container { flex: 1 1 auto; overflow-y: auto; min-height: 0; }
+}
+
+/* Overview: compact KPI + mini analytics + queue preview */
+.overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+@media (max-width: 700px) { .overview-grid { grid-template-columns: 1fr; } }
+.chart-canvas-wrap-sm { height: 150px; }
+.table-scroll-preview { max-height: 300px; }
+.table-scroll-full { max-height: 68vh; }
+@media (min-width: 901px) { .table-scroll-full { max-height: none; } }
+
+/* Analytics: dedicated chart grid filling its own view */
+.analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+.analytics-grid .chart-canvas-wrap { height: 220px; }
+.analytics-grid-wide { grid-column: 1 / -1; }
+@media (max-width: 900px) { .analytics-grid { grid-template-columns: 1fr; } }
+
+/* Model Insights */
+.insights-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.1rem; }
+@media (max-width: 800px) { .insights-grid { grid-template-columns: 1fr; } }
+
+/* Workflow: dedicated, taller board */
+.kanban-board-full .kanban-column { max-height: 68vh; }
+@media (min-width: 901px) { .kanban-board-full .kanban-column { max-height: calc(100vh - 220px); } }
 
 /* ---------- historical model performance (Stage 10) ---------- */
 .historical-panel {
@@ -211,7 +265,7 @@ main { max-width: 1400px; margin: 0 auto; padding: 1.25rem 1.5rem 3rem; }
   padding: 0.9rem 1.1rem;
   margin-bottom: 1.25rem;
 }
-.historical-panel h2 { margin: 0 0 0.15rem 0; font-size: 0.92rem; }
+.historical-panel h3 { margin: 0 0 0.15rem 0; font-size: 0.92rem; }
 .historical-panel .panel-note { color: var(--muted); font-size: 0.78rem; margin: 0 0 0.7rem 0; }
 .historical-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.7rem; }
 .historical-stat .k { color: var(--muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; }
@@ -297,26 +351,14 @@ button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible
 }
 #controls-status { color: var(--muted); font-size: 0.82rem; margin-left: auto; align-self: center; }
 
-/* ---------- layout: queue + charts ---------- */
-.layout-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
-  gap: 1.25rem;
-  align-items: start;
-  min-width: 0;
-}
 /* Grid/flex items default to min-width:auto, which lets a descendant's
-   intrinsic content (here, table.queue's min-width:620px) force this
-   item wider than its track even though that descendant scrolls
+   intrinsic content (here, table.queue's min-width:620px) force an
+   ancestor wider than its track even though that descendant scrolls
    internally -- confirmed by measuring a real 390px render, where this
    pushed document.body.scrollWidth to 742px despite every individual
    scrollable region correctly containing its own overflow. The standard
-   fix is this explicit min-width: 0 down the chain. */
-.queue-col, .charts-col, .panel { min-width: 0; }
-@media (max-width: 980px) {
-  .layout-grid { grid-template-columns: 1fr; }
-  .sidenav-list a span.label { display: inline; }
-}
+   fix is this explicit min-width: 0, applied broadly below. */
+.panel, .view, .overview-grid, .analytics-grid, .insights-grid { min-width: 0; }
 
 .panel {
   background: var(--panel);
@@ -325,7 +367,7 @@ button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible
   padding: 1rem 1.1rem;
   margin-bottom: 1.25rem;
 }
-.panel h2 { margin: 0 0 0.6rem 0; font-size: 1rem; }
+.panel h3 { margin: 0 0 0.6rem 0; font-size: 1rem; }
 .panel .panel-note { color: var(--muted); font-size: 0.78rem; margin: -0.3rem 0 0.7rem 0; }
 
 /* queue table */
@@ -394,9 +436,6 @@ table.queue tbody tr.selected { background: rgba(90, 169, 255, 0.14); }
    CSS rule here was tried and confirmed to break rendering (all 5
    charts went blank), because it fought Chart.js's own sizing logic
    rather than complementing it. */
-.chart-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; min-width: 0; }
-.chart-grid-2 > div { min-width: 0; }
-@media (max-width: 560px) { .chart-grid-2 { grid-template-columns: 1fr; } }
 .chart-clickable-hint { font-style: italic; }
 
 /* health mini panel */
@@ -495,8 +534,10 @@ table.queue tbody tr.selected { background: rgba(90, 169, 255, 0.14); }
 .drawer .score-big { font-size: 1.9rem; font-weight: 700; }
 .drawer .interpretation { background: var(--panel-2); border-radius: 0.4rem; padding: 0.7rem 0.85rem; font-size: 0.88rem; margin-top: 0.5rem; }
 .drawer .caveat { color: var(--warn); font-weight: 600; font-size: 0.85rem; }
-.drawer ol.feature-list { margin: 0.4rem 0 0 0; padding-left: 1.2rem; font-size: 0.85rem; }
-.drawer ol.feature-list li { margin-bottom: 0.2rem; }
+.feature-list { margin: 0.4rem 0 0 0; padding-left: 1.2rem; font-size: 0.85rem; }
+.feature-list li { margin-bottom: 0.2rem; }
+.feature-list-lg { font-size: 0.92rem; }
+.feature-list-lg li { margin-bottom: 0.5rem; }
 
 /* ---------- responsible AI panel ---------- */
 .responsible-ai {
@@ -506,7 +547,6 @@ table.queue tbody tr.selected { background: rgba(90, 169, 255, 0.14); }
   padding: 1rem 1.2rem;
   margin-top: 0.5rem;
 }
-.responsible-ai h2 { margin-top: 0; font-size: 1rem; color: var(--warn); }
 .responsible-ai ul { margin: 0.4rem 0 0 0; padding-left: 1.3rem; font-size: 0.88rem; }
 .responsible-ai li { margin-bottom: 0.3rem; }
 
@@ -518,7 +558,7 @@ footer.page-footer { text-align: center; color: var(--muted); font-size: 0.8rem;
 }
 
 @media (max-width: 480px) {
-  .topbar, main { padding-left: 1rem; padding-right: 1rem; }
+  .topbar, .view-container { padding-left: 1rem; padding-right: 1rem; }
   .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
   .kpi-value { font-size: 1.25rem; }
   .historical-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
