@@ -385,7 +385,7 @@
       amount: `<td>${fmtMoney(t.amount)}</td>`,
       score: `<td>${fmtScore(t.risk_score)}</td>`,
       band: `<td><span class="risk-pill ${band}">${band}</span></td>`,
-      status: `<td><span class="status-pill">${escapeHtml(t.status)}</span></td>`,
+      status: `<td><span class="status-pill" data-status="${escapeHtml(t.status)}">${escapeHtml(t.status)}</span></td>`,
       sequence: `<td>#${t.sequence}</td>`,
       inspect: `<td><button type="button" class="ghost inspect-btn" data-id="${id}">Inspect</button></td>`,
     };
@@ -471,8 +471,22 @@
     const container = el("insights-feature-importance");
     if (!container || !state.raw) return;
     const features = (state.raw.global_feature_importance || []).slice(0, 15);
+    // A small horizontal bar per row, scaled against the top (already
+    // highest-ranked) entry -- the same importance values already shown
+    // as text, visualized, not a new or re-derived data source.
+    const maxImportance = features.length ? features[0].importance : 1;
     container.innerHTML = features
-      .map((f, i) => `<li><code>${escapeHtml(f.feature)}</code> &mdash; global importance ${f.importance.toFixed(5)}</li>`)
+      .map((f, i) => {
+        const widthPct = maxImportance > 0 ? Math.max(4, Math.round((f.importance / maxImportance) * 100)) : 0;
+        return `
+      <li>
+        <div class="feature-row">
+          <span><span class="feature-rank">${i + 1}.</span> <code>${escapeHtml(f.feature)}</code></span>
+          <span class="feature-value">${f.importance.toFixed(5)}</span>
+        </div>
+        <div class="feature-bar-track"><div class="feature-bar-fill" style="width: ${widthPct}%"></div></div>
+      </li>`;
+      })
       .join("");
   }
 
@@ -647,10 +661,35 @@
     });
   }
 
+  // Both the scatter and sequence charts below plot risk_score on the
+  // y-axis. A fixed 0-1 range is honest but, since scores in this
+  // project's synthetic batches typically cluster narrowly (documented
+  // in docs/DASHBOARD.md), it visually wastes most of the chart's
+  // height -- the exact same problem the risk-score distribution
+  // histogram already solved by auto-ranging to the batch's own observed
+  // range instead of a fixed axis. Reused here for the same honest
+  // reason: the shape stays readable without implying a spread that
+  // isn't there.
+  function scoreAxisRange(rows) {
+    if (!rows.length) return { min: 0, max: 1 };
+    const scores = rows.map((t) => t.risk_score);
+    const min = Math.min(...scores);
+    const max = Math.max(...scores);
+    const pad = (max - min) * 0.1 || 0.02;
+    return { min: Math.max(0, min - pad), max: Math.min(1, max + pad) };
+  }
+
   function renderAmountVsRiskChart(rows) {
     const canvas = el("chart-amount-vs-risk");
     if (!canvas) return;
     destroyChart("amountVsRisk");
+    const yRange = scoreAxisRange(rows);
+    const noteEl = el("amount-risk-note");
+    if (noteEl) {
+      noteEl.textContent = rows.length
+        ? "Y-axis zoomed to this batch's observed score range (" + yRange.min.toFixed(3) + "–" + yRange.max.toFixed(3) + "), not a fixed 0–1 axis, for the same reason as the distribution chart."
+        : "No transactions match the current filters.";
+    }
     state.charts.amountVsRisk = new Chart(canvas, {
       type: "scatter",
       data: {
@@ -666,7 +705,13 @@
         plugins: { legend: { display: false } },
         scales: {
           x: { title: { display: true, text: "Amount ($)", color: "#a9adb8" }, ticks: { color: "#a9adb8" }, grid: { color: "#30343d" } },
-          y: { title: { display: true, text: "Risk score", color: "#a9adb8" }, min: 0, max: 1, ticks: { color: "#a9adb8" }, grid: { color: "#30343d" } },
+          y: {
+            title: { display: true, text: "Risk score", color: "#a9adb8" },
+            min: yRange.min,
+            max: yRange.max,
+            ticks: { color: "#a9adb8" },
+            grid: { color: "#30343d" },
+          },
         },
       }),
     });
@@ -677,13 +722,20 @@
     if (!canvas) return;
     const bySeq = [...rows].sort((a, b) => a.sequence - b.sequence);
     destroyChart("sequence");
+    const yRange = scoreAxisRange(rows);
     state.charts.sequence = new Chart(canvas, {
       type: "line",
       data: {
         labels: bySeq.map((t) => "#" + t.sequence),
         datasets: [{ label: "Risk score", data: bySeq.map((t) => t.risk_score), borderColor: "#b183f7", backgroundColor: "rgba(177,131,247,0.15)", tension: 0.25, pointRadius: 2 }],
       },
-      options: baseOptions({ plugins: { legend: { display: false } }, scales: { x: { ticks: { color: "#a9adb8", maxTicksLimit: 10 }, grid: { color: "#30343d" } }, y: { min: 0, max: 1, ticks: { color: "#a9adb8" }, grid: { color: "#30343d" } } } }),
+      options: baseOptions({
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: "#a9adb8", maxTicksLimit: 10 }, grid: { color: "#30343d" } },
+          y: { min: yRange.min, max: yRange.max, ticks: { color: "#a9adb8" }, grid: { color: "#30343d" } },
+        },
+      }),
     });
   }
 

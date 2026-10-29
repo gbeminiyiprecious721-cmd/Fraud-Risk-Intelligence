@@ -184,6 +184,7 @@
           </div>
           <div class="panel chart-card">
             <h3>Amount vs. risk score</h3>
+            <p class="panel-note" id="amount-risk-note">Y-axis zoomed to this batch's observed score range, not a fixed 0&ndash;1 axis, for the same reason as the distribution chart.</p>
             <div class="chart-canvas-wrap"><canvas id="chart-amount-vs-risk" role="img" aria-label="Scatter plot of transaction amount against risk score"></canvas></div>
           </div>
           <div class="panel chart-card analytics-grid-wide">
@@ -241,13 +242,13 @@
           </div>
           <div class="panel">
             <h3>Model &amp; service health</h3>
-            <div class="health-rows" id="health-rows">
-              <div class="health-row"><span class="k">API status</span><span id="health-row-status">&ndash;</span></div>
-              <div class="health-row"><span class="k">Artifact version</span><span id="health-row-version">&ndash;</span></div>
-              <div class="health-row"><span class="k">Artifact checksum</span><span id="health-row-checksum">&ndash;</span></div>
-              <div class="health-row"><span class="k">API contract</span><span id="health-row-contract">&ndash;</span></div>
-              <div class="health-row"><span class="k">Batch generated</span><span id="health-row-generated">&ndash;</span></div>
-              <div class="health-row"><span class="k">Batch seed</span><span id="health-row-seed">&ndash;</span></div>
+            <div class="health-stat-grid" id="health-rows">
+              <div class="historical-stat"><div class="k">API status</div><div class="v" id="health-row-status">&ndash;</div></div>
+              <div class="historical-stat"><div class="k">Artifact version</div><div class="v" id="health-row-version">&ndash;</div></div>
+              <div class="historical-stat"><div class="k">Artifact checksum</div><div class="v" id="health-row-checksum">&ndash;</div></div>
+              <div class="historical-stat"><div class="k">API contract</div><div class="v" id="health-row-contract">&ndash;</div></div>
+              <div class="historical-stat"><div class="k">Batch generated</div><div class="v" id="health-row-generated">&ndash;</div></div>
+              <div class="historical-stat"><div class="k">Batch seed</div><div class="v" id="health-row-seed">&ndash;</div></div>
             </div>
           </div>
         </div>
@@ -256,17 +257,27 @@
       <!-- ===================== RESPONSIBLE AI ===================== -->
       <section class="view" data-view="responsible-ai" aria-labelledby="view-heading-responsible-ai">
         <h2 id="view-heading-responsible-ai" class="view-heading" tabindex="-1">Responsible Use &amp; Limitations</h2>
-        <section class="responsible-ai" aria-label="Responsible AI and limitations">
-          <ul>
-            <li>This score is an <strong>investigation-prioritization signal only</strong> &mdash; it ranks transactions relative to one another, for a human investigator to triage.</li>
-            <li>It must <strong>never</strong> be used to automatically decline, block, or flag a transaction as fraud without human review.</li>
-            <li>It is <strong>not a calibrated probability</strong> &mdash; no reliability diagram, Brier score, or recalibration has been performed anywhere in this project.</li>
-            <li>Every record shown on this page is <strong>synthetic and portfolio-safe</strong>, fabricated for this demo and scored on request &mdash; none are real or training transactions.</li>
-            <li>The <strong>historical Stage 10 metrics</strong> (Model Insights) are a separate, fixed, one-time measurement on held-out data &mdash; they describe the model in general, not any specific prediction shown on this page, and must never be read as if they applied to an individual transaction.</li>
-            <li>This project makes <strong>no demographic fairness claim</strong>; a Responsible AI assessment was performed on the model (Stage 12) but is not re-run or re-validated by this dashboard.</li>
-            <li>This is a <strong>portfolio demonstration</strong>, not production banking software, and was never evaluated, reviewed, or approved as one.</li>
-          </ul>
-        </section>
+        <div class="responsible-ai-grid">
+          <section class="responsible-ai" aria-label="Responsible AI and limitations">
+            <ul>
+              <li>This score is an <strong>investigation-prioritization signal only</strong> &mdash; it ranks transactions relative to one another, for a human investigator to triage.</li>
+              <li>It must <strong>never</strong> be used to automatically decline, block, or flag a transaction as fraud without human review.</li>
+              <li>It is <strong>not a calibrated probability</strong> &mdash; no reliability diagram, Brier score, or recalibration has been performed anywhere in this project.</li>
+              <li>Every record shown on this page is <strong>synthetic and portfolio-safe</strong>, fabricated for this demo and scored on request &mdash; none are real or training transactions.</li>
+              <li>The <strong>historical Stage 10 metrics</strong> (Model Insights) are a separate, fixed, one-time measurement on held-out data &mdash; they describe the model in general, not any specific prediction shown on this page, and must never be read as if they applied to an individual transaction.</li>
+              <li>This project makes <strong>no demographic fairness claim</strong>; a Responsible AI assessment was performed on the model (Stage 12) but is not re-run or re-validated by this dashboard.</li>
+              <li>This is a <strong>portfolio demonstration</strong>, not production banking software, and was never evaluated, reviewed, or approved as one.</li>
+            </ul>
+          </section>
+          <aside class="panel responsible-ai-aside" aria-label="At a glance">
+            <h3>At a glance</h3>
+            <ul class="quick-facts">
+              <li><span class="badge badge-synthetic">Synthetic / portfolio demonstration</span></li>
+              <li><span class="badge badge-uncalibrated">Not a calibrated probability</span></li>
+            </ul>
+            <p class="panel-note">For the fixed, one-time Stage 10 evaluation numbers, see <a href="#/insights">Model Insights</a>. To see the model score one real request end-to-end, try the <a href="index.html">single-transaction demo</a>.</p>
+          </aside>
+        </div>
       </section>
 
     </div>

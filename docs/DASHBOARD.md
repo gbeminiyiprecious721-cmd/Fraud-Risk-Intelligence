@@ -600,3 +600,84 @@ not fabricated live SHAP.
   detection has not been tested on Linux (the likely CI/Render build
   platform) — it is designed to skip cleanly there, not fail, but that
   skip path itself has not been independently verified on Linux.
+
+## Stage 9: professional audit and refinement (same branch)
+
+An audit pass on top of Stage 8's architecture, continuing directly on
+`dashboard-multiview-redesign` (not a new branch — this is refinement of
+the same work, per the task's own stated option). Confirmed by real
+browser testing first that the Stage 8 architecture was already
+functionally sound (routing, cross-view selection, global filters, all
+working correctly against `src.render_demo:app`); this stage's actual
+work was a visual/UX audit against screenshots at all 4 required widths,
+closing the real gaps found, not rebuilding anything that already
+worked.
+
+### What the audit found and fixed
+
+1. **The Status column (Queue table, Overview preview) had no color
+   coding** — plain gray text, while Risk band already used color pills.
+   Fixed by styling the existing `status` field with the exact same
+   color language the Kanban column headers already use (New=accent,
+   In Review=accent-2, Escalated=warn, Resolved=ok) — no new data, just
+   making an already-real field scannable. Computed WCAG contrast for
+   all 4: 4.66–5.89:1, all pass AA.
+2. **The "Amount vs. risk score" scatter and "Risk score by queue order"
+   line charts used a fixed 0–1 y-axis**, which — since scores in this
+   project's synthetic batches cluster narrowly, as already documented —
+   visually wasted most of the chart's height. Fixed by applying the
+   exact same honest auto-ranging the risk-score distribution histogram
+   already used (zoom to the batch's own observed range, captioned with
+   the real numbers), not a new technique.
+3. **The Responsible AI view was mostly empty space** at normal desktop
+   height — real, correct content, just not enough of it to fill a
+   dedicated view on its own, confirmed by direct screenshot review, not
+   assumed. Fixed by adding a companion "At a glance" panel that reuses
+   only already-real elements (the same badges shown in the header, real
+   functional links to Model Insights and the single-transaction demo) —
+   explicitly not filled with invented content.
+4. **The Model Insights "Model & service health" panel** (6 short facts
+   in a plain list) had the same empty-space problem. Restyled as a
+   stat-tile grid reusing the historical panel's own `.k`/`.v` visual
+   language, so 6 real facts read as a deliberately designed panel.
+5. **"Top model-level risk drivers" was a plain numbered text list.**
+   Added a small proportional horizontal bar per entry, scaled against
+   the top-ranked value — the exact same numbers already shown as text,
+   visualized as an actual mini feature-importance chart rather than
+   invented or re-derived.
+
+### Confirmed NOT broken: the architecture itself
+
+Re-verified before touching anything: all 6 views genuinely distinct
+(not scroll anchors); routing, direct hash navigation, back/forward, the
+5 fixed sequences (exact-match seed pass-through re-confirmed against
+`src.render_demo:app`), cross-view selected-transaction persistence, and
+global filter propagation all still correct. Chart click-to-filter was
+re-tested with precise Chart.js arc/bar geometry; one apparent bar-chart
+click "miss" during this testing was root-caused to the test script
+clicking exactly on a bar's 1px top boundary pixel (a test-precision
+artifact — real users click within the bar body, confirmed to work
+reliably on retest), not a dashboard defect, and is disclosed as such
+rather than silently dropped.
+
+### Verified this round
+
+- Full suite: **399 passed**, 0 failed (387 Python + 12 browser-
+  integration, both re-run cleanly after freeing the ports the browser
+  fixture needs). No backend, model, or `src/` Python file touched —
+  confirmed via `git diff --stat`; only `ui/dashboard.{html,css,js}`
+  changed.
+- Real browser screenshots re-captured at **1440px, 1280px, 768px, and
+  390px** for every view, before and after the fixes, with zero
+  horizontal overflow at any width on either pass (`document.body.
+  scrollWidth` exactly equal to `document.documentElement.clientWidth`).
+- The new "At a glance" panel's live link to Model Insights was clicked
+  for real and confirmed to navigate correctly, not just visually
+  present.
+
+### Remaining limitations
+
+Unchanged from Stage 8: this work is local-only on
+`dashboard-multiview-redesign`, not pushed again this round, not merged,
+Render untouched. Everything in the Stage 5 readiness report's
+"remaining risks" section still applies.
