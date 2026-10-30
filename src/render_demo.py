@@ -304,3 +304,13 @@ def capacity_js():
 @app.get("/benchmark.js", include_in_schema=False)
 def benchmark_js():
     return FileResponse(_UI_DIR / "benchmark.js", media_type="application/javascript", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/case-store.js", include_in_schema=False)
+def case_store_js():
+    return FileResponse(_UI_DIR / "case-store.js", media_type="application/javascript", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/case-ui.js", include_in_schema=False)
+def case_ui_js():
+    return FileResponse(_UI_DIR / "case-ui.js", media_type="application/javascript", headers={"Cache-Control": "no-store"})

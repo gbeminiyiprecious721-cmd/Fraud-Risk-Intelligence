@@ -69,6 +69,14 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h5"/><path d="M20 20v-5h-5"/><path d="M5.5 9A7 7 0 0118 8.5M18.5 15A7 7 0 016 15.5"/></svg>
         </button>
         <span id="global-scope-status" class="scope-status" role="status" aria-live="polite"></span>
+        <div id="case-filters" class="case-filters" aria-label="Investigation case filters">
+          <label>Status <select id="case-status-filter"><option value="">All statuses</option><option>Not opened</option><option>New</option><option>In Review</option><option>Escalated</option><option>Resolved</option></select></label>
+          <label>Demo analyst <select id="case-analyst-filter"><option value="">All analysts</option><option>Unassigned</option><option>Fictional Analyst A</option><option>Fictional Analyst B</option><option>Fictional Analyst C</option></select></label>
+          <label>Priority <select id="case-priority-filter"><option value="">All priorities</option><option>Normal</option><option>High</option><option>Urgent</option></select></label>
+          <label>Risk band <select id="case-risk-filter"><option value="">All bands</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></label>
+          <button type="button" class="ghost" id="case-clear-filters">Clear case filters</button>
+          <button type="button" class="ghost" id="case-reset">Reset Demo Cases</button>
+        </div>
       </div>
     </header>
 
@@ -206,7 +214,9 @@
       <!-- ===================== WORKFLOW BOARD ===================== -->
       <section class="view view-flex" data-view="workflow" aria-labelledby="view-heading-workflow">
         <h2 id="view-heading-workflow" class="view-heading" tabindex="-1">Investigation Workflow</h2>
-        <p class="panel-note view-intro">Grouped by this batch's synthetic <code>status</code> field, filtered the same as the queue. Read-only &mdash; there is no backend write path for status changes in this demo, so cards are not draggable; click one to inspect it in the same detail panel used everywhere else.</p>
+        <p class="panel-note view-intro">Synthetic browser-local cases, not a server audit log. Unopened cards retain seeded demo lanes. Open a case to manage its analyst-controlled state; model scores never change.</p>
+        <p id="case-storage-status" role="status" class="case-disclaimer"></p>
+        <div id="case-workload" class="case-workload" aria-live="polite"></div>
         <div class="view-fill">
           <div class="kanban-scroll-wrap" id="kanban-scroll-wrap">
             <div class="kanban-board kanban-board-full" id="kanban-board">
@@ -359,18 +369,40 @@
 </div>
 
 <div class="drawer-backdrop" id="drawer-backdrop"></div>
-<aside class="drawer" id="detail-drawer" aria-label="Transaction detail" aria-hidden="true">
+<aside class="drawer" id="detail-drawer" aria-label="Transaction detail" aria-hidden="true" role="dialog" aria-modal="true">
   <button type="button" class="drawer-close" id="drawer-close" aria-label="Close detail panel">&times;</button>
   <h2 id="drawer-id">&ndash;</h2>
   <p class="score-big" id="drawer-score">&ndash;</p>
   <span class="risk-pill" id="drawer-band-pill">&ndash;</span>
   <div class="interpretation" id="drawer-interpretation"></div>
   <p class="caveat">This is a relative ranking score, not a calibrated probability of real-world fraud.</p>
+  <section class="case-panel" aria-label="Investigation case management">
+    <h3>Investigation case</h3>
+    <p class="case-disclaimer">Synthetic demo only. Notes stay in this browser/device. Do not enter real personal, customer or sensitive information. Local history can be edited outside this app; it is not a secure audit log. Resolution never blocks a transaction.</p>
+    <p id="case-message" role="status" aria-live="polite"></p>
+    <button id="case-open" type="button" class="ghost">Open investigation case</button>
+    <div id="case-detail" hidden>
+      <p id="case-identity"></p>
+      <div class="case-fields">
+        <label>Fictional demo analyst <select id="case-analyst"></select></label>
+        <label>Priority <select id="case-priority"></select></label>
+        <label>Investigation status <select id="case-status"></select></label>
+      </div>
+      <label for="case-reason">Resolution / reopening reason (required for those changes, max 300)</label>
+      <textarea id="case-reason" maxlength="300" rows="2" placeholder="Fictional demo reason only"></textarea>
+      <button id="case-save" type="button" class="ghost">Apply case changes</button>
+      <label for="case-note">Add plain-text demo note (max 500, maximum 16 notes)</label>
+      <textarea id="case-note" maxlength="500" rows="3" placeholder="Synthetic demonstration notes only"></textarea>
+      <button id="case-add-note" type="button" class="ghost">Add timestamped note</button>
+      <h4>Notes</h4><ol id="case-notes"></ol>
+      <details open><summary>Local activity history</summary><ol id="case-history"></ol></details>
+    </div>
+  </section>
   <dl>
     <dt>ProductCD</dt><dd id="drawer-product">&ndash;</dd>
     <dt>Card network</dt><dd id="drawer-card">&ndash;</dd>
     <dt>Amount</dt><dd id="drawer-amount">&ndash;</dd>
-    <dt>Status</dt><dd id="drawer-status">&ndash;</dd>
+    <dt>Seeded transaction status (not analyst decision)</dt><dd id="drawer-status">&ndash;</dd>
     <dt>Queue order</dt><dd id="drawer-sequence">&ndash;</dd>
   </dl>
   <dt style="color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em;">Feature highlights (model-level, not per-transaction)</dt>
@@ -378,6 +410,8 @@
   <ol class="feature-list" id="drawer-features"></ol>
 </aside>
 
+<script src="case-store.js"></script>
+<script src="case-ui.js"></script>
 <script src="dashboard.js"></script>
 <script src="capacity.js"></script>
 <script src="benchmark.js"></script>

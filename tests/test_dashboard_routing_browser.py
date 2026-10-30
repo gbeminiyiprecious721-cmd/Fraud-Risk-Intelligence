@@ -600,3 +600,147 @@ def test_benchmark_unavailable_evidence_and_retry(browser_env):
         while time.monotonic()<deadline and session.evaluate("document.getElementById('benchmark-workspace').hidden"):time.sleep(.1)
         assert not session.evaluate("document.getElementById('benchmark-workspace').hidden")
     finally:session.close()
+
+
+@pytest.mark.parametrize('check', ['schema','duplicate','resolveReason','reopenReason','assignment','transitions','noteBounds','appendOnly','seedIsolation','persistence','corrupt','unsupported','quota','unavailable','tamperedHistory','crossBatch','conflict','reset','hostileText','eventLimit','invalidBatch'])
+def test_stage21_case_store_contract_in_chrome(page,check):
+    page.evaluate((ROOT_DIR/'tests/stage21_store_checks.js').read_text())
+    result=page.evaluate(f"(()=>{{try{{stage21StoreChecks.{check}();return 'pass'}}catch(e){{return e.message}}}})()")
+    assert result=='pass',result
+
+
+def _stage21_ready(page,browser_env):
+    page.evaluate('localStorage.clear()')
+    page.navigate(browser_env['static_origin']+'/dashboard.html?stage21-reset=1#/workflow')
+    page.wait_for_queue_data()
+
+
+def _stage21_select(page,id,value,event='change'):
+    page.evaluate(f"document.getElementById({id!r}).value={value!r};document.getElementById({id!r}).dispatchEvent(new Event({event!r}))")
+
+
+@pytest.mark.parametrize('width,height',[(1440,900),(1280,800),(768,1024),(390,844)])
+def test_stage21_full_case_lifecycle_persistence_filters_and_keyboard(page,browser_env,width,height):
+    _stage21_ready(page,browser_env)
+    page.send('Emulation.setDeviceMetricsOverride',{'width':width,'height':height,'deviceScaleFactor':1,'mobile':False})
+    page.evaluate("window.caseRequests=[];window.originalFetch=window.fetch;window.fetch=(...args)=>{caseRequests.push(args);return originalFetch(...args)}")
+    page.click('.kanban-card')
+    transaction=page.evaluate("document.getElementById('drawer-id').textContent")
+    score=page.evaluate("document.getElementById('drawer-score').textContent")
+    page.click('#case-open')
+    assert page.evaluate("!document.getElementById('case-detail').hidden"), page.evaluate("document.getElementById('case-message').textContent")
+    _stage21_select(page,'case-analyst','Fictional Analyst B');_stage21_select(page,'case-priority','Urgent');_stage21_select(page,'case-status','In Review')
+    page.click('#case-save')
+    _stage21_select(page,'case-note','<img src=x onerror=alert(1)> Fictional demo only')
+    page.click('#case-add-note')
+    assert page.evaluate("document.querySelectorAll('#case-notes img').length")==0
+    assert '<img' in page.evaluate("document.getElementById('case-notes').textContent")
+    _stage21_select(page,'case-status','Resolved');page.click('#case-save')
+    assert 'reason' in page.evaluate("document.getElementById('case-message').textContent")
+    _stage21_select(page,'case-reason','Synthetic review completed');page.click('#case-save')
+    assert 'resolved' in page.evaluate("document.getElementById('case-history').textContent")
+    _stage21_select(page,'case-status','In Review');_stage21_select(page,'case-reason','Fictional second look');page.click('#case-save')
+    assert 'reopened' in page.evaluate("document.getElementById('case-history').textContent")
+    assert page.evaluate("document.getElementById('drawer-score').textContent")==score
+    assert page.evaluate('caseRequests.length')==0
+    page.evaluate("document.getElementById('drawer-close').focus()")
+    page.send('Input.dispatchKeyEvent',{'type':'keyDown','key':'Tab','code':'Tab','windowsVirtualKeyCode':9,'modifiers':8})
+    assert page.evaluate("document.getElementById('detail-drawer').contains(document.activeElement)")
+    page.send('Input.dispatchKeyEvent',{'type':'keyDown','key':'Escape','code':'Escape','windowsVirtualKeyCode':27})
+    assert not page.evaluate("document.getElementById('detail-drawer').classList.contains('open')")
+    _stage21_select(page,'case-analyst-filter','Fictional Analyst B')
+    assert page.evaluate("document.querySelectorAll('.kanban-card').length")==1
+    assert 'Showing 1 of' in page.evaluate("document.getElementById('global-scope-status').textContent")
+    page.click('.sidenav-list a[data-view="queue"]')
+    assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==1
+    page.click('#case-clear-filters')
+    page.navigate(browser_env['static_origin']+'/dashboard.html#/workflow');page.wait_for_queue_data()
+    page.click(f'.kanban-card[data-id="{transaction}"]')
+    assert page.evaluate("document.getElementById('case-analyst').value")=='Fictional Analyst B'
+    assert 'Fictional second look' in page.evaluate("document.getElementById('case-history').textContent")
+    page.click('#drawer-close')
+    _stage21_select(page,'batch-select','202');time.sleep(.8)
+    assert 'Opened cases: 0' in page.evaluate("document.getElementById('case-workload').textContent")
+    _stage21_select(page,'batch-select','101');time.sleep(.8)
+    assert 'Opened cases: 1' in page.evaluate("document.getElementById('case-workload').textContent")
+    assert page.evaluate('document.body.scrollWidth<=innerWidth')
+    if width>900:assert page.evaluate("document.querySelector('.view-container').scrollHeight<=document.querySelector('.view-container').clientHeight+1")
+    page.evaluate('localStorage.clear()')
+
+
+def test_stage21_reset_confirmation_and_storage_error_ui(page,browser_env):
+    _stage21_ready(page,browser_env);page.click('.kanban-card');page.click('#case-open');page.click('#drawer-close')
+    for accept in [False,True]:
+        page.evaluate("setTimeout(()=>document.getElementById('case-reset').click(),0)");time.sleep(.1)
+        page.send('Page.handleJavaScriptDialog',{'accept':accept})
+        assert ('Opened cases: 0' if accept else 'Opened cases: 1') in page.evaluate("document.getElementById('case-workload').textContent")
+    page.evaluate("Storage.prototype.setItem=function(){throw new DOMException('quota','QuotaExceededError')}")
+    page.click('.kanban-card');page.click('#case-open')
+    assert 'memory' in page.evaluate("document.getElementById('case-message').textContent")
+    assert not page.evaluate("document.getElementById('case-detail').hidden")
+    page.click('#drawer-close');page.evaluate('localStorage.clear()')
+
+
+def test_stage21_search_all_case_filters_and_empty_state(page,browser_env):
+    _stage21_ready(page,browser_env);page.click('.kanban-card');page.click('#case-open')
+    case_id=page.evaluate("document.getElementById('case-identity').textContent.split(' · ')[0]")
+    band=page.evaluate("document.getElementById('drawer-band-pill').textContent")
+    _stage21_select(page,'case-priority','High');page.click('#case-save');page.click('#drawer-close')
+    _stage21_select(page,'filter-search',case_id,'input')
+    _stage21_select(page,'case-status-filter','New');_stage21_select(page,'case-priority-filter','High');_stage21_select(page,'case-risk-filter',band)
+    assert page.evaluate("document.querySelectorAll('.kanban-card').length")==1
+    _stage21_select(page,'case-status-filter','Resolved')
+    assert page.evaluate("document.querySelectorAll('.kanban-card').length")==0
+    assert 'No matching transactions' in page.evaluate("document.getElementById('kanban-board').textContent")
+    page.click('#reset-filters-btn')
+    assert page.evaluate("document.querySelectorAll('.kanban-card').length")==48
+    page.evaluate('localStorage.clear()')
+
+
+@pytest.mark.parametrize('stored',['{broken','{"schemaVersion":999}'])
+def test_stage21_corrupt_and_unsupported_storage_ui_recovers_after_explicit_reset(page,browser_env,stored):
+    page.evaluate(f"localStorage.clear();localStorage.setItem('fri.demo.cases.v1.101.48',{stored!r})")
+    page.navigate(browser_env['static_origin']+'/dashboard.html?invalid-store=1#/workflow');page.wait_for_queue_data()
+    page.click('.kanban-card');page.click('#case-open')
+    assert page.evaluate("document.getElementById('case-detail').hidden")
+    assert 'Reset Demo Cases' in page.evaluate("document.getElementById('case-message').textContent")
+    page.click('#drawer-close');page.evaluate("setTimeout(()=>document.getElementById('case-reset').click(),0)");time.sleep(.1);page.send('Page.handleJavaScriptDialog',{'accept':True})
+    page.click('.kanban-card');page.click('#case-open')
+    assert not page.evaluate("document.getElementById('case-detail').hidden")
+    page.evaluate('localStorage.clear()')
+
+
+def test_stage21_unavailable_storage_remains_usable_and_honest(page,browser_env):
+    page.send('Page.addScriptToEvaluateOnNewDocument',{'source':"Storage.prototype.getItem=function(){throw Error('storage denied')}"})
+    page.navigate(browser_env['static_origin']+'/dashboard.html?storage-denied=1#/workflow');page.wait_for_queue_data()
+    page.click('.kanban-card');page.click('#case-open')
+    assert not page.evaluate("document.getElementById('case-detail').hidden")
+    assert 'memory' in page.evaluate("document.getElementById('case-message').textContent")
+
+
+def test_stage21_rejected_multifield_edit_is_atomic_at_activity_limit(page,browser_env):
+    _stage21_ready(page,browser_env);page.click('.kanban-card');page.click('#case-open');page.click('#drawer-close')
+    page.evaluate("""(()=>{const key='fri.demo.cases.v1.101.48',d=JSON.parse(localStorage.getItem(key)),c=d.cases[0];for(let i=0;i<62;i++){const value=i%2?'Normal':'High';c.history.push({type:'priority',at:c.updatedAt,before:c.priority,after:value,text:''});c.priority=value;d.revision++;}localStorage.setItem(key,JSON.stringify(d))})()""")
+    page.navigate(browser_env['static_origin']+'/dashboard.html?activity-limit=1#/workflow');page.wait_for_queue_data()
+    before=page.evaluate("localStorage.getItem('fri.demo.cases.v1.101.48')")
+    board=page.evaluate("document.getElementById('kanban-board').textContent")
+    page.click('.kanban-card');_stage21_select(page,'case-analyst','Fictional Analyst B');_stage21_select(page,'case-status','In Review');page.click('#case-save')
+    assert 'limit' in page.evaluate("document.getElementById('case-message').textContent")
+    assert page.evaluate("localStorage.getItem('fri.demo.cases.v1.101.48')")==before
+    assert page.evaluate("document.getElementById('case-history').children.length")==63
+    assert 'New' in page.evaluate("document.getElementById('case-identity').textContent")
+    page.click('#drawer-close')
+    assert page.evaluate("document.getElementById('kanban-board').textContent")==board
+    page.evaluate('localStorage.clear()')
+
+
+def test_stage21_native_keyboard_creation_keeps_focus_in_case_controls(page,browser_env):
+    _stage21_ready(page,browser_env);page.click('.kanban-card');time.sleep(.2)
+    page.evaluate("document.getElementById('case-open').focus()")
+    page.send('Input.dispatchKeyEvent',{'type':'keyDown','key':'Enter','code':'Enter','windowsVirtualKeyCode':13,'text':'\r','unmodifiedText':'\r'})
+    page.send('Input.dispatchKeyEvent',{'type':'keyUp','key':'Enter','code':'Enter','windowsVirtualKeyCode':13})
+    assert not page.evaluate("document.getElementById('case-detail').hidden")
+    assert page.evaluate('document.activeElement.id')=='case-analyst'
+    page.send('Input.dispatchKeyEvent',{'type':'keyDown','key':'Tab','code':'Tab','windowsVirtualKeyCode':9})
+    assert page.evaluate("document.getElementById('detail-drawer').contains(document.activeElement)")
+    page.evaluate('localStorage.clear()')
