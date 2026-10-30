@@ -96,6 +96,7 @@
     const historical = view === "capacity" || view === "benchmark";
     document.body.classList.toggle("capacity-active", historical);
     document.body.classList.toggle("benchmark-active", view === "benchmark");
+    document.body.classList.toggle("case-workspace-active", ["queue","workflow"].includes(view));
     const populationBadge = document.querySelector(".topbar .badge-synthetic");
     populationBadge.textContent = historical ? "Historical validation / portfolio" : "Synthetic / portfolio demonstration";
     populationBadge.title = historical
@@ -175,7 +176,9 @@
       el("controls-status").textContent = "";
       return;
     }
+    closeDrawer();
     state.raw = body;
+    window.CaseUI.setBatch(body, applyFiltersAndRender);
     state.seed = body.seed;
     const select = el("batch-select");
     if ([...select.options].some((o) => Number(o.value) === body.seed)) {
@@ -241,6 +244,7 @@
     if (f.band) n += 1;
     if (f.maxAmount < 5000) n += 1;
     if (f.search) n += 1;
+    for (const id of ["case-status-filter","case-analyst-filter","case-priority-filter"]) if (el(id).value) n += 1;
     return n;
   }
 
@@ -252,7 +256,8 @@
       if (f.cardNetwork && t.card4 !== f.cardNetwork) return false;
       if (f.band && t.risk_band !== f.band) return false;
       if (t.amount > f.maxAmount) return false;
-      if (f.search && !t.transaction_id.toLowerCase().includes(f.search)) return false;
+      if (f.search && !t.transaction_id.toLowerCase().includes(f.search) && !t.transaction_id.replace("TXN-","CASE-").toLowerCase().includes(f.search)) return false;
+      if (!window.CaseUI.filter(t)) return false;
       return true;
     });
     const dir = state.sortDir === "asc" ? 1 : -1;
@@ -280,6 +285,8 @@
     renderPreviewTable(rows);
     renderCharts(rows, state.raw);
     renderKanban(rows);
+    window.CaseUI.workload(rows);
+    el("case-risk-filter").value = el("filter-band").value;
     renderInsightsFeatureImportance();
   }
 
@@ -422,7 +429,7 @@
       amount: `<td>${fmtMoney(t.amount)}</td>`,
       score: `<td>${fmtScore(t.risk_score)}</td>`,
       band: `<td><span class="risk-pill ${band}">${band}</span></td>`,
-      status: `<td><span class="status-pill" data-status="${escapeHtml(t.status)}">${escapeHtml(t.status)}</span></td>`,
+      status: `<td><span class="status-pill" data-status="${escapeHtml(window.CaseUI.status(t))}">${escapeHtml(window.CaseUI.label(t))}</span></td>`,
       sequence: `<td>#${t.sequence}</td>`,
       inspect: `<td><button type="button" class="ghost inspect-btn" data-id="${id}">Inspect</button></td>`,
     };
@@ -478,7 +485,7 @@
       const container = document.querySelector(`[data-cards="${status}"]`);
       const countEl = document.querySelector(`[data-count="${status}"]`);
       if (!container || !countEl) return;
-      const inColumn = rows.filter((t) => t.status === status);
+      const inColumn = rows.filter((t) => window.CaseUI.status(t) === status);
       countEl.textContent = inColumn.length;
       if (!inColumn.length) {
         container.innerHTML = '<p class="kanban-empty">No matching transactions</p>';
@@ -488,7 +495,7 @@
         .map(
           (t) => `
         <button type="button" class="kanban-card" data-id="${escapeHtml(t.transaction_id)}">
-          <span class="id">${escapeHtml(t.transaction_id)}</span>
+          <span class="id">${escapeHtml(t.transaction_id)}</span><span class="case-card-meta">${escapeHtml(window.CaseUI.label(t))}</span>
           <span class="meta"><span>${fmtMoney(t.amount)}</span><span class="risk-pill ${escapeHtml(t.risk_band)}">${escapeHtml(t.risk_band)}</span></span>
         </button>`
         )
@@ -863,12 +870,15 @@
     return templates[band] || "";
   }
 
+  let drawerOpener = null;
   function openDrawer(transactionId) {
     if (!state.raw) return;
     const t = state.raw.transactions.find((x) => x.transaction_id === transactionId);
     if (!t) return;
 
+    if (!el("detail-drawer").classList.contains("open")) drawerOpener = document.activeElement;
     state.selectedId = transactionId;
+    window.CaseUI.show(transactionId);
     applySelectionVisuals();
 
     el("drawer-id").textContent = t.transaction_id;
@@ -891,12 +901,19 @@
     el("detail-drawer").classList.add("open");
     el("detail-drawer").setAttribute("aria-hidden", "false");
     el("drawer-backdrop").classList.add("open");
+    el("drawer-close").focus();
   }
 
   function closeDrawer() {
+    const wasOpen = el("detail-drawer").classList.contains("open");
+    window.CaseUI.close();
     el("detail-drawer").classList.remove("open");
     el("detail-drawer").setAttribute("aria-hidden", "true");
     el("drawer-backdrop").classList.remove("open");
+    if (wasOpen) {
+      const replacement = [...document.querySelectorAll(".view.active button[data-id]")].find(x => x.dataset.id === state.selectedId);
+      (drawerOpener?.isConnected ? drawerOpener : replacement || document.querySelector(".view.active .view-heading"))?.focus();
+    }
     state.selectedId = null;
     applySelectionVisuals();
   }
@@ -937,6 +954,7 @@
       el("filter-amount-max").value = 5000;
       el("filter-amount-max-value").textContent = "$5,000";
       el("filter-search").value = "";
+      ["case-status-filter","case-analyst-filter","case-priority-filter","case-risk-filter"].forEach(id => el(id).value = "");
       applyFiltersAndRender();
     });
 
@@ -964,6 +982,13 @@
     el("drawer-close").addEventListener("click", closeDrawer);
     el("drawer-backdrop").addEventListener("click", closeDrawer);
     document.addEventListener("keydown", (e) => {
+      if (e.key === "Tab" && el("detail-drawer").classList.contains("open")) {
+        const focusable = [...el("detail-drawer").querySelectorAll('button,select,textarea,a[href],summary')].filter(x => !x.disabled && x.getClientRects().length);
+        const first = focusable[0], last = focusable.at(-1);
+        if (!el("detail-drawer").contains(document.activeElement)) {e.preventDefault();first.focus();}
+        else if (e.shiftKey && document.activeElement === first) {e.preventDefault();last.focus();}
+        else if (!e.shiftKey && document.activeElement === last) {e.preventDefault();first.focus();}
+      }
       if (e.key !== "Escape") return;
       closeDrawer();
       closeNav();

@@ -1,5 +1,51 @@
 # ML Workflow State — Fraud-Risk-Intelligence
 
+## Portfolio enhancement Stage 21 — Browser-local case management (2026-10-30)
+
+The owner explicitly authorised Stage 21 implementation, tests and local-only
+commit on `stage21-case-management`, based at approved integration/live
+reference `7ffe91f995bd4bea7296e04ef408d9c3600869a7`. The owner's Stage 21
+brief supersedes the earlier Stage 20 note's restriction on advancing stages.
+Architecture and plan were documented before implementation in
+[Stage 21 case management](STAGE21_CASE_MANAGEMENT.md).
+
+A versioned, bounded, replay-validated browser store and shared drawer extend
+the existing queue and Kanban board. Cases support fictional assignments,
+priority, status, reasons, notes and append-only local activity. Case state
+is isolated by fixed seed and 24/48-record batch scope. Model scores/ranks
+remain immutable context. No backend writes, database, authentication or
+Render filesystem persistence was added; server changes only serve two
+static JavaScript assets. Unopened cards retain explicitly labelled seeded
+lanes; opened-case KPIs measure analyst-controlled case state separately.
+
+Initial 21 pure-store contract checks and the final 32 Stage 21 real-Chrome
+checks pass, including all four viewports, create/assign/resolve/reopen,
+refresh, filters, safe text, storage denial/quota/corruption/version recovery,
+reset confirmation and atomic rejection at the 64-event history limit.
+Independent review found one P2 partial-save issue; a regression reproduced
+it, and atomic multi-field validation/persistence fixed it. Native keyboard
+creation focus loss was also reproduced and fixed. Final complete regression:
+**486 passed, zero failures/skips**, five existing warnings, 253.66s; includes
+all six heavy/data-contract tests and 63 real-Chrome cases. Sixteen screenshots
+show Queue, Workflow, Case Details and history at all four required sizes;
+default desktop outer overflow is zero. Frozen checksum, all prior scientific
+records, source scoring/security, historical aggregates, dependencies and
+protected refs remain unchanged. Stage 21 implementation is complete locally
+and ready for owner review; browser-local/audit/accessibility limitations are
+documented. All pre-existing workflow records below remain unchanged.
+Initial delivery was local-only. The owner subsequently explicitly authorised
+final review, feature-branch push and a PR to `render-dashboard-integration`.
+Fresh full regression: **486 passed, zero failures/skips**, five unchanged
+warnings, 249.27s; all six heavy/data-contract tests and 63 real-Chrome cases.
+An independent source review found no concrete defects; two-tab/CDP verification
+confirmed conflicts, persistence, scoped reset, schema/quota recovery and no
+case-note canary or non-GET case requests in 42 observed requests. The original
+37-file scope remains intact; two added review-evidence files produce a 39-file
+PR inventory. No product/styling correction was needed. Frozen model, science,
+historical aggregates and public safeguards remain unchanged. No merge,
+deployment, Render changes, frozen-model training/replacement/promotion or
+closed final-test access is authorised. No Stage 22+ work is authorised.
+
 ## Portfolio enhancement Stage 20 — Challenger benchmarking (2026-10-30)
 
 The owner explicitly approved Stage 20, its pre-training protocol and five

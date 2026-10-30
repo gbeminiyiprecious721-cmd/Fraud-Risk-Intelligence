@@ -211,3 +211,12 @@ def test_demo_fixture_loading_raises_clearly_if_marker_is_ever_removed(tmp_path,
     monkeypatch.setattr(render_demo, "_UI", broken_ui)
     with pytest.raises(RuntimeError, match="Public demo fixture missing"):
         render_demo._demo_payload()
+
+
+def test_stage21_static_case_modules_and_no_server_case_write_endpoints(client):
+    for asset in ['/case-store.js','/case-ui.js']:
+        response=client.get(asset)
+        assert response.status_code==200
+        assert response.headers['cache-control']=='no-store'
+    for path in ['/v1/cases','/v1/dashboard/cases']:
+        assert client.post(path,json={'note':'Synthetic demo only'}).status_code==404

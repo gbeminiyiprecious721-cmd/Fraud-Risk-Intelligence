@@ -878,3 +878,25 @@ footer.page-footer { text-align: center; color: var(--muted); font-size: 0.8rem;
 }
 /* Benchmark already carries its population warning beside the results. */
 @media(min-width:901px) { .benchmark-active .header-controls { display:none; } }
+
+/* Stage 21 local-only case controls; original ranking/chart layout retained. */
+.case-filters { display:none; width:100%; flex-wrap:wrap; gap:.4rem; align-items:end; }
+.case-workspace-active .case-filters { display:flex; }
+.case-filters label, .case-fields label { display:flex; flex-direction:column; font-size:.72rem; gap:.2rem; min-width:0; }
+.case-filters select, .case-fields select, .case-panel textarea { background:var(--panel-2); color:var(--text); border:1px solid var(--border); border-radius:.35rem; padding:.35rem; max-width:100%; }
+.case-filters .ghost { padding:.35rem .5rem; font-size:.72rem; }
+.case-workload { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.45rem; margin-bottom:.5rem; }
+.case-workload p { margin:0; padding:.4rem; background:var(--panel); border:1px solid var(--border); border-radius:.4rem; font-size:.75rem; }
+.case-disclaimer { color:var(--warn); font-size:.73rem; margin:.3rem 0; }
+.case-card-meta { display:block; font-size:.65rem; color:var(--muted); overflow-wrap:anywhere; }
+.case-panel { margin:.8rem 0; padding:.8rem; border:1px solid var(--border); border-radius:.5rem; }
+.case-panel h3, .case-panel h4 { margin:.5rem 0; }
+.case-panel label { display:block; font-size:.76rem; margin:.5rem 0 .2rem; }
+.case-panel textarea { width:100%; resize:vertical; }
+.case-fields { display:grid; gap:.4rem; }
+.case-panel li { white-space:pre-wrap; overflow-wrap:anywhere; margin:.5rem 0; font-size:.76rem; }
+.case-panel ol { padding-left:1.3rem; }
+#case-message { font-size:.78rem; color:var(--warn); }
+#case-detail[hidden], #case-open[hidden] { display:none; }
+@media(max-width:600px) { .case-workload { grid-template-columns:repeat(2,minmax(0,1fr)); } .case-filters label { flex:1 1 40%; } }
+@media(min-width:901px) { .case-workspace-active .topbar { gap:.5rem; } .view[data-view=workflow] .view-fill { min-height:210px; } }

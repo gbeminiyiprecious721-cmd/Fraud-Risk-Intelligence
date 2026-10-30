@@ -1,0 +1,28 @@
+{
+  "base_commit": "7ffe91f995bd4bea7296e04ef408d9c3600869a7",
+  "branch": "stage21-case-management",
+  "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "all_prior_workflow_records_unchanged": true,
+  "production_scoring_preprocessing_security_and_dependencies_unchanged": true,
+  "historical_aggregate_files_unchanged": true,
+  "backend_case_write_routes_added": false,
+  "new_runtime_dependencies": [],
+  "protected_refs": {
+    "main": "52c01c919cb40cd2bedf1a41794a73e38c6cf737",
+    "render-dashboard-integration": "d413486e962368a5ad81a445f15549da3d8075fc",
+    "origin/render-dashboard-integration": "7ffe91f995bd4bea7296e04ef408d9c3600869a7"
+  },
+  "closed_evaluation_accessed": false,
+  "push_merge_deploy_attempted": false,
+  "prior_workflow_body_sha256": "00c0ecfab341cf4e8060e734e723b488095a6b193dbb6059d838a5dc7f66a506",
+  "final_regression": {
+    "passed": 486,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 5,
+    "seconds": 253.66,
+    "real_chrome_cases": 63,
+    "heavy_data_contract_cases": 6
+  },
+  "final_frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
+}
