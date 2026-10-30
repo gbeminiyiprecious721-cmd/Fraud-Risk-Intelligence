@@ -603,6 +603,13 @@ not fabricated live SHAP.
 
 ## Stage 9: professional audit and refinement (same branch)
 
+**Approved by user, 2026-10-30**, as-is, with no further changes requested.
+(A 2026-10-30 session recovered from an unrelated local restart, confirmed
+the working tree was already clean with this stage fully committed at
+`a6b5e75`, re-ran the fast suite fresh — 387 passed, 0 failed, matching the
+399-with-browser-tests figure below — and obtained this sign-off before any
+new work.)
+
 An audit pass on top of Stage 8's architecture, continuing directly on
 `dashboard-multiview-redesign` (not a new branch — this is refinement of
 the same work, per the task's own stated option). Confirmed by real
@@ -681,3 +688,170 @@ Unchanged from Stage 8: this work is local-only on
 `dashboard-multiview-redesign`, not pushed again this round, not merged,
 Render untouched. Everything in the Stage 5 readiness report's
 "remaining risks" section still applies.
+
+## Stage 10: final acceptance, visual review and deployment readiness (same branch)
+
+**Status: work complete, one identified visual gap fixed and re-verified,
+awaiting final user approval** (reported 2026-10-30; not self-approved —
+see the project's stage-gate rule in `CLAUDE.md` and
+`docs/ML_WORKFLOW_STATE.md`'s Approval Status convention, applied here even
+though this dashboard track sits outside the formal Stage 0–19 roadmap).
+Note on numbering: this is "Stage 10" of the **dashboard track** (continuing
+Stage 8/9's own numbering in this file), a different thing from the ML
+roadmap's Stage 10 (Model Evaluation, already closed — see
+`docs/STAGE10_EVALUATION_PROTOCOL.md`). No file collision was created:
+this write-up lives in this document, not a new top-level `STAGE10_*.md`,
+precisely to avoid confusing the two.
+
+Scope: a final acceptance pass over Stage 8/9's work — real-browser
+verification of every view and interaction, a full regression run, a
+security/deployment-readiness review, and an honest screenshot record —
+before asking for sign-off to consider the dashboard track done. No new
+features were built; this stage is verification, not construction.
+
+### Full regression suite
+
+All 399 project tests re-run fresh, split across two invocations by
+marker (both all-green, zero failures):
+- `pytest -m "not heavy and not data_contract_full"`: **393 passed**, 6
+  deselected (33.2s).
+- `pytest -m "heavy or data_contract_full"` (includes the full-training
+  reproducibility check against the frozen artifact — read-only
+  verification, no retraining, no write to the artifact file):
+  **6 passed** (128.6s).
+- Frozen artifact checksum reconfirmed unchanged throughout:
+  `2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+
+### Real-browser verification
+
+Reused this project's existing Stage 8 CDP-automation pattern (headless
+Chrome, same fixed local ports) to drive the actual running dashboard —
+not a static review of the HTML/CSS.
+
+- **Screenshots**: all 6 views captured fresh at all 4 required widths
+  (1440px, 1280px, 768px, 390px) = 24 images, plus 3 targeted interaction
+  captures (transaction drawer open, Kanban board, mobile nav menu open).
+  Saved to `docs/stage10_screenshots/` (same convention as
+  `docs/stage15_screenshots/`).
+- **Responsive/overflow**: `document.body.scrollWidth` measured equal to
+  `document.documentElement.clientWidth` at every view × width
+  combination — zero horizontal page overflow anywhere. The 4-column
+  Kanban board scrolls horizontally *within its own strip* on narrower
+  widths by design (confirmed intentional, not a layout bug — the page
+  itself never scrolls sideways).
+- **Routing**: every sidebar link at every width routes to the correct
+  view (re-verified, no regressions from Stage 9).
+- **Transaction drawer**: a real row click opens it (`aria-hidden`
+  flips to `"false"`, `.open` class applied); the close button closes it
+  again. Confirmed via DOM state, not just a screenshot.
+- **Kanban board**: confirmed exactly 4 columns present
+  (`.kanban-column`) at desktop width, matching the approved design.
+- **Mobile sidebar navigation**: closed on load; the hamburger
+  (`#nav-toggle`) opens it (`aria-expanded` flips to `"true"`); tapping a
+  real nav link inside it both routes to the correct view AND closes the
+  sidebar afterward — the full interaction chain, not just that the
+  button exists.
+- **Console**: zero JS errors or uncaught exceptions across all of the
+  above (24 view loads + 2 dedicated interaction sessions).
+
+### Security / deployment-readiness review
+
+Read-only review of `src/api.py` (no changes made — everything below was
+already true, re-confirmed, not newly added):
+- API still binds `127.0.0.1` only; CORS still restricted to the two
+  local static-UI origins (`127.0.0.1:8080`, `localhost:8080`), no
+  wildcard, no credentials.
+- No endpoint accepts an artifact path, uploads a file, or otherwise
+  allows loading anything other than the one fixed, checksummed frozen
+  artifact; `final_test` is not referenced anywhere in `src/api.py` or
+  `ui/`.
+- `/v1/dashboard/queue` only ever generates and scores **synthetic**
+  rows (`_synthetic_dashboard_row`) — confirmed by re-reading the
+  generator, not just trusting the docstring.
+- Error responses never leak a traceback; logs never persist a raw
+  transaction payload (structured, field-allowlisted logging only).
+- The live Render deployment (`render-dashboard-integration` branch) and
+  Stage 17's local release-management scripts (`deploy/*.sh`) were not
+  touched, run, or referenced by anything in this stage.
+
+### Defects found (technical/security pass)
+
+**None.** No console errors, no routing regressions, no overflow, no
+broken interaction, no security regression. This pass found Stage 8/9's
+work already correct — it is a verification record, not a changelog of
+fixes.
+
+### Visual review follow-up: mobile Kanban scroll affordance
+
+A separate, dedicated visual-inspection round (six 1440px desktop views +
+mobile Overview + mobile Workflow Board, reviewed against this file's own
+"Visual fidelity vs. the approved target mockup" checklist, since no
+stored prototype image exists to diff against directly) found one real
+issue, everywhere else PASS:
+
+- **Mobile Workflow Board (390px): NEEDS IMPROVEMENT.** The 4-column
+  Kanban board showed only ~1.1 columns at once with no visual cue that
+  3 more columns existed off-screen (no fade edge, no peek, no scroll
+  indicator). Horizontal scroll itself worked — this was a discoverability
+  gap, not a functional break.
+
+**Fix applied** (`ui/dashboard.html`, `ui/dashboard.css`,
+`ui/dashboard.js`): wrapped `#kanban-board` in `#kanban-scroll-wrap` with
+two absolutely-positioned edge-fade overlays (`--bg`-to-transparent
+gradients, matching the existing dark theme, no new colors introduced)
+and a 4-dot scroll-position indicator below the board. A new
+`updateKanbanScrollAffordance()` function in `dashboard.js` reads
+`scrollLeft`/`scrollWidth`/`clientWidth` to toggle `data-at-start`/
+`data-at-end` attributes (hiding each fade once there's nothing further
+in that direction) and highlights the dot nearest the centered column;
+it's wired to the board's `scroll` event, `window`'s `resize` event, and
+every existing re-render path (so it's always current after a filter/
+sequence change). Both the fades and dots are CSS-hidden above 900px,
+where the existing desktop 4-column grid already shows everything at
+once — the desktop layout itself was not touched.
+
+**Re-verification** (real headless-Chrome sessions, not visual inspection
+alone), at all three required widths:
+
+| Width | Overflow | Columns reachable | Fade shown | Dots shown | Scroll-to-end flips affordance | Console errors |
+|---|---|---|---|---|---|---|
+| 390px (mobile) | none (`scrollWidth` == `clientWidth`) | all 4, confirmed by scrolling to max and checking the Resolved column's bounding box sits fully inside the board | yes | yes | yes (`data-at-end` flips `false`→`true`) | 0 |
+| 768px (tablet) | none | all 4, same check | yes | yes | yes | 0 |
+| 1440px (desktop) | none | all 4 (no scroll needed) | hidden (by design) | hidden (by design) | n/a (already at both ends) | 0 |
+
+Dot-tracking was also checked at intermediate scroll positions (0%,
+33%, 66%, 100% of max scroll) and correctly highlighted columns 1→2→3→4
+in order.
+
+Full regression suite re-run after the fix: **393 passed** (incl. all 12
+browser-integration tests, 27.3s) + **6 passed** (heavy/data-contract
+tier, 126.3s) = **399/399, zero failures**. Frozen artifact checksum
+reconfirmed unchanged: `2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf
+872760268d9122bf04`. Updated screenshots (including explicit before/after
+-scroll pairs at all 3 widths demonstrating the fix) are in
+`docs/stage10_screenshots/`.
+
+Desktop layout, all filters, demo-sequence switching, chart click-to-
+filter, reset, navigation, and the transaction drawer were re-confirmed
+untouched and working (same checks as the original Stage 10 functional
+pass) — only the mobile/tablet Kanban scroll affordance changed.
+
+### Outstanding, pre-existing limitations (carried forward, unchanged)
+
+All of Stage 8's "Deployment blockers" and Stage 9's "Remaining
+limitations" still apply verbatim: local-only on
+`dashboard-multiview-redesign`; not pushed, merged, or deployed this
+round; the browser-test suite has only run on this machine/Chrome
+version, not in CI, and its Linux skip path is unverified; Render's real
+build environment has never been exercised; `X-Forwarded-For` behind
+Render's proxy remains unverified live. Nothing new was discovered this
+stage beyond re-confirming these still hold.
+
+### What this stage does NOT claim
+
+Per explicit constraint: the frozen Random Forest was not retrained or
+modified (confirmed via unchanged checksum); `final_test` was not
+accessed; no performance metric or case outcome was fabricated — the
+only numbers shown anywhere (test pass counts, checksum, screenshot
+dimensions) are this session's own direct measurements. Nothing was
+pushed, merged, or deployed.

@@ -540,6 +540,41 @@ table.queue tbody tr.selected { background: rgba(90, 169, 255, 0.14); }
 .kanban-card .meta { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 0.78rem; }
 .kanban-empty { color: var(--muted); font-size: 0.8rem; padding: 0.5rem; text-align: center; }
 
+/* Stage 10 mobile/tablet fix: the Kanban board scrolls horizontally below
+   901px (4 columns don't fit), but had no visual cue that more columns
+   exist off-screen. Edge fades + dots are JS-driven (see
+   updateKanbanScrollAffordance in dashboard.js) and only shown below
+   901px, where desktop's 4-column grid already shows everything at once. */
+.kanban-scroll-wrap { position: relative; }
+.kanban-scroll-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+  display: none;
+}
+.kanban-scroll-fade-left { left: 0; background: linear-gradient(90deg, var(--bg) 0%, transparent 100%); }
+.kanban-scroll-fade-right { right: 0; background: linear-gradient(270deg, var(--bg) 0%, transparent 100%); }
+.kanban-scroll-wrap[data-at-start="true"] .kanban-scroll-fade-left { opacity: 0; }
+.kanban-scroll-wrap[data-at-end="true"] .kanban-scroll-fade-right { opacity: 0; }
+.kanban-scroll-dots { display: none; justify-content: center; gap: 0.4rem; margin-top: 0.7rem; }
+.kanban-scroll-dots .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.kanban-scroll-dots .dot.active { background: var(--accent); transform: scale(1.3); }
+@media (max-width: 900px) {
+  .kanban-scroll-fade { display: block; }
+  .kanban-scroll-dots { display: flex; }
+}
+
 /* ---------- detail drawer ---------- */
 .drawer-backdrop {
   position: fixed; inset: 0; background: rgba(0,0,0,0.45);

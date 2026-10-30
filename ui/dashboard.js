@@ -461,6 +461,39 @@
       });
     });
     applySelectionVisuals();
+    updateKanbanScrollAffordance();
+  }
+
+  // Stage 10: below 901px the 4-column board scrolls horizontally and only
+  // ~1 column fits in view. This gives a real, scroll-position-aware cue
+  // (edge fades + dots) instead of leaving users to discover it by luck.
+  // Re-run on every re-render (above) and on scroll/resize (wired below) --
+  // cheap DOM reads, no measurable cost at this scale (4 columns).
+  function updateKanbanScrollAffordance() {
+    const board = el("kanban-board");
+    const wrap = el("kanban-scroll-wrap");
+    const dots = document.querySelectorAll("#kanban-scroll-dots .dot");
+    if (!board || !wrap) return;
+    const maxScroll = board.scrollWidth - board.clientWidth;
+    const atStart = board.scrollLeft <= 2;
+    const atEnd = maxScroll <= 2 || board.scrollLeft >= maxScroll - 2;
+    wrap.dataset.atStart = String(atStart);
+    wrap.dataset.atEnd = String(atEnd);
+    if (!dots.length) return;
+    const columns = board.querySelectorAll(".kanban-column");
+    if (!columns.length) return;
+    const viewportCenter = board.scrollLeft + board.clientWidth / 2;
+    let activeIndex = 0;
+    let bestDistance = Infinity;
+    columns.forEach((col, i) => {
+      const colCenter = col.offsetLeft + col.offsetWidth / 2;
+      const distance = Math.abs(colCenter - viewportCenter);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        activeIndex = i;
+      }
+    });
+    dots.forEach((dot, i) => dot.classList.toggle("active", i === activeIndex));
   }
 
   // ---------------------------------------------------------------------
@@ -860,6 +893,9 @@
       closeDrawer();
       closeNav();
     });
+
+    el("kanban-board").addEventListener("scroll", updateKanbanScrollAffordance, { passive: true });
+    window.addEventListener("resize", updateKanbanScrollAffordance);
 
     el("nav-toggle").addEventListener("click", openNav);
     el("sidenav-close").addEventListener("click", closeNav);

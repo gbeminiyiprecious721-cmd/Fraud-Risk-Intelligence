@@ -199,23 +199,33 @@
       <section class="view" data-view="workflow" aria-labelledby="view-heading-workflow">
         <h2 id="view-heading-workflow" class="view-heading" tabindex="-1">Investigation Workflow</h2>
         <p class="panel-note view-intro">Grouped by this batch's synthetic <code>status</code> field, filtered the same as the queue. Read-only &mdash; there is no backend write path for status changes in this demo, so cards are not draggable; click one to inspect it in the same detail panel used everywhere else.</p>
-        <div class="kanban-board kanban-board-full" id="kanban-board">
-          <div class="kanban-column" data-status="New">
-            <div class="kanban-column-head"><span>New</span><span class="count" data-count="New">0</span></div>
-            <div class="kanban-cards" data-cards="New"></div>
+        <div class="kanban-scroll-wrap" id="kanban-scroll-wrap">
+          <div class="kanban-board kanban-board-full" id="kanban-board">
+            <div class="kanban-column" data-status="New">
+              <div class="kanban-column-head"><span>New</span><span class="count" data-count="New">0</span></div>
+              <div class="kanban-cards" data-cards="New"></div>
+            </div>
+            <div class="kanban-column" data-status="In Review">
+              <div class="kanban-column-head"><span>In Review</span><span class="count" data-count="In Review">0</span></div>
+              <div class="kanban-cards" data-cards="In Review"></div>
+            </div>
+            <div class="kanban-column" data-status="Escalated">
+              <div class="kanban-column-head"><span>Escalated</span><span class="count" data-count="Escalated">0</span></div>
+              <div class="kanban-cards" data-cards="Escalated"></div>
+            </div>
+            <div class="kanban-column" data-status="Resolved">
+              <div class="kanban-column-head"><span>Resolved</span><span class="count" data-count="Resolved">0</span></div>
+              <div class="kanban-cards" data-cards="Resolved"></div>
+            </div>
           </div>
-          <div class="kanban-column" data-status="In Review">
-            <div class="kanban-column-head"><span>In Review</span><span class="count" data-count="In Review">0</span></div>
-            <div class="kanban-cards" data-cards="In Review"></div>
-          </div>
-          <div class="kanban-column" data-status="Escalated">
-            <div class="kanban-column-head"><span>Escalated</span><span class="count" data-count="Escalated">0</span></div>
-            <div class="kanban-cards" data-cards="Escalated"></div>
-          </div>
-          <div class="kanban-column" data-status="Resolved">
-            <div class="kanban-column-head"><span>Resolved</span><span class="count" data-count="Resolved">0</span></div>
-            <div class="kanban-cards" data-cards="Resolved"></div>
-          </div>
+          <div class="kanban-scroll-fade kanban-scroll-fade-left" aria-hidden="true"></div>
+          <div class="kanban-scroll-fade kanban-scroll-fade-right" aria-hidden="true"></div>
+        </div>
+        <div class="kanban-scroll-dots" id="kanban-scroll-dots" aria-hidden="true">
+          <span class="dot" data-dot="0"></span>
+          <span class="dot" data-dot="1"></span>
+          <span class="dot" data-dot="2"></span>
+          <span class="dot" data-dot="3"></span>
         </div>
       </section>
 
