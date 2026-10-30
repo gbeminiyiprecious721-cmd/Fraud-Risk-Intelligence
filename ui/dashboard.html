@@ -26,6 +26,7 @@
       <li><a href="#/analytics" data-view="analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="20" x2="5" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="14"/></svg><span class="label">Analytics</span></a></li>
       <li><a href="#/workflow" data-view="workflow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="4.5" height="16" rx="1"/><rect x="9.75" y="4" width="4.5" height="10" rx="1"/><rect x="16.5" y="4" width="4.5" height="13" rx="1"/></svg><span class="label">Workflow board</span></a></li>
       <li><a href="#/insights" data-view="insights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg><span class="label">Model insights</span></a></li>
+      <li><a href="#/benchmark" data-view="benchmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V4M4 20h16M8 17V9M13 17V5M18 17v-6"/></svg><span class="label">Model benchmarking</span></a></li>
       <li><a href="#/capacity" data-view="capacity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V4M4 20h16M7 16l4-5 4 2 5-8"/></svg><span class="label">Capacity simulator</span></a></li>
       <li><a href="#/responsible-ai" data-view="responsible-ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg><span class="label">Responsible use</span></a></li>
       <li><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg><span class="label">Single-transaction demo</span></a></li>
@@ -238,6 +239,29 @@
         </div>
       </section>
 
+      <section class="view benchmark-view" data-view="benchmark" aria-labelledby="view-heading-benchmark">
+        <h2 id="view-heading-benchmark" class="view-heading" tabindex="-1">Model Benchmarking</h2>
+        <p class="capacity-disclosure">Historical validation / development backtesting. Reused validation may overstate performance. Shared features and bounded training; no independent future-performance or promotion claim. Random Forest remains deployed.</p>
+        <p id="benchmark-status" role="status" aria-live="polite">Open this view to load measured evidence.</p>
+        <button type="button" class="ghost" id="benchmark-retry" hidden>Retry evidence</button>
+        <div id="benchmark-workspace" hidden>
+          <p id="benchmark-population" class="panel-note"></p>
+          <div class="benchmark-controls panel">
+            <label for="benchmark-metric">Comparison metric <select id="benchmark-metric"><option value="average_precision">Average Precision</option><option value="roc_auc">ROC-AUC</option><option value="top1">Precision at top 1%</option><option value="top5">Recall at top 5%</option></select></label>
+            <label for="benchmark-slider"><span>Review capacity <output id="benchmark-percent"></output></span><input type="range" id="benchmark-slider" min="0" max="200" step="1" value="2"></label>
+            <label for="benchmark-count">Transactions to review <input type="number" id="benchmark-count" min="0" step="1" aria-describedby="benchmark-step"></label>
+            <button type="button" class="ghost" id="benchmark-reset">Reset to 1%</button>
+            <span id="benchmark-step" class="panel-note">Snaps to 0.5% checkpoints.</span>
+          </div>
+          <div id="benchmark-kpis" class="benchmark-kpis"></div>
+          <div class="benchmark-charts">
+            <div class="panel"><h3>Shared-population comparison</h3><div class="benchmark-canvas"><canvas id="benchmark-metric-chart" role="img" aria-label="Measured validation metric by model"></canvas></div></div>
+            <div class="panel"><h3>Historical fraud capture</h3><div class="benchmark-canvas"><canvas id="benchmark-capacity-chart" role="img" aria-label="Historical recall versus review capacity for all four models"></canvas></div></div>
+          </div>
+          <div class="panel benchmark-table-wrap"><table class="benchmark-table"><caption>Measured model costs and exact selected-capacity metrics</caption><thead><tr><th scope="col">Model</th><th scope="col">AP [95% block interval]</th><th scope="col">Precision / recall</th><th scope="col">TP / FP / FN / TN</th><th scope="col">Training seconds</th><th scope="col">Scoring seconds / peak RSS</th></tr></thead><tbody id="benchmark-table"></tbody></table></div>
+          <details class="panel benchmark-findings"><summary id="benchmark-finding">Findings and limitations</summary><div id="benchmark-limits"></div></details>
+        </div>
+      </section>
       <!-- Stage 19: separate labelled validation population; never synthetic outcomes. -->
       <section class="view capacity-view" data-view="capacity" aria-labelledby="view-heading-capacity">
         <h2 id="view-heading-capacity" class="view-heading" tabindex="-1">Investigation Capacity Simulator</h2>
@@ -356,5 +380,6 @@
 
 <script src="dashboard.js"></script>
 <script src="capacity.js"></script>
+<script src="benchmark.js"></script>
 </body>
 </html>

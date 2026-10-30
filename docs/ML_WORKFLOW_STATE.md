@@ -1,5 +1,53 @@
 # ML Workflow State — Fraud-Risk-Intelligence
 
+## Portfolio enhancement Stage 20 — Challenger benchmarking (2026-10-30)
+
+The owner explicitly approved Stage 20, its pre-training protocol and five
+pinned optional dependencies. Implementation is verified locally on
+`stage20-challenger-benchmark`, based at Stage 19 merge
+`5b6e90d8bf5665d4a316c063e0a6a1b0737feab7`. The prior usage-limit
+interruption was recovered without discarding work or changing Git config.
+All 132 existing package versions remain unchanged; exactly five approved
+additions were installed. Training libraries are not runtime dependencies.
+
+Frozen RF inference and three bounded challengers share the authorised
+75,560-row validation population, 2,617 positives and 813 final features.
+Inner chronological train-only preprocessing/stopping precedes fixed-round
+full-train challenger fits. AP: RF 0.447002; LightGBM 0.545903;
+XGBoost 0.551777; CatBoost 0.490482. XGBoost has highest observed AP within
+this shared-representation budget, not proven future superiority. All three
+runs reached the round ceiling without establishing convergence. One identical
+XGBoost selection fit was repeated after a metadata serialization failure:
+seven executions for six scientific fits, no added candidate/retuning.
+Reused validation and selection optimism remain explicit limitations.
+
+The read-only eighth dashboard view serves verified aggregate evidence only.
+All 804 capacity checkpoints have independent confusion/precision/recall
+checks. All 1,000 paired chronological block draws were valid. Native reload,
+five-pass inference consistency, byte-identical aggregate reproduction and
+RF equivalence to Stage 19 evidence pass. Full suite: **453 passed, zero
+failures/skips**, including all six heavy/data-contract tests and 31 real-Chrome
+cases. Eighteen screenshots cover all eight desktop views at 1440×900 and
+1280×800 plus benchmark tablet/mobile layouts; default desktop outer content
+overflow is zero. See [Stage 20 report](STAGE20_CHALLENGER_BENCHMARK.md)
+for configurations, results, resource costs, evidence and limitations.
+
+Frozen RF checksum remains
+`2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+Original scientific records below are preserved verbatim. Closed final-test
+values/predictions were not used. Production scoring/security, deployment
+requirements, main and integration refs are unchanged. Initial implementation
+was committed locally only. The owner subsequently explicitly authorised final
+release review, branch push and a PR targeting `render-dashboard-integration`.
+Fresh full regression: **453 passed, zero failures/skips**, 197.72s, including
+all six heavy/data-contract checks and 31 real-Chrome cases. The independent
+release verifier re-read validation-only labels, reloaded native models and
+recomputed all 804 checkpoints plus 1,000 literal-row paired block bootstrap
+draws; all metrics/intervals match to 1e-12. Complete committed diff review
+found no implementation defect. Fresh evidence is linked in the Stage 20
+report. No merge, deployment, Render changes or model promotion is authorised;
+no Stage 21+ work is authorised.
+
 ## Portfolio enhancement Stage 19 — Investigation Capacity Simulator (2026-10-30)
 
 This is separate from the original closed ML Stages 0–19 below. The owner

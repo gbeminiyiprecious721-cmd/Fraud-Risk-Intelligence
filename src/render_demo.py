@@ -299,3 +299,8 @@ def public_dashboard_queue(n: int = 48, seed: int = 2024):
 @app.get("/capacity.js", include_in_schema=False)
 def capacity_js():
     return FileResponse(_UI_DIR / "capacity.js", media_type="application/javascript", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/benchmark.js", include_in_schema=False)
+def benchmark_js():
+    return FileResponse(_UI_DIR / "benchmark.js", media_type="application/javascript", headers={"Cache-Control": "no-store"})

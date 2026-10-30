@@ -828,3 +828,53 @@ footer.page-footer { text-align: center; color: var(--muted); font-size: 0.8rem;
   .capacity-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .capacity-controls { align-items: start; }
 }
+
+/* Stage 20 shared-representation benchmark, using the existing dark system. */
+.benchmark-view .view-heading { margin-bottom: .4rem; }
+.benchmark-controls { display:flex; flex-wrap:wrap; gap:.6rem 1rem; align-items:center; padding:.6rem .8rem; margin:.5rem 0; }
+.benchmark-controls label { display:flex; flex-direction:column; gap:.3rem; font-size:.76rem; flex:1 1 170px; min-width:0; }
+.benchmark-controls input, .benchmark-controls select { width:100%; min-width:0; }
+.benchmark-controls input[type=number], .benchmark-controls select { background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:.4rem; }
+.benchmark-charts { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; }
+.benchmark-charts .panel { min-width:0; padding:.65rem .8rem; margin:0; display:flex; flex-direction:column; }
+.benchmark-canvas { position:relative; height:200px; min-height:130px; }
+.benchmark-table-wrap { overflow:auto; padding:.35rem .65rem; margin:.6rem 0; }
+.benchmark-table { width:100%; border-collapse:collapse; font-size:.71rem; }
+.benchmark-table caption { text-align:left; color:var(--muted); padding:.2rem 0; }
+.benchmark-table th, .benchmark-table td { padding:.4rem; text-align:left; border-bottom:1px solid var(--border); }
+.benchmark-table th { color:var(--muted); }
+.benchmark-findings { padding:.55rem .8rem; margin:0; font-size:.76rem; }
+.benchmark-findings summary { cursor:pointer; }
+.benchmark-findings p { margin:.45rem 0; }
+#benchmark-workspace[hidden], #benchmark-retry[hidden] { display:none; }
+@media(min-width:901px) {
+ .benchmark-view.active { display:flex; flex-direction:column; height:100%; min-height:0; }
+ #benchmark-workspace { display:flex; flex-direction:column; flex:1 1 auto; min-height:0; }
+ #benchmark-workspace > * { flex-shrink:0; }
+ #benchmark-workspace > .benchmark-charts { flex:1 1 auto; min-height:170px; }
+ .benchmark-canvas { flex:1; height:auto; }
+}
+@media(max-width:900px) { .benchmark-charts { grid-template-columns:1fr; } .benchmark-table { min-width:700px; } }
+.benchmark-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.6rem; margin-bottom:.6rem; }
+.benchmark-kpis .kpi-card { padding:.4rem .65rem; }
+.benchmark-kpis .kpi-value { font-size:1.2rem; }
+.benchmark-kpis .kpi-label { font-size:.7rem; margin-bottom:.15rem; }
+.benchmark-kpis .panel-note { font-size:.65rem; }
+@media(max-width:600px) { .benchmark-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+#benchmark-status { font-size:.76rem; color:var(--muted); margin:0 0 .4rem; }
+#benchmark-status:empty { display:none; }
+#benchmark-population { margin:.15rem 0 .35rem; color:var(--muted); font-size:.76rem; }
+.benchmark-charts h3 { font-size:.88rem; margin:0 0 .35rem; }
+.benchmark-charts .panel { min-height:0; }
+@media(min-width:901px) {
+ .benchmark-controls { padding:.4rem .7rem; margin:.25rem 0 .4rem; }
+ .benchmark-kpis .kpi-card { padding:.3rem .6rem; }
+ .benchmark-kpis { margin-bottom:.4rem; }
+ .benchmark-kpis .panel-note { display:none; }
+ #benchmark-workspace > .benchmark-charts { min-height:160px; }
+ .benchmark-canvas { min-height:0; }
+ .benchmark-table th, .benchmark-table td { padding:.3rem; }
+ .benchmark-table-wrap { margin:.4rem 0; }
+}
+/* Benchmark already carries its population warning beside the results. */
+@media(min-width:901px) { .benchmark-active .header-controls { display:none; } }

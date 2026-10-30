@@ -1,0 +1,10 @@
+{
+  "phase": "aggregate",
+  "model": "none",
+  "wall_seconds": 9.602948125000694,
+  "rss_peak_bytes": 205520896,
+  "rss_baseline_bytes": 57901056,
+  "rss_increment_bytes": 147619840,
+  "sampling_seconds": 0.1,
+  "exit_code": 0
+}
