@@ -276,7 +276,15 @@ def test_direct_hash_navigation_resolves_correct_view_on_fresh_load(browser_env)
     time.sleep(0.3)  # let Chart.js finish creating the just-rendered canvases
     try:
         state = session.evaluate_json(
-            "JSON.stringify({activeView: document.querySelector('.view.active').dataset.view, chartCount: document.querySelectorAll('.analytics-grid canvas').length})"
+            # Stage 15 split Analytics into a 2x2 "primary" grid (4 charts,
+            # .analytics-grid-primary) plus one standalone 5th chart
+            # (.analytics-grid-wide-standalone) so the primary 4 can fill the
+            # view's available height without the 5th stealing space from
+            # them (see docs/DASHBOARD.md) -- both live inside the active
+            # Analytics view, so scoping the count to the view (not the old
+            # single .analytics-grid container, which no longer wraps all 5)
+            # is what still proves "5 charts, fresh load" that this test checks.
+            "JSON.stringify({activeView: document.querySelector('.view.active').dataset.view, chartCount: document.querySelectorAll('.view[data-view=\"analytics\"] canvas').length})"
         )
         assert state["activeView"] == "analytics"
         assert state["chartCount"] == 5
@@ -373,3 +381,94 @@ def test_no_console_errors_across_full_navigation_sweep(browser_env):
         assert not errors, f"Console exceptions during navigation: {errors}"
     finally:
         session.close()
+
+
+def test_product_chart_distinguishes_no_high_risk_from_no_matches(page):
+    page.click('.sidenav-list a[data-view="analytics"]')
+    page.evaluate("document.getElementById('filter-band').value = 'Low'; document.getElementById('filter-band').dispatchEvent(new Event('change'))")
+    assert page.evaluate("document.getElementById('chart-by-product-empty').textContent") == "No High or Critical transactions in the current scope."
+    page.evaluate("document.getElementById('filter-search').value = 'no-such-transaction'; document.getElementById('filter-search').dispatchEvent(new Event('input'))")
+    time.sleep(0.5)
+    assert page.evaluate("document.getElementById('chart-by-product-empty').textContent") == "No synthetic transactions match the current filters."
+    assert "Showing 0 of" in page.evaluate("document.getElementById('global-scope-status').textContent")
+    page.click('#reset-filters-btn')
+    assert page.evaluate("document.getElementById('chart-by-product-empty').hidden")
+    assert "Showing all" in page.evaluate("document.getElementById('global-scope-status').textContent")
+
+
+@pytest.mark.parametrize('width,height', [(1440, 900), (1280, 800), (1024, 600), (390, 844)])
+def test_refined_views_fit_width_and_keep_content_accessible(page, width, height):
+    page.send('Emulation.setDeviceMetricsOverride', {'width': width, 'height': height, 'deviceScaleFactor': 1, 'mobile': False})
+    for view in ['overview', 'queue', 'analytics', 'workflow', 'insights', 'responsible-ai']:
+        page.click(f'.sidenav-list a[data-view="{view}"]')
+        time.sleep(0.2)
+        metrics = page.evaluate_json("JSON.stringify({width: innerWidth, body: document.body.scrollWidth, heading: document.querySelector('.view.active h2').getBoundingClientRect().height})")
+        assert metrics['body'] <= metrics['width'], (view, metrics)
+        assert metrics['heading'] > 0
+    if width > 900:
+        page.click('.sidenav-list a[data-view="queue"]')
+        time.sleep(0.2)
+        assert page.evaluate("document.querySelector('.table-scroll-full').clientHeight > 0")
+        page.click('.sidenav-list a[data-view="analytics"]')
+        time.sleep(0.2)
+        assert page.evaluate("Array.from(document.querySelectorAll('.analytics-grid-primary canvas')).every(c => c.getBoundingClientRect().height > 0)")
+
+
+def test_single_score_back_link_and_disclosure_badge(page, browser_env):
+    page.navigate(f"{browser_env['static_origin']}/index.html")
+    page.click('.back-link')
+    page.wait_for_queue_data()
+    assert page.evaluate('location.hash') == '#/overview'
+    page.click('.badge-uncalibrated')
+    time.sleep(0.2)
+    assert page.evaluate("document.querySelector('.view.active').dataset.view") == 'responsible-ai'
+
+
+@pytest.mark.parametrize('width,height', [(1440, 900), (1280, 800)])
+def test_desktop_views_use_local_scroll_regions(page, width, height):
+    page.send('Emulation.setDeviceMetricsOverride', {'width': width, 'height': height, 'deviceScaleFactor': 1, 'mobile': False})
+    for view in ['overview', 'queue', 'analytics', 'workflow', 'insights', 'responsible-ai']:
+        page.click(f'.sidenav-list a[data-view="{view}"]')
+        time.sleep(0.3)
+        assert page.evaluate("document.body.scrollHeight <= innerHeight"), view
+        assert page.evaluate("document.querySelector('.view-container').scrollHeight <= document.querySelector('.view-container').clientHeight + 1"), view
+    page.click('.sidenav-list a[data-view="workflow"]')
+    time.sleep(0.3)
+    assert page.evaluate("Array.from(document.querySelectorAll('.kanban-column')).every(e => e.getBoundingClientRect().bottom <= document.querySelector('.view-container').getBoundingClientRect().bottom)")
+    assert page.evaluate("Array.from(document.querySelectorAll('.kanban-cards')).some(e => e.scrollHeight > e.clientHeight)")
+
+
+def test_kanban_chart_click_and_real_single_transaction_scoring(page, browser_env):
+    page.send('Emulation.setDeviceMetricsOverride', {'width': 1440, 'height': 900, 'deviceScaleFactor': 1, 'mobile': False})
+    page.click('.sidenav-list a[data-view="workflow"]')
+    time.sleep(0.3)
+    selected = page.evaluate("document.querySelector('.kanban-card').dataset.id")
+    page.click('.kanban-card')
+    assert page.evaluate("document.getElementById('drawer-id').textContent") == selected
+    assert page.evaluate("document.getElementById('detail-drawer').classList.contains('open')")
+    page.click('#drawer-close')
+    assert not page.evaluate("document.getElementById('detail-drawer').classList.contains('open')")
+    page.click('.sidenav-list a[data-view="analytics"]')
+    time.sleep(0.4)
+    assert page.evaluate("Array.from(document.querySelectorAll('.view[data-view=\"analytics\"] canvas')).every(c => Chart.getChart(c))")
+    # Send genuine browser pointer events to the first nonzero doughnut arc.
+    target = page.evaluate_json("""JSON.stringify((()=>{const c=Chart.getChart(document.getElementById('chart-band-breakdown')); const i=c.data.datasets[0].data.findIndex(n=>n>0); const e=c.getDatasetMeta(0).data[i]; const a=(e.startAngle+e.endAngle)/2; const r=(e.innerRadius+e.outerRadius)/2; const b=c.canvas.getBoundingClientRect(); return {x:b.x+e.x+Math.cos(a)*r,y:b.y+e.y+Math.sin(a)*r,band:c.data.labels[i]};})())""")
+    for event in ['mouseMoved', 'mousePressed', 'mouseReleased']:
+        page.send('Input.dispatchMouseEvent', {'type': event, 'x': target['x'], 'y': target['y'], 'button': 'left', 'clickCount': 1})
+    time.sleep(0.4)
+    assert page.evaluate("document.getElementById('filter-band').value") == target['band']
+    page.click('.sidenav-list a[data-view="queue"]')
+    time.sleep(0.3)
+    page.click('#reset-filters-btn')
+    assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length") == 48
+    page.navigate(f"{browser_env['static_origin']}/index.html")
+    page.click('#score-btn')
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline and page.evaluate("document.getElementById('result').hidden"):
+        time.sleep(0.2)
+    assert not page.evaluate("document.getElementById('result').hidden")
+    assert 0 <= float(page.evaluate("document.getElementById('score-value').textContent").split(' / ')[0]) <= 1
+    assert page.evaluate("document.getElementById('error').hidden && document.getElementById('unavailable').hidden")
+    page.click('.back-link')
+    page.wait_for_queue_data()
+    assert page.evaluate("document.querySelector('.view.active').dataset.view") == 'overview'

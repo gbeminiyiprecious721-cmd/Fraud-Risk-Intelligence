@@ -143,9 +143,15 @@ code { background: #0b0d10; padding: 0.1rem 0.3rem; border-radius: 0.2rem; font-
   border-radius: 999px;
   white-space: nowrap;
 }
-.badge-synthetic { background: var(--warn); color: #1a1d24; }
-.badge-uncalibrated { background: var(--panel-2); color: var(--muted); border: 1px solid var(--border); }
-.badge-health { background: var(--panel-2); border: 1px solid var(--border); }
+.badge-synthetic { background: var(--warn); color: #1a1d24; cursor: default; }
+/* .badge-uncalibrated is a real <a> to #/responsible-ai (Stage 15) -- styled
+   identically to the other, purely informational badges (no button-like
+   shading/border change) so it still reads as a label at a glance, while
+   genuinely navigating on click/Enter rather than being a decorative
+   dead control. */
+.badge-uncalibrated { background: var(--panel-2); color: var(--muted); border: 1px solid var(--border); text-decoration: none; }
+.badge-uncalibrated:hover, .badge-uncalibrated:focus-visible { color: var(--text); border-color: var(--accent); }
+.badge-health { background: var(--panel-2); border: 1px solid var(--border); cursor: default; }
 .badge-health .dot { width: 0.5rem; height: 0.5rem; border-radius: 50%; display: inline-block; }
 .dot-ok { background: var(--ok); }
 .dot-bad { background: var(--err); }
@@ -203,6 +209,17 @@ code { background: #0b0d10; padding: 0.1rem 0.3rem; border-radius: 0.2rem; font-
 .icon-btn svg { width: 1.05rem; height: 1.05rem; }
 .icon-btn:hover { filter: brightness(1.2); }
 
+/* Stage 15: visible on every view (unlike #controls-status, which lives
+   only inside the Queue view's filter panel), so "how much of the batch
+   is this view currently showing" stays legible while navigating. */
+.scope-status {
+  font-size: 0.78rem;
+  color: var(--muted);
+  white-space: nowrap;
+  margin-left: auto;
+}
+.scope-status.filtered { color: var(--accent); font-weight: 600; }
+
 /* ---------- view container / router (Stage 8) ---------- */
 .view-container { max-width: 1400px; width: 100%; margin: 0 auto; padding: 1.25rem 1.5rem 2rem; }
 .view { display: none; }
@@ -221,6 +238,7 @@ code { background: #0b0d10; padding: 0.1rem 0.3rem; border-radius: 0.2rem; font-
 .ghost-link { font-size: 0.82rem; font-weight: 600; white-space: nowrap; }
 
 @media (min-width: 901px) {
+  .view-container { padding-top: 1rem; padding-bottom: 1rem; }
   /* Desktop: a fixed-height app shell where the view area scrolls
      internally, so switching views never requires scrolling through
      several dashboard sections stacked on one long page (the explicit
@@ -233,29 +251,83 @@ code { background: #0b0d10; padding: 0.1rem 0.3rem; border-radius: 0.2rem; font-
   .app-main { height: 100vh; display: flex; flex-direction: column; }
   .topbar, footer.page-footer { flex: 0 0 auto; }
   .view-container { flex: 1 1 auto; overflow-y: auto; min-height: 0; }
+
+  /* Bound the five desktop data views to the available content height.
+     Each has a designated flex region for local scrolling (Overview uses
+     its preview panel). Responsible Use retains natural block layout.
+     Minimum usable region heights below permit outer scrolling on short
+     desktops rather than collapsing or clipping essential content. */
+  .view.view-flex.active { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+  /* Keep headings and filters at natural height. The content region's
+     minimum below lets the outer container scroll on short desktops. */
+  .view.view-flex.active > *:not(.view-fill) { flex-shrink: 0; }
+  /* Preserve usable content on short desktops or when the header wraps.
+     The outer view-container scrolls when this minimum cannot fit. */
+  .view-fill { flex: 1 1 auto; min-height: 320px; display: flex; flex-direction: column; overflow-y: auto; }
 }
 
-/* Overview: compact KPI + mini analytics + queue preview */
-.overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+/* Overview: compact KPI + mini analytics + queue preview. Heights/margins
+   here are deliberately tighter than the other views' natural sizing --
+   measured against a real 1280x800 render (Stage 15): the KPI row + the
+   two mini charts are the part this view's own requirement calls out as
+   needing to stay visible together without scrolling past one to reach
+   the other; the preview table below may still need its own scroll on a
+   short viewport, which is fine since it already scrolls internally. */
+.overview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 1rem; }
 @media (max-width: 700px) { .overview-grid { grid-template-columns: 1fr; } }
-.chart-canvas-wrap-sm { height: 150px; }
-.table-scroll-preview { max-height: 300px; }
+.chart-canvas-wrap.chart-canvas-wrap-sm { height: 120px; }
+.table-scroll.table-scroll-preview { max-height: 230px; }
 .table-scroll-full { max-height: 68vh; }
-@media (min-width: 901px) { .table-scroll-full { max-height: none; } }
 
-/* Analytics: dedicated chart grid filling its own view */
+/* Analytics: the 4 primary charts fill the view's available height as a
+   true 2x2 grid (Stage 15 requirement); the 5th, supplementary "by queue
+   order" chart sits below, in the view's natural (scrollable) overflow --
+   it was never one of "the four" the requirement names. */
 .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
 .analytics-grid .chart-canvas-wrap { height: 220px; }
-.analytics-grid-wide { grid-column: 1 / -1; }
+.analytics-grid-wide-standalone { margin-top: 1.1rem; flex: 0 0 auto; }
 @media (max-width: 900px) { .analytics-grid { grid-template-columns: 1fr; } }
+@media (min-width: 901px) {
+  /* flex:0 0 auto + min-height:100% (not height:100%, and not flex:1 1 auto)
+     -- the primary 2x2 grid must ALWAYS get at least the view-fill's full
+     available height, never shrink to make room for the 5th standalone
+     chart appended after it. That chart is "extra" content past what the
+     requirement calls "the four charts"; it's meant to push .view-fill's
+     own total content past its box and trigger ITS internal overflow-y:auto
+     scroll (already set on .view-fill), not resize the 2x2 grid. Confirmed
+     by measurement: without flex-shrink:0 here, flexbox shrank this grid to
+     fit the standalone chart's natural height instead, visibly overlapping
+     all 4 charts' titles and canvases into a ~190px sliver. */
+  /* height (not min-height): CSS Grid's `1fr` row tracks only divide the
+     container's space evenly when the container itself has a DEFINITE
+     height -- min-height alone left the grid's own height content-driven,
+     so row 1 just grew to fit its content and pushed row 2 off-screen
+     instead of the two rows splitting evenly (confirmed by measurement).
+     Safe to use a fixed height here specifically because flex-shrink:0
+     above means this item is never squeezed by its sibling regardless. */
+  .analytics-grid-primary { flex: 0 0 auto; height: 100%; grid-template-rows: 1fr 1fr; }
+  .analytics-grid-primary .chart-card { display: flex; flex-direction: column; min-height: 0; margin-bottom: 0; }
+  .analytics-grid-primary .chart-canvas-wrap { flex: 1 1 auto; height: auto; min-height: 0; }
+}
 
 /* Model Insights */
 .insights-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 1.1rem; }
 @media (max-width: 800px) { .insights-grid { grid-template-columns: 1fr; } }
+@media (min-width: 901px) {
+  .insights-grid { height: 100%; }
+  .insights-drivers-panel { display: flex; flex-direction: column; min-height: 0; }
+  .insights-drivers-panel #insights-feature-importance { flex: 1 1 auto; overflow-y: auto; min-height: 0; margin-top: 0.3rem; }
+}
 
-/* Workflow: dedicated, taller board */
+/* Workflow: the board fills the view's available height on desktop so its
+   own 4 columns -- each independently scrollable -- are what scrolls, not
+   the outer view. Mobile/tablet (<=900px) keeps Stage 10's exact
+   fixed-height behavior (68vh) untouched. */
 .kanban-board-full .kanban-column { max-height: 68vh; }
-@media (min-width: 901px) { .kanban-board-full .kanban-column { max-height: calc(100vh - 220px); } }
+@media (min-width: 901px) {
+  .kanban-board-full .kanban-column { max-height: none; height: 100%; }
+  .kanban-board { height: 100%; }
+}
 
 /* ---------- historical model performance (Stage 10) ---------- */
 .historical-panel {
@@ -274,9 +346,9 @@ code { background: #0b0d10; padding: 0.1rem 0.3rem; border-radius: 0.2rem; font-
 /* ---------- KPI grid ---------- */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 0.8rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 0.7rem;
+  margin-bottom: 1rem;
 }
 .kpi-card {
   background: var(--panel);
@@ -345,6 +417,13 @@ button.ghost {
   border-radius: 0.4rem;
   cursor: pointer;
 }
+/* Stage 15: "make Reset all filters obvious and reliable" -- it's a no-op
+   with nothing to reset until a filter is actually active, so it starts
+   visually quiet (dimmed, inert) and becomes an unmistakable accent-bordered
+   action the moment there's something to clear. Reliability is functional
+   (already worked before this stage); this is the legibility half. */
+#reset-filters-btn { opacity: 0.55; transition: opacity 0.15s ease, border-color 0.15s ease; }
+#reset-filters-btn.has-active-filters { opacity: 1; border-color: var(--accent); color: var(--accent); font-weight: 600; }
 button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   outline: 3px solid #fff;
   outline-offset: 2px;
@@ -372,6 +451,15 @@ button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible
 
 /* queue table */
 .table-scroll { max-height: 560px; overflow-y: auto; overflow-x: auto; border: 1px solid var(--border); border-radius: 0.4rem; }
+@media (min-width: 901px) {
+  /* The Queue view's .view-fill contains exactly one panel; let the panel
+     and its table-scroll stretch to fill the available height so the
+     TABLE scrolls internally (as the requirement asks), instead of a
+     fixed/removed max-height letting the panel grow past the viewport and
+     making the outer .view-container scroll instead. */
+  .view-fill > .queue-panel { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  .view-fill > .queue-panel .table-scroll-full { flex: 1 1 auto; max-height: none; min-height: 0; }
+}
 table.queue { width: 100%; min-width: 620px; border-collapse: collapse; font-size: 0.85rem; }
 table.queue thead th {
   position: sticky; top: 0;
@@ -454,6 +542,33 @@ table.queue tbody tr.selected { background: rgba(90, 169, 255, 0.14); }
    charts went blank), because it fought Chart.js's own sizing logic
    rather than complementing it. */
 .chart-clickable-hint { font-style: italic; }
+
+/* Stage 15: a chart whose filtered scope is empty used to just vanish
+   (Chart.js destroyed/left blank), with no explanation -- confusing,
+   indistinguishable from a bug. Overlaid on .chart-canvas-wrap (already
+   position:relative) instead of replacing the canvas, so the chart
+   reappears immediately once a filter is relaxed, with no re-layout. */
+.chart-empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1rem;
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  background: var(--panel);
+}
+/* Author-origin CSS always wins over the browser's default [hidden]{display:
+   none} UA rule, regardless of selector specificity (CSS cascade origin, not
+   specificity, decides between the two) -- so the unconditional display:flex
+   above was silently defeating the `hidden` attribute entirely, permanently
+   showing this overlay over every chart. Confirmed directly: getComputedStyle
+   reported display:flex even with hidden===true before this rule was added.
+   This explicit, higher-specificity override restores the intended toggle. */
+.chart-empty-state[hidden] { display: none; }
 
 /* health mini panel -- a small stat-tile grid (reusing the historical
    panel's .k/.v visual language) instead of a plain label:value list, so
@@ -622,8 +737,8 @@ table.queue tbody tr.selected { background: rgba(90, 169, 255, 0.14); }
   padding: 1rem 1.2rem;
   margin-top: 0.5rem;
 }
-.responsible-ai ul { margin: 0.4rem 0 0 0; padding-left: 1.3rem; font-size: 0.88rem; }
-.responsible-ai li { margin-bottom: 0.3rem; }
+.responsible-ai ul { margin: 0.5rem 0 0 0; padding-left: 1.3rem; font-size: 0.9rem; line-height: 1.6; }
+.responsible-ai li { margin-bottom: 0.4rem; }
 
 .responsible-ai-aside .quick-facts { list-style: none; margin: 0.6rem 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
 .responsible-ai-aside .quick-facts .badge { width: fit-content; }
@@ -640,4 +755,28 @@ footer.page-footer { text-align: center; color: var(--muted); font-size: 0.8rem;
   .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
   .kpi-value { font-size: 1.25rem; }
   .historical-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Stage 15 final desktop fit: bound the board's intermediate wrapper and
+   give Overview's preview the remaining space, with local table scrolling. */
+@media (min-width: 901px) {
+  footer.page-footer { padding: 0.5rem 1.5rem; }
+  .view[data-view="workflow"] .kanban-scroll-wrap { flex: 1 1 auto; min-height: 0; }
+  .view[data-view="workflow"] .kanban-column-head { flex-shrink: 0; }
+  .view[data-view="workflow"] .kanban-cards { min-height: 0; }
+  .view[data-view="queue"] .view-fill { min-height: 240px; }
+  .view[data-view="overview"] > .overview-preview {
+    flex: 1 1 auto; min-height: 150px; display: flex; flex-direction: column; margin-bottom: 0; padding: 0.75rem 1rem;
+  }
+  .overview-preview .table-scroll-preview { flex: 1 1 auto; min-height: 0; max-height: none; }
+  .overview-grid { gap: 0.85rem; margin-bottom: 0.85rem; }
+  .overview-grid .panel { padding: 0.75rem 1rem; margin-bottom: 0; }
+  .overview-grid .chart-canvas-wrap-sm { height: 110px; }
+}
+@media (min-width: 1200px) {
+  .kpi-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .kpi-card { padding: 0.65rem 0.75rem; }
+  .kpi-label { font-size: 0.7rem; letter-spacing: 0.02em; }
+  .kpi-sub { font-size: 0.7rem; }
+  .kpi-card-head svg { flex-shrink: 0; }
 }

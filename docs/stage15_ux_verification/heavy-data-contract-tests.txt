@@ -1,0 +1,22 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.15, pytest-9.1.1, pluggy-1.7.0 -- /Users/MicrosoftSurface2/Projects/data-science-lab/Fraud-Risk-Intelligence/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/MicrosoftSurface2/Projects/data-science-lab/Fraud-Risk-Intelligence
+configfile: pytest.ini
+plugins: anyio-4.15.1, platformdirs-4.13.5
+collecting ... collected 405 items / 399 deselected / 6 selected
+
+tests/test_data_contract.py::test_full_train_partition_isfraud_is_strictly_binary_with_no_nulls PASSED [ 16%]
+tests/test_data_contract.py::test_full_train_partition_transactionid_is_unique_not_null_and_matches_documented_count PASSED [ 33%]
+tests/test_data_contract.py::test_full_train_partition_transactiondt_has_no_nulls_and_is_numeric PASSED [ 50%]
+tests/test_data_contract.py::test_full_train_partition_has_every_required_feature_column_present PASSED [ 66%]
+tests/test_data_contract.py::test_legitimate_feature_missingness_is_not_a_contract_violation PASSED [ 83%]
+tests/test_production_pipeline.py::test_full_training_regression_against_independent_reference_procedure PASSED [100%]
+
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /Users/MicrosoftSurface2/Projects/data-science-lab/Fraud-Risk-Intelligence/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========== 6 passed, 399 deselected, 1 warning in 138.15s (0:02:18) ===========

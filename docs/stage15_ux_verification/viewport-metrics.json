@@ -1,0 +1,554 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "overview",
+    "metrics": {
+      "body": {
+        "clientHeight": 900,
+        "scrollHeight": 900,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "overflowY": "hidden"
+      },
+      ".app-main": {
+        "clientHeight": 900,
+        "scrollHeight": 900,
+        "clientWidth": 1208,
+        "scrollWidth": 1208,
+        "overflowY": "visible"
+      },
+      ".view-container": {
+        "clientHeight": 721,
+        "scrollHeight": 721,
+        "clientWidth": 1208,
+        "scrollWidth": 1208,
+        "overflowY": "auto"
+      },
+      ".view.active": {
+        "clientHeight": 689,
+        "scrollHeight": 689,
+        "clientWidth": 1160,
+        "scrollWidth": 1160,
+        "overflowY": "visible"
+      },
+      ".view.active .view-fill": {
+        "clientHeight": 308,
+        "scrollHeight": 308,
+        "clientWidth": 1158,
+        "scrollWidth": 1158,
+        "overflowY": "auto"
+      },
+      ".view.active .table-scroll": {
+        "clientHeight": 220,
+        "scrollHeight": 338,
+        "clientWidth": 1109,
+        "scrollWidth": 1109,
+        "overflowY": "auto"
+      },
+      ".view.active .kanban-board": null
+    }
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "queue",
+    "metrics": {
+      "body": {
+        "clientHeight": 900,
+        "scrollHeight": 900,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "overflowY": "hidden"
+      },
+      ".app-main": {
+        "clientHeight": 900,
+        "scrollHeight": 900,
+        "clientWidth": 1208,
+        "scrollWidth": 1208,
+        "overflowY": "visible"
+      },
+      ".view-container": {
+        "clientHeight": 721,
+        "scrollHeight": 721,
+        "clientWidth": 1208,
+        "scrollWidth": 1208,
+        "overflowY": "auto"
+      },
+      ".view.active": {
+        "clientHeight": 689,
+        "scrollHeight": 689,
+        "clientWidth": 1160,
+        "scrollWidth": 1160,
+        "overflowY": "visible"
+      },
+      ".view.active .view-fill": {
+        "clientHeight": 452,
+        "scrollHeight": 452,
+        "clientWidth": 1160,
+        "scrollWidth": 1160,
+        "overflowY": "auto"
+      },
+      ".view.active .table-scroll": {
+        "clientHeight": 371,
+        "scrollHeight": 2356,
+        "clientWidth": 1106,
+        "scrollWidth": 1106,
+        "overflowY": "auto"
+      },
+      ".view.active .kanban-board": null
+    }
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "analytics",
+    "metrics": {
+      "body": {
+        "clientHeight": 900,
+        "scrollHeight": 900,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "overflowY": "hidden"
+      },
+      ".app-main": {
+        "clientHeight": 900,
+        "scrollHeight": 900,
+        "clientWidth": 1208,
+        "scrollWidth": 1208,
+        "overflowY": "visible"
+      },
+      ".view-container": {
+        "clientHeight": 721,
+        "scrollHeight": 721,
+        "clientWidth": 1208,
+        "scrollWidth": 1208,
+        "overflowY": "auto"
+      },
+      ".view.active": {
+        "clientHeight": 689,
+        "scrollHeight": 689,
+        "clientWidth": 1160,
+        "scrollWidth": 1160,
+        "overflowY": "visible"
+      },
+      ".view.active .view-fill": {
+        "clientHeight": 588,
+        "scrollHeight": 906,
+        "clientWidth": 1145,
+        "scrollWidth": 1145,
+        "overflowY": "auto"
+      },
+      ".view.active .table-scroll": null,
+      ".view.active .kanban-board": null
+    }
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "workflow",
+    "metrics": {
+      "body": {
+        "clientHeight": 900,
+        "scrollHeight": 900,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "overflowY": "hidden"
+      },
+      ".app-main": {
+        "clientHeight": 900,
+        "scrollHeight": 900,
+        "clientWidth": 1208,
+        "scrollWidth": 1208,
+        "overflowY": "visible"
+      },
+      ".view-container": {
+        "clientHeight": 721,
+        "scrollHeight": 721,
+        "clientWidth": 1208,
+        "scrollWidth": 1208,
+        "overflowY": "auto"
+      },
+      ".view.active": {
+        "clientHeight": 689,
+        "scrollHeight": 689,
+        "clientWidth": 1160,
+        "scrollWidth": 1160,
+        "overflowY": "visible"
+      },
+      ".view.active .view-fill": {
+        "clientHeight": 588,
+        "scrollHeight": 588,
+        "clientWidth": 1160,
+        "scrollWidth": 1160,
+        "overflowY": "auto"
+      },
+      ".view.active .table-scroll": null,
+      ".view.active .kanban-board": {
+        "clientHeight": 588,
+        "scrollHeight": 588,
+        "clientWidth": 1160,
+        "scrollWidth": 1160,
+        "overflowY": "auto"
+      }
+    }
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "insights",
+    "metrics": {
+      "body": {
+        "clientHeight": 900,
+        "scrollHeight": 900,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "overflowY": "hidden"
+      },
+      ".app-main": {
+        "clientHeight": 900,
+        "scrollHeight": 900,
+        "clientWidth": 1208,
+        "scrollWidth": 1208,
+        "overflowY": "visible"
+      },
+      ".view-container": {
+        "clientHeight": 721,
+        "scrollHeight": 721,
+        "clientWidth": 1208,
+        "scrollWidth": 1208,
+        "overflowY": "auto"
+      },
+      ".view.active": {
+        "clientHeight": 689,
+        "scrollHeight": 689,
+        "clientWidth": 1160,
+        "scrollWidth": 1160,
+        "overflowY": "visible"
+      },
+      ".view.active .view-fill": {
+        "clientHeight": 473,
+        "scrollHeight": 473,
+        "clientWidth": 1160,
+        "scrollWidth": 1160,
+        "overflowY": "auto"
+      },
+      ".view.active .table-scroll": null,
+      ".view.active .kanban-board": null
+    }
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "responsible-ai",
+    "metrics": {
+      "body": {
+        "clientHeight": 900,
+        "scrollHeight": 900,
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "overflowY": "hidden"
+      },
+      ".app-main": {
+        "clientHeight": 900,
+        "scrollHeight": 900,
+        "clientWidth": 1208,
+        "scrollWidth": 1208,
+        "overflowY": "visible"
+      },
+      ".view-container": {
+        "clientHeight": 721,
+        "scrollHeight": 721,
+        "clientWidth": 1208,
+        "scrollWidth": 1208,
+        "overflowY": "auto"
+      },
+      ".view.active": {
+        "clientHeight": 485,
+        "scrollHeight": 485,
+        "clientWidth": 1160,
+        "scrollWidth": 1160,
+        "overflowY": "visible"
+      },
+      ".view.active .view-fill": null,
+      ".view.active .table-scroll": null,
+      ".view.active .kanban-board": null
+    }
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "overview",
+    "metrics": {
+      "body": {
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "clientWidth": 1280,
+        "scrollWidth": 1280,
+        "overflowY": "hidden"
+      },
+      ".app-main": {
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "clientWidth": 1048,
+        "scrollWidth": 1048,
+        "overflowY": "visible"
+      },
+      ".view-container": {
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "clientWidth": 1048,
+        "scrollWidth": 1048,
+        "overflowY": "auto"
+      },
+      ".view.active": {
+        "clientHeight": 589,
+        "scrollHeight": 589,
+        "clientWidth": 1000,
+        "scrollWidth": 1000,
+        "overflowY": "visible"
+      },
+      ".view.active .view-fill": {
+        "clientHeight": 191,
+        "scrollHeight": 191,
+        "clientWidth": 998,
+        "scrollWidth": 998,
+        "overflowY": "auto"
+      },
+      ".view.active .table-scroll": {
+        "clientHeight": 103,
+        "scrollHeight": 338,
+        "clientWidth": 949,
+        "scrollWidth": 949,
+        "overflowY": "auto"
+      },
+      ".view.active .kanban-board": null
+    }
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "queue",
+    "metrics": {
+      "body": {
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "clientWidth": 1280,
+        "scrollWidth": 1280,
+        "overflowY": "hidden"
+      },
+      ".app-main": {
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "clientWidth": 1048,
+        "scrollWidth": 1048,
+        "overflowY": "visible"
+      },
+      ".view-container": {
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "clientWidth": 1048,
+        "scrollWidth": 1048,
+        "overflowY": "auto"
+      },
+      ".view.active": {
+        "clientHeight": 589,
+        "scrollHeight": 589,
+        "clientWidth": 1000,
+        "scrollWidth": 1000,
+        "overflowY": "visible"
+      },
+      ".view.active .view-fill": {
+        "clientHeight": 320,
+        "scrollHeight": 320,
+        "clientWidth": 1000,
+        "scrollWidth": 1000,
+        "overflowY": "auto"
+      },
+      ".view.active .table-scroll": {
+        "clientHeight": 220,
+        "scrollHeight": 2356,
+        "clientWidth": 946,
+        "scrollWidth": 946,
+        "overflowY": "auto"
+      },
+      ".view.active .kanban-board": null
+    }
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "analytics",
+    "metrics": {
+      "body": {
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "clientWidth": 1280,
+        "scrollWidth": 1280,
+        "overflowY": "hidden"
+      },
+      ".app-main": {
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "clientWidth": 1048,
+        "scrollWidth": 1048,
+        "overflowY": "visible"
+      },
+      ".view-container": {
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "clientWidth": 1048,
+        "scrollWidth": 1048,
+        "overflowY": "auto"
+      },
+      ".view.active": {
+        "clientHeight": 589,
+        "scrollHeight": 589,
+        "clientWidth": 1000,
+        "scrollWidth": 1000,
+        "overflowY": "visible"
+      },
+      ".view.active .view-fill": {
+        "clientHeight": 488,
+        "scrollHeight": 806,
+        "clientWidth": 985,
+        "scrollWidth": 985,
+        "overflowY": "auto"
+      },
+      ".view.active .table-scroll": null,
+      ".view.active .kanban-board": null
+    }
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "workflow",
+    "metrics": {
+      "body": {
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "clientWidth": 1280,
+        "scrollWidth": 1280,
+        "overflowY": "hidden"
+      },
+      ".app-main": {
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "clientWidth": 1048,
+        "scrollWidth": 1048,
+        "overflowY": "visible"
+      },
+      ".view-container": {
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "clientWidth": 1048,
+        "scrollWidth": 1048,
+        "overflowY": "auto"
+      },
+      ".view.active": {
+        "clientHeight": 589,
+        "scrollHeight": 589,
+        "clientWidth": 1000,
+        "scrollWidth": 1000,
+        "overflowY": "visible"
+      },
+      ".view.active .view-fill": {
+        "clientHeight": 488,
+        "scrollHeight": 488,
+        "clientWidth": 1000,
+        "scrollWidth": 1000,
+        "overflowY": "auto"
+      },
+      ".view.active .table-scroll": null,
+      ".view.active .kanban-board": {
+        "clientHeight": 488,
+        "scrollHeight": 488,
+        "clientWidth": 1000,
+        "scrollWidth": 1000,
+        "overflowY": "auto"
+      }
+    }
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "insights",
+    "metrics": {
+      "body": {
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "clientWidth": 1280,
+        "scrollWidth": 1280,
+        "overflowY": "hidden"
+      },
+      ".app-main": {
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "clientWidth": 1048,
+        "scrollWidth": 1048,
+        "overflowY": "visible"
+      },
+      ".view-container": {
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "clientWidth": 1048,
+        "scrollWidth": 1048,
+        "overflowY": "auto"
+      },
+      ".view.active": {
+        "clientHeight": 589,
+        "scrollHeight": 589,
+        "clientWidth": 1000,
+        "scrollWidth": 1000,
+        "overflowY": "visible"
+      },
+      ".view.active .view-fill": {
+        "clientHeight": 373,
+        "scrollHeight": 373,
+        "clientWidth": 1000,
+        "scrollWidth": 1000,
+        "overflowY": "auto"
+      },
+      ".view.active .table-scroll": null,
+      ".view.active .kanban-board": null
+    }
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "responsible-ai",
+    "metrics": {
+      "body": {
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "clientWidth": 1280,
+        "scrollWidth": 1280,
+        "overflowY": "hidden"
+      },
+      ".app-main": {
+        "clientHeight": 800,
+        "scrollHeight": 800,
+        "clientWidth": 1048,
+        "scrollWidth": 1048,
+        "overflowY": "visible"
+      },
+      ".view-container": {
+        "clientHeight": 621,
+        "scrollHeight": 621,
+        "clientWidth": 1048,
+        "scrollWidth": 1048,
+        "overflowY": "auto"
+      },
+      ".view.active": {
+        "clientHeight": 531,
+        "scrollHeight": 531,
+        "clientWidth": 1000,
+        "scrollWidth": 1000,
+        "overflowY": "visible"
+      },
+      ".view.active .view-fill": null,
+      ".view.active .table-scroll": null,
+      ".view.active .kanban-board": null
+    }
+  }
+]

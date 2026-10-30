@@ -39,12 +39,12 @@
       </button>
       <div class="topbar-titles">
         <h1>Fraud Risk <span style="color: var(--accent);">Intelligence</span> Dashboard</h1>
-        <p class="subtitle">Portfolio demonstration &mdash; an investigation-prioritization view, not a production fraud system.</p>
+        <p class="subtitle">Interactive fraud risk analysis and investigation prioritisation.</p>
       </div>
       <div class="topbar-badges">
         <span class="badge badge-synthetic" title="Every transaction shown here is fabricated for this demo, never a real or training record.">Synthetic / portfolio demonstration</span>
-        <span class="badge badge-uncalibrated" title="No calibration check (reliability diagram, Brier score) has been performed on this score anywhere in the project.">Not a calibrated probability</span>
-        <span class="badge badge-health" id="health-badge"><span class="dot" id="health-dot"></span><span id="health-text">Checking service&hellip;</span></span>
+        <a class="badge badge-uncalibrated" href="#/responsible-ai" title="No calibration check (reliability diagram, Brier score) has been performed on this score anywhere in the project. Click for the full Responsible AI disclosure.">Not a calibrated probability</a>
+        <span class="badge badge-health" id="health-badge" role="status"><span class="dot" id="health-dot"></span><span id="health-text">Checking service&hellip;</span></span>
       </div>
       <div class="header-controls">
         <div class="header-search">
@@ -65,13 +65,14 @@
         <button type="button" class="icon-btn" id="reload-btn" title="Re-score the current demo sequence" aria-label="Reload current demo batch">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h5"/><path d="M20 20v-5h-5"/><path d="M5.5 9A7 7 0 0118 8.5M18.5 15A7 7 0 016 15.5"/></svg>
         </button>
+        <span id="global-scope-status" class="scope-status" role="status" aria-live="polite"></span>
       </div>
     </header>
 
     <div class="view-container" id="view-container" tabindex="-1">
 
       <!-- ===================== OVERVIEW ===================== -->
-      <section class="view" data-view="overview" aria-labelledby="view-heading-overview">
+      <section class="view view-flex" data-view="overview" aria-labelledby="view-heading-overview">
         <h2 id="view-heading-overview" class="view-heading" tabindex="-1">Overview</h2>
         <section class="kpi-grid" id="kpi-grid" aria-label="Key metrics for this batch">
           <!-- populated by dashboard.js -->
@@ -79,14 +80,14 @@
         <div class="overview-grid">
           <div class="panel chart-card">
             <h3>Risk band breakdown</h3>
-            <div class="chart-canvas-wrap chart-canvas-wrap-sm"><canvas id="chart-band-breakdown-mini" role="img" aria-label="Count of transactions per risk band for this batch"></canvas></div>
+            <div class="chart-canvas-wrap chart-canvas-wrap-sm"><canvas id="chart-band-breakdown-mini" role="img" aria-label="Count of transactions per risk band for this batch"></canvas><p class="chart-empty-state" id="chart-band-breakdown-mini-empty" hidden>No matching transactions.</p></div>
           </div>
           <div class="panel chart-card">
             <h3>Risk score distribution</h3>
-            <div class="chart-canvas-wrap chart-canvas-wrap-sm"><canvas id="chart-distribution-mini" role="img" aria-label="Histogram of risk scores across the current batch"></canvas></div>
+            <div class="chart-canvas-wrap chart-canvas-wrap-sm"><canvas id="chart-distribution-mini" role="img" aria-label="Histogram of risk scores across the current batch"></canvas><p class="chart-empty-state" id="chart-distribution-mini-empty" hidden>No matching transactions.</p></div>
           </div>
         </div>
-        <div class="panel">
+        <div class="panel overview-preview view-fill">
           <div class="panel-head-row">
             <h3>Investigation preview</h3>
             <a href="#/queue" class="ghost-link">View full queue &rarr;</a>
@@ -104,7 +105,7 @@
       </section>
 
       <!-- ===================== INVESTIGATION QUEUE ===================== -->
-      <section class="view" data-view="queue" aria-labelledby="view-heading-queue">
+      <section class="view view-flex" data-view="queue" aria-labelledby="view-heading-queue">
         <h2 id="view-heading-queue" class="view-heading" tabindex="-1">Investigation Queue</h2>
         <section class="controls" aria-label="Filters and controls">
           <div class="controls-heading">
@@ -135,102 +136,108 @@
               <input type="range" id="filter-amount-max" min="5" max="5000" step="5" value="5000">
             </div>
           </div>
-          <button type="button" class="ghost" id="reset-filters-btn">Reset filters</button>
+          <button type="button" class="ghost" id="reset-filters-btn">Reset all filters</button>
           <span id="controls-status" role="status" aria-live="polite"></span>
         </section>
-        <div class="panel queue-panel">
-          <p class="panel-note">Each row is a synthetic transaction scored live, on request, by the real frozen model artifact. Click a row to inspect it, or click a column header to sort. Filters here apply across every view.</p>
-          <div class="table-scroll table-scroll-full">
-            <table class="queue" id="queue-table">
-              <thead>
-                <tr>
-                  <th class="sortable" data-sort-key="transaction_id" aria-sort="none"><button type="button">Transaction ID <span class="sort-caret">&#9662;</span></button></th>
-                  <th>ProductCD</th>
-                  <th class="sortable" data-sort-key="amount" aria-sort="none"><button type="button">Amount <span class="sort-caret">&#9662;</span></button></th>
-                  <th class="sortable" data-sort-key="risk_score" aria-sort="descending"><button type="button">Risk score <span class="sort-caret">&#9662;</span></button></th>
-                  <th>Risk band</th>
-                  <th>Status</th>
-                  <th>Order</th>
-                  <th><span class="visually-hidden">Actions</span></th>
-                </tr>
-              </thead>
-              <tbody id="queue-tbody">
-                <tr><td colspan="8" class="table-empty">Loading&hellip;</td></tr>
-              </tbody>
-            </table>
+        <div class="view-fill">
+          <div class="panel queue-panel">
+            <p class="panel-note">Each row is a synthetic transaction scored live, on request, by the real frozen model artifact. Click a row to inspect it, or click a column header to sort. Filters here apply across every view.</p>
+            <div class="table-scroll table-scroll-full">
+              <table class="queue" id="queue-table">
+                <thead>
+                  <tr>
+                    <th class="sortable" data-sort-key="transaction_id" aria-sort="none"><button type="button">Transaction ID <span class="sort-caret">&#9662;</span></button></th>
+                    <th>ProductCD</th>
+                    <th class="sortable" data-sort-key="amount" aria-sort="none"><button type="button">Amount <span class="sort-caret">&#9662;</span></button></th>
+                    <th class="sortable" data-sort-key="risk_score" aria-sort="descending"><button type="button">Risk score <span class="sort-caret">&#9662;</span></button></th>
+                    <th>Risk band</th>
+                    <th>Status</th>
+                    <th>Order</th>
+                    <th><span class="visually-hidden">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody id="queue-tbody">
+                  <tr><td colspan="8" class="table-empty">Loading&hellip;</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
 
       <!-- ===================== ANALYTICS ===================== -->
-      <section class="view" data-view="analytics" aria-labelledby="view-heading-analytics">
+      <section class="view view-flex" data-view="analytics" aria-labelledby="view-heading-analytics">
         <h2 id="view-heading-analytics" class="view-heading" tabindex="-1">Analytics</h2>
         <p class="panel-note view-intro">Charts reflect the current demo batch and active filters (same scope as the Investigation Queue). Binned/scaled explicitly where the data clusters narrowly &mdash; no invented time-series, real fraud rates, or outcomes.</p>
-        <div class="analytics-grid">
-          <div class="panel chart-card">
-            <h3>Risk score distribution</h3>
-            <p class="panel-note" id="distribution-note">Binned across this batch's own observed score range (not a fixed 0&ndash;1 axis) so the shape stays readable even when scores cluster narrowly.</p>
-            <div class="chart-canvas-wrap"><canvas id="chart-distribution" role="img" aria-label="Histogram of risk scores across the current batch, binned across the batch's observed range"></canvas></div>
+        <div class="view-fill">
+          <div class="analytics-grid analytics-grid-primary">
+            <div class="panel chart-card">
+              <h3>Risk score distribution</h3>
+              <p class="panel-note" id="distribution-note">Binned across this batch's own observed score range (not a fixed 0&ndash;1 axis) so the shape stays readable even when scores cluster narrowly.</p>
+              <div class="chart-canvas-wrap"><canvas id="chart-distribution" role="img" aria-label="Histogram of risk scores across the current batch, binned across the batch's observed range"></canvas><p class="chart-empty-state" id="chart-distribution-empty" hidden>No synthetic transactions match the current filters.</p></div>
+            </div>
+            <div class="panel chart-card">
+              <h3>Risk band breakdown</h3>
+              <p class="panel-note chart-clickable-hint">Click a slice or legend entry to filter the queue.</p>
+              <div class="chart-canvas-wrap"><canvas id="chart-band-breakdown" role="img" aria-label="Count of transactions per risk band. Clicking a slice filters the investigation queue to that band."></canvas><p class="chart-empty-state" id="chart-band-breakdown-empty" hidden>No synthetic transactions match the current filters.</p></div>
+            </div>
+            <div class="panel chart-card">
+              <h3>High-risk by ProductCD</h3>
+              <p class="panel-note chart-clickable-hint">Click a bar to filter the queue.</p>
+              <div class="chart-canvas-wrap"><canvas id="chart-by-product" role="img" aria-label="Count of High and Critical transactions per ProductCD. Clicking a bar filters the investigation queue to that product."></canvas><p class="chart-empty-state" id="chart-by-product-empty" hidden>No synthetic transactions match the current filters.</p></div>
+            </div>
+            <div class="panel chart-card">
+              <h3>Amount vs. risk score</h3>
+              <p class="panel-note" id="amount-risk-note">Y-axis zoomed to this batch's observed score range, not a fixed 0&ndash;1 axis, for the same reason as the distribution chart.</p>
+              <div class="chart-canvas-wrap"><canvas id="chart-amount-vs-risk" role="img" aria-label="Scatter plot of transaction amount against risk score"></canvas><p class="chart-empty-state" id="chart-amount-vs-risk-empty" hidden>No synthetic transactions match the current filters.</p></div>
+            </div>
           </div>
-          <div class="panel chart-card">
-            <h3>Risk band breakdown</h3>
-            <p class="panel-note chart-clickable-hint">Click a slice or legend entry to filter the queue.</p>
-            <div class="chart-canvas-wrap"><canvas id="chart-band-breakdown" role="img" aria-label="Count of transactions per risk band. Clicking a slice filters the investigation queue to that band."></canvas></div>
-          </div>
-          <div class="panel chart-card">
-            <h3>High-risk by ProductCD</h3>
-            <p class="panel-note chart-clickable-hint">Click a bar to filter the queue.</p>
-            <div class="chart-canvas-wrap"><canvas id="chart-by-product" role="img" aria-label="Count of High and Critical transactions per ProductCD. Clicking a bar filters the investigation queue to that product."></canvas></div>
-          </div>
-          <div class="panel chart-card">
-            <h3>Amount vs. risk score</h3>
-            <p class="panel-note" id="amount-risk-note">Y-axis zoomed to this batch's observed score range, not a fixed 0&ndash;1 axis, for the same reason as the distribution chart.</p>
-            <div class="chart-canvas-wrap"><canvas id="chart-amount-vs-risk" role="img" aria-label="Scatter plot of transaction amount against risk score"></canvas></div>
-          </div>
-          <div class="panel chart-card analytics-grid-wide">
+          <div class="panel chart-card analytics-grid-wide-standalone">
             <h3>Risk score by queue order</h3>
             <p class="panel-note">Sequence in the scored batch, not real elapsed time.</p>
-            <div class="chart-canvas-wrap"><canvas id="chart-sequence" role="img" aria-label="Risk score for each transaction in batch order"></canvas></div>
+            <div class="chart-canvas-wrap"><canvas id="chart-sequence" role="img" aria-label="Risk score for each transaction in batch order"></canvas><p class="chart-empty-state" id="chart-sequence-empty" hidden>No synthetic transactions match the current filters.</p></div>
           </div>
         </div>
       </section>
 
       <!-- ===================== WORKFLOW BOARD ===================== -->
-      <section class="view" data-view="workflow" aria-labelledby="view-heading-workflow">
+      <section class="view view-flex" data-view="workflow" aria-labelledby="view-heading-workflow">
         <h2 id="view-heading-workflow" class="view-heading" tabindex="-1">Investigation Workflow</h2>
         <p class="panel-note view-intro">Grouped by this batch's synthetic <code>status</code> field, filtered the same as the queue. Read-only &mdash; there is no backend write path for status changes in this demo, so cards are not draggable; click one to inspect it in the same detail panel used everywhere else.</p>
-        <div class="kanban-scroll-wrap" id="kanban-scroll-wrap">
-          <div class="kanban-board kanban-board-full" id="kanban-board">
-            <div class="kanban-column" data-status="New">
-              <div class="kanban-column-head"><span>New</span><span class="count" data-count="New">0</span></div>
-              <div class="kanban-cards" data-cards="New"></div>
+        <div class="view-fill">
+          <div class="kanban-scroll-wrap" id="kanban-scroll-wrap">
+            <div class="kanban-board kanban-board-full" id="kanban-board">
+              <div class="kanban-column" data-status="New">
+                <div class="kanban-column-head"><span>New</span><span class="count" data-count="New">0</span></div>
+                <div class="kanban-cards" data-cards="New"></div>
+              </div>
+              <div class="kanban-column" data-status="In Review">
+                <div class="kanban-column-head"><span>In Review</span><span class="count" data-count="In Review">0</span></div>
+                <div class="kanban-cards" data-cards="In Review"></div>
+              </div>
+              <div class="kanban-column" data-status="Escalated">
+                <div class="kanban-column-head"><span>Escalated</span><span class="count" data-count="Escalated">0</span></div>
+                <div class="kanban-cards" data-cards="Escalated"></div>
+              </div>
+              <div class="kanban-column" data-status="Resolved">
+                <div class="kanban-column-head"><span>Resolved</span><span class="count" data-count="Resolved">0</span></div>
+                <div class="kanban-cards" data-cards="Resolved"></div>
+              </div>
             </div>
-            <div class="kanban-column" data-status="In Review">
-              <div class="kanban-column-head"><span>In Review</span><span class="count" data-count="In Review">0</span></div>
-              <div class="kanban-cards" data-cards="In Review"></div>
-            </div>
-            <div class="kanban-column" data-status="Escalated">
-              <div class="kanban-column-head"><span>Escalated</span><span class="count" data-count="Escalated">0</span></div>
-              <div class="kanban-cards" data-cards="Escalated"></div>
-            </div>
-            <div class="kanban-column" data-status="Resolved">
-              <div class="kanban-column-head"><span>Resolved</span><span class="count" data-count="Resolved">0</span></div>
-              <div class="kanban-cards" data-cards="Resolved"></div>
-            </div>
+            <div class="kanban-scroll-fade kanban-scroll-fade-left" aria-hidden="true"></div>
+            <div class="kanban-scroll-fade kanban-scroll-fade-right" aria-hidden="true"></div>
           </div>
-          <div class="kanban-scroll-fade kanban-scroll-fade-left" aria-hidden="true"></div>
-          <div class="kanban-scroll-fade kanban-scroll-fade-right" aria-hidden="true"></div>
-        </div>
-        <div class="kanban-scroll-dots" id="kanban-scroll-dots" aria-hidden="true">
-          <span class="dot" data-dot="0"></span>
-          <span class="dot" data-dot="1"></span>
-          <span class="dot" data-dot="2"></span>
-          <span class="dot" data-dot="3"></span>
+          <div class="kanban-scroll-dots" id="kanban-scroll-dots" aria-hidden="true">
+            <span class="dot" data-dot="0"></span>
+            <span class="dot" data-dot="1"></span>
+            <span class="dot" data-dot="2"></span>
+            <span class="dot" data-dot="3"></span>
+          </div>
         </div>
       </section>
 
       <!-- ===================== MODEL INSIGHTS ===================== -->
-      <section class="view" data-view="insights" aria-labelledby="view-heading-insights">
+      <section class="view view-flex" data-view="insights" aria-labelledby="view-heading-insights">
         <h2 id="view-heading-insights" class="view-heading" tabindex="-1">Model Insights</h2>
         <div class="historical-panel" aria-label="Historical model performance">
           <h3>Model performance &mdash; historical, Stage 10 offline evaluation</h3>
@@ -244,21 +251,23 @@
             <div class="historical-stat"><div class="k">No-skill baseline</div><div class="v">0.035</div></div>
           </div>
         </div>
-        <div class="insights-grid">
-          <div class="panel">
-            <h3>Top model-level risk drivers</h3>
-            <p class="panel-note">The model's own global permutation-importance ranking (Stage 11 explainability), computed once, offline &mdash; not a live, per-transaction explanation of any specific score on this page.</p>
-            <ol class="feature-list feature-list-lg" id="insights-feature-importance"></ol>
-          </div>
-          <div class="panel">
-            <h3>Model &amp; service health</h3>
-            <div class="health-stat-grid" id="health-rows">
-              <div class="historical-stat"><div class="k">API status</div><div class="v" id="health-row-status">&ndash;</div></div>
-              <div class="historical-stat"><div class="k">Artifact version</div><div class="v" id="health-row-version">&ndash;</div></div>
-              <div class="historical-stat"><div class="k">Artifact checksum</div><div class="v" id="health-row-checksum">&ndash;</div></div>
-              <div class="historical-stat"><div class="k">API contract</div><div class="v" id="health-row-contract">&ndash;</div></div>
-              <div class="historical-stat"><div class="k">Batch generated</div><div class="v" id="health-row-generated">&ndash;</div></div>
-              <div class="historical-stat"><div class="k">Batch seed</div><div class="v" id="health-row-seed">&ndash;</div></div>
+        <div class="view-fill">
+          <div class="insights-grid">
+            <div class="panel insights-drivers-panel">
+              <h3>Top model-level risk drivers</h3>
+              <p class="panel-note">The model's own global permutation-importance ranking (Stage 11 explainability), computed once, offline &mdash; not a live, per-transaction explanation of any specific score on this page.</p>
+              <ol class="feature-list feature-list-lg" id="insights-feature-importance"></ol>
+            </div>
+            <div class="panel">
+              <h3>Model &amp; service health</h3>
+              <div class="health-stat-grid" id="health-rows">
+                <div class="historical-stat"><div class="k">API status</div><div class="v" id="health-row-status">&ndash;</div></div>
+                <div class="historical-stat"><div class="k">Artifact version</div><div class="v" id="health-row-version">&ndash;</div></div>
+                <div class="historical-stat"><div class="k">Artifact checksum</div><div class="v" id="health-row-checksum">&ndash;</div></div>
+                <div class="historical-stat"><div class="k">API contract</div><div class="v" id="health-row-contract">&ndash;</div></div>
+                <div class="historical-stat"><div class="k">Batch generated</div><div class="v" id="health-row-generated">&ndash;</div></div>
+                <div class="historical-stat"><div class="k">Batch seed</div><div class="v" id="health-row-seed">&ndash;</div></div>
+              </div>
             </div>
           </div>
         </div>
