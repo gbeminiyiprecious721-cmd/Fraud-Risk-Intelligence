@@ -426,3 +426,694 @@ evidence in this review was captured.
 - The doughnut chart's thinnest possible slice remains a harder click
   target than the others by the nature of the chart type; mitigated, not
   eliminated, by the legend-click fix.
+
+## Stage 8: multi-page redesign (branch: dashboard-multiview-redesign)
+
+Built on a new local branch off `d413486` (the then-currently-deployed
+integration commit), **not pushed, merged, or deployed** — this stage
+delivers and documents the redesign; it does not ship it. The long
+scrolling single page with anchor links was replaced with a real
+multi-view application: a hash-based client-side router
+(`#/overview`, `#/queue`, `#/analytics`, `#/workflow`, `#/insights`,
+`#/responsible-ai`) across six views, sharing one JS `state` object as
+the single source of truth for the current demo batch, the selected
+transaction, and all filters.
+
+### Why hash routing, not path-based routing (confirmed decision)
+
+Path-based routes (`/queue`, not `/#/queue`) look cleaner but require a
+new FastAPI catch-all on Render so a hard refresh/direct link resolves
+server-side — something local dev's plain `python3 -m http.server`
+cannot replicate, which would make direct-link behavior differ between
+local dev and Render. Hash routing needs zero new server routes and
+behaves identically in both environments; confirmed with the project
+owner before implementing.
+
+### Why filters are global, not per-view (confirmed decision)
+
+The detailed filter panel lives on the Investigation Queue view, but its
+*state* affects every view: Overview's preview, Analytics' charts, and
+the Workflow board all read the same `filteredSorted()` result the Queue
+table does. Confirmed with the project owner specifically to satisfy
+"avoid inconsistent KPI, chart and queue counts" literally — every view
+is always looking at the same scope, never a silently different one.
+
+### View-by-view content redistribution
+
+- **Overview** — compact 7-card KPI grid, two small non-interactive
+  preview charts (risk band breakdown, risk score distribution), and an
+  8-row investigation preview with a link to the full queue. The large
+  historical Stage 10 panel was removed from here per the explicit
+  instruction and relocated to Model Insights.
+- **Investigation Queue** — the full filter panel + the complete,
+  sortable, searchable table (unchanged logic from Stage 4).
+- **Analytics** — all 5 full-size charts in a dedicated 2-column grid
+  with real room to breathe, instead of being squeezed into a narrow
+  column beside the table.
+- **Workflow Board** — the 4-column Kanban board, now filling most of
+  the viewport instead of a fixed 520px box.
+- **Model Insights** (new) — the relocated Stage 10 historical panel,
+  plus a new "Top model-level risk drivers" list built from the same
+  `global_feature_importance` data the detail drawer already used
+  (genuinely derived from the batch response, not invented), plus the
+  relocated Model & service health panel.
+- **Responsible Use & Limitations** — unchanged content, now its own
+  standalone view instead of the page's last scrollable section.
+- **`/index.html`** (single-transaction demo) — untouched, still a
+  separate page outside the SPA, linked from the sidenav and footer
+  exactly as before.
+
+### Desktop viewport-fit shell, with a mobile fallback
+
+At `min-width: 901px`, the app shell is fixed to `100vh`: the header
+stays compact and visible, and only `.view-container` scrolls
+internally (confirmed via `document.body.scrollWidth`/computed overflow
+checks — `overflow: hidden` on `body`, `overflow-y: auto` on
+`.view-container`). Below that width, the base (mobile-first) rules
+apply instead: the whole document scrolls normally, matching the
+already-proven mobile pattern from Stages 3-4, satisfying the explicit
+"don't clip essential content on narrow screens" requirement.
+
+### Real bugs found and fixed while building this
+
+1. **A visible focus-outline box appeared on the view heading after every
+   navigation.** Each route change moves keyboard focus to the new
+   view's `<h2>` (for screen-reader announcement), and the browser's
+   default `:focus-visible` outline rendered a stark white box around
+   it — correct for an interactive control, wrong for a heading a mouse
+   user just watched get swapped in. Fixed by removing the outline
+   specifically on `.view-heading`, while leaving it in place on every
+   genuinely interactive control.
+2. **My own test harness's port choice broke every data-dependent
+   browser test.** `ui/dashboard.js`'s local-dev origin detection
+   (`IS_LOCAL_DEV_SPLIT_ORIGIN`) hardcodes "static server on 8080, API
+   on 8000" — the project's own documented convention. The first version
+   of the new committed browser-test fixture used dynamically-assigned
+   random ports instead, so the browser's own fetch silently went to the
+   wrong origin and the dashboard never loaded any data — not a
+   dashboard bug, a test-harness bug, root-caused by checking exactly
+   what the browser actually fetched rather than assuming the test
+   infrastructure was correct. Fixed by using the project's real
+   documented ports, with a clear skip if they're already occupied.
+3. **A test helper's URL fragment was silently dropped.** `requests.put(f"{base}/json/new?{url}")` strips everything after `#` before
+   the HTTP request is even sent (a URL fragment is a client-side-only
+   concept) — so a direct-hash-navigation test was never actually
+   testing a hash URL. Fixed by opening `about:blank` first and using
+   `Page.navigate` with the full URL as a JSON body value instead, which
+   has no such stripping problem.
+
+None of these were dashboard defects that would affect a real user —
+items 2 and 3 were bugs in the new test code written to verify the
+dashboard, caught by checking actual behavior rather than trusting the
+test's own first result.
+
+### Automated tests: routing and shared state (new)
+
+`tests/test_dashboard_routing_browser.py` — a real, committed,
+pytest-discoverable browser-integration suite (12 tests), using only
+already-pinned project dependencies (`requests`, `websocket-client`;
+see `requirements.txt`) to drive a real headless Chrome instance via the
+Chrome DevTools Protocol. No new test framework (Selenium/Playwright/
+Jest) was introduced. Marked `@pytest.mark.browser` (registered in
+`pytest.ini`, alongside the project's existing `heavy`/
+`data_contract_full` markers) and skips cleanly via `pytest.skip` if
+Chrome isn't found or its required ports are occupied, rather than
+failing a run on a machine without Chrome.
+
+Covers: default route with no hash; each of the 6 nav links updating the
+hash, active view, and `aria-current`; a direct hash navigation on a
+*fresh* page load resolving the correct view (the literal "direct link"
+requirement); real `history.back()`/`forward()` restoring the correct
+prior views; the core shared-state contract — selecting a transaction,
+then navigating to a different view, and confirming the drawer stays
+open on the *same* transaction; global filter state propagating from the
+Queue view to the Overview preview and the Workflow board's card counts;
+and a full navigation sweep asserting zero console exceptions.
+
+### Verified this round
+
+- Full suite: **399 passed**, 0 failed (387 prior + 12 new browser
+  tests). No backend, model, or `src/` Python file was touched this
+  stage — confirmed via `git diff --stat` — only `ui/dashboard.{html,css,js}`,
+  `pytest.ini` (new marker), and the new test file.
+- Real browser verification beyond the committed suite: desktop
+  screenshots at **1440px and 1280px**, tablet at **768px**, and mobile
+  at **390px**, for every one of the 6 views — zero horizontal overflow
+  at any width (`document.body.scrollWidth` exactly equals
+  `document.documentElement.clientWidth` at all four), confirmed by
+  direct measurement, not visual inspection alone.
+- The original single-transaction demo (`/index.html`) re-verified with
+  a real button click at the end of this stage, returning a real score —
+  confirmed unaffected by the SPA restructuring.
+
+### Visual fidelity vs. the approved target mockup
+
+Present and matching: dark navy/charcoal theme with cyan/purple/amber/
+teal/red accents; colorful icon-coded KPI cards; a left sidebar nav
+(now routing to real views, not scrolling to anchors); coordinated,
+globally-consistent filters; linked/clickable charts; a transaction
+detail drawer; a 4-column Kanban board; a compact, professional header.
+
+Intentionally different, listed plainly (carried over from Stage 5's
+same honest accounting, now re-confirmed against the restructured page):
+no fabricated date-range picker (no real elapsed-time dimension to
+support one — the Demo batch selector is the real, functional
+header control instead); no invented reviewer-capacity KPI; no
+period-over-period trend arrows (no real previous period exists); the
+Kanban board is explicitly read-only, not drag-and-drop; the detail
+drawer's "feature highlights" are the model's global importance ranking,
+not fabricated live SHAP.
+
+### Deployment blockers
+
+- This branch is local-only (`dashboard-multiview-redesign`), not
+  pushed, not merged into `render-dashboard-integration` or PR #2, and
+  not deployed. The live dashboard (deployed separately, if/when PR #2
+  is merged) is unaffected by any of this work.
+- Everything listed in the Stage 5 readiness report's "remaining risks"
+  section still applies unchanged (the real Render build environment has
+  never been exercised; `X-Forwarded-For` behind Render's proxy remains
+  unverified live).
+- The new browser-integration test suite has only been run on this
+  machine (macOS, a specific Chrome version); it has not been exercised
+  in a CI environment, and its `CHROME_PATH` override / common-path
+  detection has not been tested on Linux (the likely CI/Render build
+  platform) — it is designed to skip cleanly there, not fail, but that
+  skip path itself has not been independently verified on Linux.
+
+## Stage 9: professional audit and refinement (same branch)
+
+**Approved by user, 2026-10-30**, as-is, with no further changes requested.
+(A 2026-10-30 session recovered from an unrelated local restart, confirmed
+the working tree was already clean with this stage fully committed at
+`a6b5e75`, re-ran the fast suite fresh — 387 passed, 0 failed, matching the
+399-with-browser-tests figure below — and obtained this sign-off before any
+new work.)
+
+An audit pass on top of Stage 8's architecture, continuing directly on
+`dashboard-multiview-redesign` (not a new branch — this is refinement of
+the same work, per the task's own stated option). Confirmed by real
+browser testing first that the Stage 8 architecture was already
+functionally sound (routing, cross-view selection, global filters, all
+working correctly against `src.render_demo:app`); this stage's actual
+work was a visual/UX audit against screenshots at all 4 required widths,
+closing the real gaps found, not rebuilding anything that already
+worked.
+
+### What the audit found and fixed
+
+1. **The Status column (Queue table, Overview preview) had no color
+   coding** — plain gray text, while Risk band already used color pills.
+   Fixed by styling the existing `status` field with the exact same
+   color language the Kanban column headers already use (New=accent,
+   In Review=accent-2, Escalated=warn, Resolved=ok) — no new data, just
+   making an already-real field scannable. Computed WCAG contrast for
+   all 4: 4.66–5.89:1, all pass AA.
+2. **The "Amount vs. risk score" scatter and "Risk score by queue order"
+   line charts used a fixed 0–1 y-axis**, which — since scores in this
+   project's synthetic batches cluster narrowly, as already documented —
+   visually wasted most of the chart's height. Fixed by applying the
+   exact same honest auto-ranging the risk-score distribution histogram
+   already used (zoom to the batch's own observed range, captioned with
+   the real numbers), not a new technique.
+3. **The Responsible AI view was mostly empty space** at normal desktop
+   height — real, correct content, just not enough of it to fill a
+   dedicated view on its own, confirmed by direct screenshot review, not
+   assumed. Fixed by adding a companion "At a glance" panel that reuses
+   only already-real elements (the same badges shown in the header, real
+   functional links to Model Insights and the single-transaction demo) —
+   explicitly not filled with invented content.
+4. **The Model Insights "Model & service health" panel** (6 short facts
+   in a plain list) had the same empty-space problem. Restyled as a
+   stat-tile grid reusing the historical panel's own `.k`/`.v` visual
+   language, so 6 real facts read as a deliberately designed panel.
+5. **"Top model-level risk drivers" was a plain numbered text list.**
+   Added a small proportional horizontal bar per entry, scaled against
+   the top-ranked value — the exact same numbers already shown as text,
+   visualized as an actual mini feature-importance chart rather than
+   invented or re-derived.
+
+### Confirmed NOT broken: the architecture itself
+
+Re-verified before touching anything: all 6 views genuinely distinct
+(not scroll anchors); routing, direct hash navigation, back/forward, the
+5 fixed sequences (exact-match seed pass-through re-confirmed against
+`src.render_demo:app`), cross-view selected-transaction persistence, and
+global filter propagation all still correct. Chart click-to-filter was
+re-tested with precise Chart.js arc/bar geometry; one apparent bar-chart
+click "miss" during this testing was root-caused to the test script
+clicking exactly on a bar's 1px top boundary pixel (a test-precision
+artifact — real users click within the bar body, confirmed to work
+reliably on retest), not a dashboard defect, and is disclosed as such
+rather than silently dropped.
+
+### Verified this round
+
+- Full suite: **399 passed**, 0 failed (387 Python + 12 browser-
+  integration, both re-run cleanly after freeing the ports the browser
+  fixture needs). No backend, model, or `src/` Python file touched —
+  confirmed via `git diff --stat`; only `ui/dashboard.{html,css,js}`
+  changed.
+- Real browser screenshots re-captured at **1440px, 1280px, 768px, and
+  390px** for every view, before and after the fixes, with zero
+  horizontal overflow at any width on either pass (`document.body.
+  scrollWidth` exactly equal to `document.documentElement.clientWidth`).
+- The new "At a glance" panel's live link to Model Insights was clicked
+  for real and confirmed to navigate correctly, not just visually
+  present.
+
+### Remaining limitations
+
+Unchanged from Stage 8: this work is local-only on
+`dashboard-multiview-redesign`, not pushed again this round, not merged,
+Render untouched. Everything in the Stage 5 readiness report's
+"remaining risks" section still applies.
+
+## Stage 10: final acceptance, visual review and deployment readiness (same branch)
+
+**Status: work complete, one identified visual gap fixed and re-verified,
+awaiting final user approval** (reported 2026-10-30; not self-approved —
+see the project's stage-gate rule in `CLAUDE.md` and
+`docs/ML_WORKFLOW_STATE.md`'s Approval Status convention, applied here even
+though this dashboard track sits outside the formal Stage 0–19 roadmap).
+Note on numbering: this is "Stage 10" of the **dashboard track** (continuing
+Stage 8/9's own numbering in this file), a different thing from the ML
+roadmap's Stage 10 (Model Evaluation, already closed — see
+`docs/STAGE10_EVALUATION_PROTOCOL.md`). No file collision was created:
+this write-up lives in this document, not a new top-level `STAGE10_*.md`,
+precisely to avoid confusing the two.
+
+Scope: a final acceptance pass over Stage 8/9's work — real-browser
+verification of every view and interaction, a full regression run, a
+security/deployment-readiness review, and an honest screenshot record —
+before asking for sign-off to consider the dashboard track done. No new
+features were built; this stage is verification, not construction.
+
+### Full regression suite
+
+All 399 project tests re-run fresh, split across two invocations by
+marker (both all-green, zero failures):
+- `pytest -m "not heavy and not data_contract_full"`: **393 passed**, 6
+  deselected (33.2s).
+- `pytest -m "heavy or data_contract_full"` (includes the full-training
+  reproducibility check against the frozen artifact — read-only
+  verification, no retraining, no write to the artifact file):
+  **6 passed** (128.6s).
+- Frozen artifact checksum reconfirmed unchanged throughout:
+  `2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+
+### Real-browser verification
+
+Reused this project's existing Stage 8 CDP-automation pattern (headless
+Chrome, same fixed local ports) to drive the actual running dashboard —
+not a static review of the HTML/CSS.
+
+- **Screenshots**: all 6 views captured fresh at all 4 required widths
+  (1440px, 1280px, 768px, 390px) = 24 images, plus 3 targeted interaction
+  captures (transaction drawer open, Kanban board, mobile nav menu open).
+  Saved to `docs/stage10_screenshots/` (same convention as
+  `docs/stage15_screenshots/`).
+- **Responsive/overflow**: `document.body.scrollWidth` measured equal to
+  `document.documentElement.clientWidth` at every view × width
+  combination — zero horizontal page overflow anywhere. The 4-column
+  Kanban board scrolls horizontally *within its own strip* on narrower
+  widths by design (confirmed intentional, not a layout bug — the page
+  itself never scrolls sideways).
+- **Routing**: every sidebar link at every width routes to the correct
+  view (re-verified, no regressions from Stage 9).
+- **Transaction drawer**: a real row click opens it (`aria-hidden`
+  flips to `"false"`, `.open` class applied); the close button closes it
+  again. Confirmed via DOM state, not just a screenshot.
+- **Kanban board**: confirmed exactly 4 columns present
+  (`.kanban-column`) at desktop width, matching the approved design.
+- **Mobile sidebar navigation**: closed on load; the hamburger
+  (`#nav-toggle`) opens it (`aria-expanded` flips to `"true"`); tapping a
+  real nav link inside it both routes to the correct view AND closes the
+  sidebar afterward — the full interaction chain, not just that the
+  button exists.
+- **Console**: zero JS errors or uncaught exceptions across all of the
+  above (24 view loads + 2 dedicated interaction sessions).
+
+### Security / deployment-readiness review
+
+Read-only review of `src/api.py` (no changes made — everything below was
+already true, re-confirmed, not newly added):
+- API still binds `127.0.0.1` only; CORS still restricted to the two
+  local static-UI origins (`127.0.0.1:8080`, `localhost:8080`), no
+  wildcard, no credentials.
+- No endpoint accepts an artifact path, uploads a file, or otherwise
+  allows loading anything other than the one fixed, checksummed frozen
+  artifact; `final_test` is not referenced anywhere in `src/api.py` or
+  `ui/`.
+- `/v1/dashboard/queue` only ever generates and scores **synthetic**
+  rows (`_synthetic_dashboard_row`) — confirmed by re-reading the
+  generator, not just trusting the docstring.
+- Error responses never leak a traceback; logs never persist a raw
+  transaction payload (structured, field-allowlisted logging only).
+- The live Render deployment (`render-dashboard-integration` branch) and
+  Stage 17's local release-management scripts (`deploy/*.sh`) were not
+  touched, run, or referenced by anything in this stage.
+
+### Defects found (technical/security pass)
+
+**None.** No console errors, no routing regressions, no overflow, no
+broken interaction, no security regression. This pass found Stage 8/9's
+work already correct — it is a verification record, not a changelog of
+fixes.
+
+### Visual review follow-up: mobile Kanban scroll affordance
+
+A separate, dedicated visual-inspection round (six 1440px desktop views +
+mobile Overview + mobile Workflow Board, reviewed against this file's own
+"Visual fidelity vs. the approved target mockup" checklist, since no
+stored prototype image exists to diff against directly) found one real
+issue, everywhere else PASS:
+
+- **Mobile Workflow Board (390px): NEEDS IMPROVEMENT.** The 4-column
+  Kanban board showed only ~1.1 columns at once with no visual cue that
+  3 more columns existed off-screen (no fade edge, no peek, no scroll
+  indicator). Horizontal scroll itself worked — this was a discoverability
+  gap, not a functional break.
+
+**Fix applied** (`ui/dashboard.html`, `ui/dashboard.css`,
+`ui/dashboard.js`): wrapped `#kanban-board` in `#kanban-scroll-wrap` with
+two absolutely-positioned edge-fade overlays (`--bg`-to-transparent
+gradients, matching the existing dark theme, no new colors introduced)
+and a 4-dot scroll-position indicator below the board. A new
+`updateKanbanScrollAffordance()` function in `dashboard.js` reads
+`scrollLeft`/`scrollWidth`/`clientWidth` to toggle `data-at-start`/
+`data-at-end` attributes (hiding each fade once there's nothing further
+in that direction) and highlights the dot nearest the centered column;
+it's wired to the board's `scroll` event, `window`'s `resize` event, and
+every existing re-render path (so it's always current after a filter/
+sequence change). Both the fades and dots are CSS-hidden above 900px,
+where the existing desktop 4-column grid already shows everything at
+once — the desktop layout itself was not touched.
+
+**Re-verification** (real headless-Chrome sessions, not visual inspection
+alone), at all three required widths:
+
+| Width | Overflow | Columns reachable | Fade shown | Dots shown | Scroll-to-end flips affordance | Console errors |
+|---|---|---|---|---|---|---|
+| 390px (mobile) | none (`scrollWidth` == `clientWidth`) | all 4, confirmed by scrolling to max and checking the Resolved column's bounding box sits fully inside the board | yes | yes | yes (`data-at-end` flips `false`→`true`) | 0 |
+| 768px (tablet) | none | all 4, same check | yes | yes | yes | 0 |
+| 1440px (desktop) | none | all 4 (no scroll needed) | hidden (by design) | hidden (by design) | n/a (already at both ends) | 0 |
+
+Dot-tracking was also checked at intermediate scroll positions (0%,
+33%, 66%, 100% of max scroll) and correctly highlighted columns 1→2→3→4
+in order.
+
+Full regression suite re-run after the fix: **393 passed** (incl. all 12
+browser-integration tests, 27.3s) + **6 passed** (heavy/data-contract
+tier, 126.3s) = **399/399, zero failures**. Frozen artifact checksum
+reconfirmed unchanged: `2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf
+872760268d9122bf04`. Updated screenshots (including explicit before/after
+-scroll pairs at all 3 widths demonstrating the fix) are in
+`docs/stage10_screenshots/`.
+
+Desktop layout, all filters, demo-sequence switching, chart click-to-
+filter, reset, navigation, and the transaction drawer were re-confirmed
+untouched and working (same checks as the original Stage 10 functional
+pass) — only the mobile/tablet Kanban scroll affordance changed.
+
+### Outstanding, pre-existing limitations (carried forward, unchanged)
+
+All of Stage 8's "Deployment blockers" and Stage 9's "Remaining
+limitations" still apply verbatim: local-only on
+`dashboard-multiview-redesign`; not pushed, merged, or deployed this
+round; the browser-test suite has only run on this machine/Chrome
+version, not in CI, and its Linux skip path is unverified; Render's real
+build environment has never been exercised; `X-Forwarded-For` behind
+Render's proxy remains unverified live. Nothing new was discovered this
+stage beyond re-confirming these still hold.
+
+### What this stage does NOT claim
+
+Per explicit constraint: the frozen Random Forest was not retrained or
+modified (confirmed via unchanged checksum); `final_test` was not
+accessed; no performance metric or case outcome was fabricated — the
+only numbers shown anywhere (test pass counts, checksum, screenshot
+dimensions) are this session's own direct measurements. Nothing was
+pushed, merged, or deployed.
+
+## Stage 11: controlled dashboard deployment preparation (same branch)
+
+**Status: preparation complete, not deployed — awaiting user approval to
+actually deploy.** Reported 2026-10-30, after Stage 10's approval. Same
+numbering caveat as before: this is "Stage 11" of the **dashboard
+track**, unrelated to the ML roadmap's real Stage 11 (Explainability,
+`docs/STAGE11_EXPLAINABILITY_REPORT.md`, already closed) — kept in this
+file, not a new top-level `STAGE11_*.md`, to avoid confusing the two.
+
+### What was done
+
+1. **Branch/commit verification.** `dashboard-multiview-redesign` working
+   tree was clean; `git log` confirmed `7c7012d` (Stage 10) on top of
+   `a6b5e75` (Stage 9) on top of `4d4bccb` (Stage 8). `git fetch` +
+   `git rev-list --left-right --count origin/dashboard-multiview-redesign...dashboard-multiview-redesign`
+   showed the remote 2 commits behind, 0 ahead — a clean fast-forward,
+   no divergence to resolve.
+2. **Full regression re-run** immediately before pushing: **399/399
+   passed** (393 fast+browser in 27.6s, 6 heavy/data-contract in
+   136.1s). Frozen artifact checksum reconfirmed unchanged:
+   `2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+3. **Pushed** `dashboard-multiview-redesign` to `origin`
+   (fast-forward, `4d4bccb..7c7012d` — no force push, nothing rewritten).
+4. **Pull request**: an open PR targeting `render-dashboard-integration`
+   from this branch already existed (**PR #3**, opened 2026-10-29,
+   before Stage 9/10) — rather than opening a duplicate, the push above
+   updated it in place. It now carries all 3 commits (Stage 8/9/10),
+   shows `MERGEABLE`/no conflicts, and **remains open and unmerged**:
+   https://github.com/gbeminiyiprecious721-cmd/Fraud-Risk-Intelligence/pull/3
+5. **Render build/start compatibility** — verified by reading
+   `src/render_demo.py` and `docs/RENDER_DEPLOYMENT_PREPARATION.md`, not
+   by deploying (deployment is explicitly out of scope this stage):
+   - `/`, `/dashboard.html`, `/dashboard.css`, `/dashboard.js` all read
+     straight from `ui/dashboard.{html,css,js}` on disk at request time
+     (`FileResponse`/`.read_text()`), so the Stage 10 Kanban-affordance
+     changes need no code change to be served — confirmed by reading
+     the route handlers, not assumed.
+   - The public `/v1/dashboard/queue` route already allowlists the
+     exact same 5 seed values (101/202/303/404/505) the dashboard's
+     "Demo batch" dropdown sends, so all 5 sequences verified locally in
+     Stage 10 will produce the same batches on the public service.
+   - No new Python dependency was added (this stage's change is
+     HTML/CSS/JS only) — `requirements-render.txt` needs no update.
+   - Documented Build/Start commands (`docs/RENDER_DEPLOYMENT_PREPARATION.md`):
+     Build `bash deploy/render_fetch_artifact.sh && pip install -r requirements-render.txt`;
+     Start `uvicorn src.render_demo:app --host 0.0.0.0 --port $PORT`. Neither
+     script nor command was modified this stage.
+6. **Public single-transaction demo** (`/index.html`): route and
+   same-origin API rewrite in `render_demo.py` are untouched by this
+   stage's diff — `git diff` confirms zero changes to `src/render_demo.py`
+   — so its availability is structurally unaffected.
+
+### Honest gap: this session cannot see the live Render service
+
+This session has no Render dashboard or Render API access (no connector
+configured), and nothing was queried or changed on Render's side. That
+cuts both ways and needs to be said plainly rather than glossed over:
+- Nothing about the live service's actual Free-plan status, environment
+  variables, or Auto-Deploy setting was touched — if they're set a
+  certain way today, they remain exactly that way after this stage.
+- But this session also **cannot independently confirm** what those
+  settings currently are, or even that a live service exists yet in the
+  form this task describes. `docs/RENDER_DEPLOYMENT_PREPARATION.md`'s
+  own last update states plainly: "Render service not yet created. No
+  public demo URL exists. No hosted prediction has succeeded." That
+  predates this stage and was not re-verified or re-written here (doing
+  so would mean asserting a live-service state this session has no way
+  to observe). If a service has since been created directly in the
+  Render dashboard, its exact configuration is only visible there — the
+  user is the only one who can confirm it before deploying.
+
+### Deployment procedure (for the user to execute — not run this stage)
+
+1. Open PR #3 on GitHub, review the Stage 8/9/10 diff, and merge it into
+   `render-dashboard-integration` **only when ready** (this stage does
+   not do this).
+2. In the Render dashboard, confirm (do not change unless intentional):
+   plan = Free, Auto-Deploy = Off, and the three artifact-retrieval
+   environment variables (`ARTIFACT_SOURCE_REPO`,
+   `ARTIFACT_SOURCE_PATH`, `ARTIFACT_SOURCE_PAT`) are already set from
+   prior setup.
+3. Confirm Build Command is exactly
+   `bash deploy/render_fetch_artifact.sh && pip install -r requirements-render.txt`
+   and Start Command is exactly
+   `uvicorn src.render_demo:app --host 0.0.0.0 --port $PORT` (unchanged
+   by this stage — verify, don't retype, to avoid an incidental edit).
+4. With Auto-Deploy off, manually trigger a deploy of the merged commit
+   from the Render dashboard ("Manual Deploy" → the specific commit
+   SHA, not "latest" blindly, so the operator knows exactly what shipped).
+5. Watch the build log for the artifact-fetch step succeeding (checksum
+   match) before the service is marked live.
+
+### Rollback plan
+
+- Render's own deploy history keeps prior successful deploys; if the
+  new deploy fails health checks or a post-deploy check below fails,
+  use Render's "Rollback to this deploy" on the last known-good deploy
+  (pre-Stage-8, if needed) rather than trying to hotfix forward under
+  pressure.
+- Because Auto-Deploy stays Off throughout, a bad deploy cannot
+  cascade — no further commits will deploy themselves while the team
+  investigates.
+- The frozen model artifact itself is never part of a dashboard
+  rollback: it's fetched independently via
+  `deploy/render_fetch_artifact.sh` from the separate, checksummed
+  artifact repo, so rolling back the app code back to any prior commit
+  still fetches the same verified artifact.
+
+### Post-deployment browser checks (manual, against the live URL)
+
+Mirrors the local Stage 10 functional/visual checks, against the real
+hosted origin instead of `127.0.0.1`:
+- [ ] `GET /health` reports `artifact_loaded: true`.
+- [ ] `GET /version` returns the expected `artifact_sha256`
+  (`2fb0cbc4...`) and `artifact_version`.
+- [ ] `/index.html` single-transaction demo: real click, real score
+  returned, no console errors.
+- [ ] `/` (dashboard homepage) loads; all 6 views reachable via sidebar
+  at desktop width.
+- [ ] All 5 demo-batch sequences produce visibly different queues.
+- [ ] Chart click-to-filter and Reset filters both work.
+- [ ] Browser back/forward across views works.
+- [ ] Mobile width (real phone or responsive mode): Kanban edge-fade +
+  dot indicator appear, all 4 columns reachable by swiping.
+- [ ] No mixed-content/CORS console errors (the dashboard now talks to
+  its own origin, not `127.0.0.1:8000`).
+- [ ] Rate-limit behavior spot-checked (a 429 after rapid repeated
+  requests, service otherwise stays healthy).
+
+### Deployment blockers / open risks
+
+- PR #3 is open but **not merged** — nothing above happens until a
+  human merges it and separately triggers a manual deploy.
+- The "Honest gap" section above: this session cannot confirm the live
+  service's actual current settings or whether it already exists in a
+  deployable state.
+- All pre-existing Render risks from `docs/RENDER_DEPLOYMENT_PREPARATION.md`
+  remain open and unverified against a real deploy: exact Python/
+  scikit-learn/pandas/numpy/scipy/joblib version compatibility on
+  Render's build image; real artifact checksum/delivery over the
+  fine-grained PAT path; `X-Forwarded-For` rate-limit attribution
+  behind Render's actual proxy; no CI, so the Linux skip-path for the
+  browser test suite remains unverified outside this one macOS machine.
+
+### What this stage did NOT do
+
+No Render dashboard setting was viewed or changed (no access exists).
+No deploy was triggered. The PR was not merged. No new PR was opened
+(the existing PR #3 was reused). No code outside `git push` of the
+already-committed Stage 10 work was changed this stage — "preparation"
+here means verification and documentation, not new application code.
+
+## Stage 12: final release preparation (same branch)
+
+**Status: preparation complete, not deployed — awaiting user decision to
+merge/deploy.** Reported 2026-10-30, after Stage 11's approval. Same
+numbering caveat as Stages 10/11: this is "Stage 12" of the
+**dashboard track**, unrelated to the ML roadmap's real Stage 12
+(Responsible AI Assessment, already closed) — kept in this file, not a
+new top-level `STAGE12_*.md`.
+
+### What was re-verified this stage
+
+1. **Stage 11 documentation committed and pushed**: commit `6b7121f`
+   ("Stage 11: document controlled dashboard deployment preparation"),
+   fast-forward push `7c7012d..6b7121f` to `origin/dashboard-multiview-redesign`.
+2. **PR #3 re-confirmed** via `gh pr view 3` after the push:
+   `state: OPEN`, `mergeStateStatus: CLEAN`, `mergeable: MERGEABLE`,
+   `baseRefName: render-dashboard-integration`,
+   `headRefName: dashboard-multiview-redesign`, now 4 commits
+   (Stage 8/9/10/11). Still unmerged.
+   https://github.com/gbeminiyiprecious721-cmd/Fraud-Risk-Intelligence/pull/3
+3. **Full regression suite re-run fresh**: **399/399 passed** (393 in
+   28.3s + 6 heavy/data-contract in 145.2s, zero failures). Frozen
+   artifact checksum reconfirmed unchanged:
+   `2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+
+### Render deployment configuration — what could actually be confirmed
+
+The user-provided configuration (service `fraud-risk-intelligence`,
+branch `render-dashboard-integration`, Auto-Deploy Off, Free instance,
+unchanged build/start commands) was checked **against this repository's
+own records only** — this session still has no Render dashboard or API
+access (unchanged from Stage 11's disclosed gap), so the live service
+itself was not queried:
+
+| Item | Repo-side consistency check | Result |
+|---|---|---|
+| Target branch `render-dashboard-integration` | Matches PR #3's actual `baseRefName` | **Consistent** |
+| Free instance | Matches `docs/RENDER_DEPLOYMENT_PREPARATION.md`'s documented plan | **Consistent with docs** |
+| Build command | `bash deploy/render_fetch_artifact.sh && pip install -r requirements-render.txt` — file exists, `git diff` shows it untouched by any dashboard-track commit | **Unchanged, verified in repo** |
+| Start command | `uvicorn src.render_demo:app --host 0.0.0.0 --port $PORT` — `src/render_demo.py` untouched by any dashboard-track commit | **Unchanged, verified in repo** |
+| Service name `fraud-risk-intelligence` | Not recorded anywhere in this repository (searched all of `docs/`) | **Cannot confirm from here** |
+| Auto-Deploy = Off | A dashboard-only toggle; not represented in any repo file | **Cannot confirm from here** |
+
+The two "cannot confirm" rows are exactly the kind of thing only visible
+in the Render dashboard itself — please verify those two directly before
+merging, since this session has no way to check them.
+
+**Addendum (Stage 13):** the user separately confirmed, outside this
+session's own tool access, that the live Render service is named
+`fraud-risk-intelligence`, targets this same `render-dashboard-integration`
+branch, Auto-Deploy is Off, and the instance is Free. That confirmation
+comes from the user directly inspecting the Render dashboard, not from
+anything this session independently verified — recorded here as the
+user's attestation, kept distinct from the repo-side checks above.
+
+### Final safe release procedure
+
+1. **Review and merge PR #3** into `render-dashboard-integration` on
+   GitHub (squash or merge commit, operator's preference) — not done by
+   this session.
+2. **Before touching Render**, note the current live restore point:
+   `render-dashboard-integration` is at `d413486` ("Stage 5: dashboard
+   becomes the homepage") *before* the merge — this is the exact commit
+   Render is currently (presumably) serving, and the one to roll back to
+   if anything below fails.
+3. In the Render dashboard for the `fraud-risk-intelligence` service,
+   verify (not blindly re-type) Auto-Deploy is still **Off**, plan is
+   **Free**, and Build/Start commands match section above exactly.
+4. With Auto-Deploy off, the merge in step 1 will **not** trigger
+   anything automatically. Only after confirming step 3, use **Manual
+   Deploy → Deploy specific commit**, selecting the merge commit SHA
+   explicitly (never "deploy latest" blindly).
+5. Watch the build log live: confirm `deploy/render_fetch_artifact.sh`
+   reports a successful checksum match before `pip install` runs, and
+   confirm the service reaches "Live" status.
+6. Immediately run every item in Stage 11's "Post-deployment browser
+   checks" checklist against the real hosted URL before considering the
+   release done.
+7. Only after all checks pass, treat the release as complete. If any
+   check fails, go straight to Rollback below rather than attempting a
+   forward fix under live traffic.
+
+### Preserving the existing functioning dashboard / restore procedure
+
+- **Nothing is deployed by this session or by merging PR #3 alone** —
+  Auto-Deploy Off means the live service keeps serving `d413486`
+  (Stage 5's dashboard) until someone explicitly runs Manual Deploy.
+- **If a deploy is attempted and fails** (build error, failed health
+  check, or a post-deployment check above fails): use Render's own
+  **"Rollback to this deploy"** on the last known-good deploy — which,
+  until this release, is the one currently serving `d413486`. This
+  requires no git operation at all; Render keeps its own deploy
+  history independently of which commit is newest on the branch.
+- **If a git-level revert is ever needed** (e.g. to stop a bad commit
+  from being the target of a future manual deploy): revert the merge
+  commit on `render-dashboard-integration` with `git revert -m 1
+  <merge-sha>` rather than a forced reset, preserving history — not
+  performed this stage, documented here only for when/if it's needed.
+- The frozen model artifact is never at risk in any of the above: it is
+  fetched independently from the separate, checksummed artifact repo on
+  every build (see Stage 11), so every rollback path still serves the
+  same verified, unchanged model.
+
+### What this stage did NOT do
+
+No Render dashboard setting was viewed, confirmed firsthand, or
+changed. PR #3 was not merged. No deploy, manual or automatic, was
+triggered. No application code changed — this stage is documentation
+and verification only, continuing Stage 11's same scope.

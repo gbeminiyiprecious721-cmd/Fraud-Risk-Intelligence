@@ -7,6 +7,17 @@
  * file renders, filters, sorts, and charts that response; it computes
  * nothing about fraud risk itself. See ui/index.html for the
  * single-transaction demo this dashboard complements (not replaces).
+ *
+ * Stage 8: this is a single-page app with hash-based client-side routing
+ * (#/overview, #/queue, #/analytics, #/workflow, #/insights,
+ * #/responsible-ai) across six views, all sharing ONE `state` object as
+ * the single source of truth (current demo batch, selected transaction,
+ * filters). Hash routing was chosen deliberately over path-based routing
+ * with a server fallback: it behaves identically in local dev (plain
+ * `python3 -m http.server`, no server changes possible) and on Render,
+ * and a hard refresh or direct link always works with zero server code,
+ * where path-based routing would need a new FastAPI catch-all that local
+ * dev's static server can't replicate.
  */
 (() => {
   "use strict";
@@ -24,6 +35,8 @@
 
   const RISK_BAND_ORDER = ["Low", "Medium", "High", "Critical"];
   const WORKFLOW_STATUSES = ["New", "In Review", "Escalated", "Resolved"];
+  const VIEWS = ["overview", "queue", "analytics", "workflow", "insights", "responsible-ai"];
+  const DEFAULT_VIEW = "overview";
 
   // Fixed demo-batch seeds. These are the SAME values src/render_demo.py
   // hard-codes as its public PUBLIC_DASHBOARD_SEED_ALLOWLIST -- chosen
@@ -40,7 +53,8 @@
     seed: DEMO_BATCH_SEEDS[0],
     sortKey: "risk_score",
     sortDir: "desc",
-    selectedId: null, // transaction_id currently shown in the detail drawer, kept in sync across the table AND the Kanban board
+    selectedId: null, // transaction_id currently shown in the detail drawer -- a SINGLE source of truth shared by every table/Kanban/preview across every view, deliberately never cleared on navigation
+    currentView: DEFAULT_VIEW,
     charts: {},
   };
 
@@ -63,6 +77,44 @@
 
   function fmtScore(n) {
     return Number(n).toFixed(4);
+  }
+
+  // ---------------------------------------------------------------------
+  // Router (hash-based: works identically in local dev and on Render,
+  // and for a hard refresh or a bookmarked/shared direct link, with zero
+  // server-side routes beyond serving this one document)
+  // ---------------------------------------------------------------------
+
+  function parseViewFromHash() {
+    const raw = location.hash.replace(/^#\/?/, "");
+    return VIEWS.includes(raw) ? raw : DEFAULT_VIEW;
+  }
+
+  function renderActiveView() {
+    const view = parseViewFromHash();
+    state.currentView = view;
+    document.querySelectorAll(".view").forEach((v) => {
+      v.classList.toggle("active", v.dataset.view === view);
+    });
+    document.querySelectorAll(".sidenav-list a[data-view]").forEach((a) => {
+      const isActive = a.dataset.view === view;
+      a.classList.toggle("active", isActive);
+      if (isActive) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
+    });
+    closeNav();
+    const container = el("view-container");
+    if (container) container.scrollTop = 0;
+    // Chart.js sizes a canvas against its container at creation time; a
+    // canvas inside a `display:none` view at that moment can end up
+    // wrongly sized. Re-rendering here, after the view's `display` has
+    // just been switched to visible, guarantees every chart is (re)built
+    // while its canvas is actually visible and correctly sized -- simpler
+    // and more robust than trying to special-case "only render the active
+    // view's charts" bookkeeping.
+    if (state.raw) applyFiltersAndRender();
+    const heading = document.getElementById("view-heading-" + view);
+    if (heading) heading.focus();
   }
 
   // ---------------------------------------------------------------------
@@ -103,14 +155,13 @@
     el("controls-status").textContent = "Scoring batch…";
     const { ok, body, networkError } = await fetchJSON("/v1/dashboard/queue", { n: 48, seed });
     if (!ok || !body || !body.transactions) {
-      el("queue-tbody").innerHTML =
-        '<tr><td colspan="8" class="table-empty">' +
-        (networkError
-          ? IS_LOCAL_DEV_SPLIT_ORIGIN
-            ? "Could not reach the API. Start it with <code>.venv/bin/uvicorn src.api:app --host 127.0.0.1 --port 8000</code>, then refresh."
-            : "Could not reach the scoring service right now. Please try refreshing in a moment."
-          : "The API could not score a batch right now (model artifact unavailable).") +
-        "</td></tr>";
+      const message = networkError
+        ? IS_LOCAL_DEV_SPLIT_ORIGIN
+          ? "Could not reach the API. Start it with <code>.venv/bin/uvicorn src.api:app --host 127.0.0.1 --port 8000</code>, then refresh."
+          : "Could not reach the scoring service right now. Please try refreshing in a moment."
+        : "The API could not score a batch right now (model artifact unavailable).";
+      el("queue-tbody").innerHTML = `<tr><td colspan="8" class="table-empty">${message}</td></tr>`;
+      if (el("preview-tbody")) el("preview-tbody").innerHTML = `<tr><td colspan="6" class="table-empty">${message}</td></tr>`;
       el("controls-status").textContent = "";
       return;
     }
@@ -137,7 +188,10 @@
   }
 
   // ---------------------------------------------------------------------
-  // Filters
+  // Filters (global: one set of filter state affects every view, per the
+  // explicit requirement that KPI/chart/queue counts never diverge --
+  // Overview's preview, Analytics' charts, and the Workflow board all
+  // read from the SAME filteredSorted() result as the Queue table.)
   // ---------------------------------------------------------------------
 
   function populateFilterOptions(transactions) {
@@ -213,8 +267,10 @@
     }
     renderKpis(rows, state.raw);
     renderTable(rows);
+    renderPreviewTable(rows);
     renderCharts(rows, state.raw);
     renderKanban(rows);
+    renderInsightsFeatureImportance();
   }
 
   // ---------------------------------------------------------------------
@@ -291,15 +347,18 @@
   }
 
   // ---------------------------------------------------------------------
-  // Table (click-sortable headers)
+  // Table (click-sortable headers) + Overview preview table
   // ---------------------------------------------------------------------
 
-  // Applied after every table/Kanban re-render so the open drawer's
-  // transaction stays visually highlighted in BOTH views, consistently,
-  // even across a filter/sort change that rebuilds their markup from
-  // scratch.
+  // Applied after every table/preview/Kanban re-render so the open
+  // drawer's transaction stays visually highlighted everywhere it
+  // appears, consistently, even across a filter/sort/view change that
+  // rebuilds their markup from scratch.
   function applySelectionVisuals() {
     document.querySelectorAll("#queue-tbody tr[data-id]").forEach((tr) => {
+      tr.classList.toggle("selected", tr.dataset.id === state.selectedId);
+    });
+    document.querySelectorAll("#preview-tbody tr[data-id]").forEach((tr) => {
       tr.classList.toggle("selected", tr.dataset.id === state.selectedId);
     });
     document.querySelectorAll(".kanban-card").forEach((card) => {
@@ -317,6 +376,22 @@
     });
   }
 
+  function queueRowHtml(t, columns) {
+    const id = escapeHtml(t.transaction_id);
+    const band = escapeHtml(t.risk_band);
+    const cells = {
+      id: `<td>${id}</td>`,
+      product: `<td>${escapeHtml(t.product_cd)}</td>`,
+      amount: `<td>${fmtMoney(t.amount)}</td>`,
+      score: `<td>${fmtScore(t.risk_score)}</td>`,
+      band: `<td><span class="risk-pill ${band}">${band}</span></td>`,
+      status: `<td><span class="status-pill" data-status="${escapeHtml(t.status)}">${escapeHtml(t.status)}</span></td>`,
+      sequence: `<td>#${t.sequence}</td>`,
+      inspect: `<td><button type="button" class="ghost inspect-btn" data-id="${id}">Inspect</button></td>`,
+    };
+    return `<tr data-id="${id}">${columns.map((c) => cells[c]).join("")}</tr>`;
+  }
+
   function renderTable(rows) {
     updateSortHeaderIndicators();
     const tbody = el("queue-tbody");
@@ -326,21 +401,7 @@
       return;
     }
     tbody.innerHTML = rows
-      .map((t) => {
-        const id = escapeHtml(t.transaction_id);
-        const band = escapeHtml(t.risk_band);
-        return `
-      <tr data-id="${id}">
-        <td>${id}</td>
-        <td>${escapeHtml(t.product_cd)}</td>
-        <td>${fmtMoney(t.amount)}</td>
-        <td>${fmtScore(t.risk_score)}</td>
-        <td><span class="risk-pill ${band}">${band}</span></td>
-        <td><span class="status-pill">${escapeHtml(t.status)}</span></td>
-        <td>#${t.sequence}</td>
-        <td><button type="button" class="ghost inspect-btn" data-id="${id}">Inspect</button></td>
-      </tr>`;
-      })
+      .map((t) => queueRowHtml(t, ["id", "product", "amount", "score", "band", "status", "sequence", "inspect"]))
       .join("");
     tbody.querySelectorAll("tr[data-id]").forEach((tr) => {
       tr.addEventListener("click", (e) => {
@@ -354,6 +415,23 @@
     applySelectionVisuals();
   }
 
+  function renderPreviewTable(rows) {
+    const tbody = el("preview-tbody");
+    if (!tbody) return;
+    const PREVIEW_LIMIT = 8;
+    const preview = rows.slice(0, PREVIEW_LIMIT);
+    if (!preview.length) {
+      tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No synthetic transactions match the current filters.</td></tr>';
+      applySelectionVisuals();
+      return;
+    }
+    tbody.innerHTML = preview.map((t) => queueRowHtml(t, ["id", "product", "amount", "score", "band", "status"])).join("");
+    tbody.querySelectorAll("tr[data-id]").forEach((tr) => {
+      tr.addEventListener("click", () => openDrawer(tr.dataset.id));
+    });
+    applySelectionVisuals();
+  }
+
   // ---------------------------------------------------------------------
   // Kanban workflow board (read-only grouping of the same filtered rows)
   // ---------------------------------------------------------------------
@@ -362,6 +440,7 @@
     WORKFLOW_STATUSES.forEach((status) => {
       const container = document.querySelector(`[data-cards="${status}"]`);
       const countEl = document.querySelector(`[data-count="${status}"]`);
+      if (!container || !countEl) return;
       const inColumn = rows.filter((t) => t.status === status);
       countEl.textContent = inColumn.length;
       if (!inColumn.length) {
@@ -382,10 +461,72 @@
       });
     });
     applySelectionVisuals();
+    updateKanbanScrollAffordance();
+  }
+
+  // Stage 10: below 901px the 4-column board scrolls horizontally and only
+  // ~1 column fits in view. This gives a real, scroll-position-aware cue
+  // (edge fades + dots) instead of leaving users to discover it by luck.
+  // Re-run on every re-render (above) and on scroll/resize (wired below) --
+  // cheap DOM reads, no measurable cost at this scale (4 columns).
+  function updateKanbanScrollAffordance() {
+    const board = el("kanban-board");
+    const wrap = el("kanban-scroll-wrap");
+    const dots = document.querySelectorAll("#kanban-scroll-dots .dot");
+    if (!board || !wrap) return;
+    const maxScroll = board.scrollWidth - board.clientWidth;
+    const atStart = board.scrollLeft <= 2;
+    const atEnd = maxScroll <= 2 || board.scrollLeft >= maxScroll - 2;
+    wrap.dataset.atStart = String(atStart);
+    wrap.dataset.atEnd = String(atEnd);
+    if (!dots.length) return;
+    const columns = board.querySelectorAll(".kanban-column");
+    if (!columns.length) return;
+    const viewportCenter = board.scrollLeft + board.clientWidth / 2;
+    let activeIndex = 0;
+    let bestDistance = Infinity;
+    columns.forEach((col, i) => {
+      const colCenter = col.offsetLeft + col.offsetWidth / 2;
+      const distance = Math.abs(colCenter - viewportCenter);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        activeIndex = i;
+      }
+    });
+    dots.forEach((dot, i) => dot.classList.toggle("active", i === activeIndex));
   }
 
   // ---------------------------------------------------------------------
-  // Charts
+  // Model Insights: global feature importance (Stage 11, model-level)
+  // ---------------------------------------------------------------------
+
+  function renderInsightsFeatureImportance() {
+    const container = el("insights-feature-importance");
+    if (!container || !state.raw) return;
+    const features = (state.raw.global_feature_importance || []).slice(0, 15);
+    // A small horizontal bar per row, scaled against the top (already
+    // highest-ranked) entry -- the same importance values already shown
+    // as text, visualized, not a new or re-derived data source.
+    const maxImportance = features.length ? features[0].importance : 1;
+    container.innerHTML = features
+      .map((f, i) => {
+        const widthPct = maxImportance > 0 ? Math.max(4, Math.round((f.importance / maxImportance) * 100)) : 0;
+        return `
+      <li>
+        <div class="feature-row">
+          <span><span class="feature-rank">${i + 1}.</span> <code>${escapeHtml(f.feature)}</code></span>
+          <span class="feature-value">${f.importance.toFixed(5)}</span>
+        </div>
+        <div class="feature-bar-track"><div class="feature-bar-fill" style="width: ${widthPct}%"></div></div>
+      </li>`;
+      })
+      .join("");
+  }
+
+  // ---------------------------------------------------------------------
+  // Charts (full versions on Analytics; compact non-interactive previews
+  // on Overview -- both driven by the same parameterized functions so
+  // there is exactly one place that computes each chart's data)
   // ---------------------------------------------------------------------
 
   function destroyChart(key) {
@@ -419,16 +560,27 @@
 
   function renderCharts(rows, raw) {
     if (typeof Chart === "undefined") return; // CDN unreachable -- degrade gracefully, table/KPIs still work
-    renderDistributionChart(rows);
-    renderBandBreakdownChart(rows);
+    renderDistributionChart(rows, { canvasId: "chart-distribution", chartKey: "distribution", noteId: "distribution-note" });
+    renderBandBreakdownChart(rows, { canvasId: "chart-band-breakdown", chartKey: "bandBreakdown", interactive: true });
     renderByProductChart(rows);
     renderAmountVsRiskChart(rows);
     renderSequenceChart(rows);
+    // Overview's compact previews: same data, smaller/non-interactive
+    // canvases. Deliberately read-only (no legend, no click handlers) --
+    // the Analytics view is the one dedicated, clickable home for these,
+    // and a silently-interactive mini chart tucked into a dense overview
+    // would be a hidden, undiscoverable control.
+    renderDistributionChart(rows, { canvasId: "chart-distribution-mini", chartKey: "distributionMini" });
+    renderBandBreakdownChart(rows, { canvasId: "chart-band-breakdown-mini", chartKey: "bandBreakdownMini", interactive: false });
   }
 
-  function renderDistributionChart(rows) {
+  function renderDistributionChart(rows, opts) {
+    opts = opts || {};
+    const canvas = el(opts.canvasId || "chart-distribution");
+    const chartKey = opts.chartKey || "distribution";
+    if (!canvas) return;
     if (!rows.length) {
-      destroyChart("distribution");
+      destroyChart(chartKey);
       return;
     }
     const scores = rows.map((t) => t.risk_score);
@@ -441,14 +593,19 @@
       const idx = Math.min(BIN_COUNT - 1, Math.floor(((s - min) / span) * BIN_COUNT));
       buckets[idx] += 1;
     });
-    el("distribution-note").textContent =
-      "Binned across this batch's observed range (" +
-      fmtScore(min) +
-      "–" +
-      fmtScore(max) +
-      "), not a fixed 0–1 axis, so the shape stays readable even when scores cluster narrowly.";
-    destroyChart("distribution");
-    state.charts.distribution = new Chart(el("chart-distribution"), {
+    if (opts.noteId) {
+      const noteEl = el(opts.noteId);
+      if (noteEl) {
+        noteEl.textContent =
+          "Binned across this batch's observed range (" +
+          fmtScore(min) +
+          "–" +
+          fmtScore(max) +
+          "), not a fixed 0–1 axis, so the shape stays readable even when scores cluster narrowly.";
+      }
+    }
+    destroyChart(chartKey);
+    state.charts[chartKey] = new Chart(canvas, {
       type: "bar",
       data: {
         labels: buckets.map((_, i) => (min + (i / BIN_COUNT) * span).toFixed(3)),
@@ -471,10 +628,31 @@
     setTimeout(applyFiltersAndRender, 0);
   }
 
-  function renderBandBreakdownChart(rows) {
+  function renderBandBreakdownChart(rows, opts) {
+    opts = opts || {};
+    const canvas = el(opts.canvasId || "chart-band-breakdown");
+    const chartKey = opts.chartKey || "bandBreakdown";
+    const interactive = opts.interactive !== false;
     const counts = RISK_BAND_ORDER.map((band) => rows.filter((t) => t.risk_band === band).length);
-    destroyChart("bandBreakdown");
-    state.charts.bandBreakdown = new Chart(el("chart-band-breakdown"), {
+    destroyChart(chartKey);
+    if (!canvas) return;
+    const legendConfig = interactive
+      ? {
+          position: "bottom",
+          labels: { color: "#a9adb8" },
+          // A thin slice (e.g. 2 of 48 transactions, ~15 degrees of arc)
+          // is a genuinely hard target to click precisely -- standard
+          // doughnut-chart behavior, not specific to this page (confirmed
+          // by testing exact arc-geometry clicks: 3 of 4 bands landed
+          // reliably, the smallest did not). The legend swatch is a much
+          // larger, reliable target for exactly that case, so it's wired
+          // to the SAME filter action instead of Chart.js's default
+          // (hiding the slice, which would misrepresent this batch's true
+          // composition).
+          onClick: (evt, legendItem) => toggleBandFilter(RISK_BAND_ORDER[legendItem.index]),
+        }
+      : { display: false };
+    state.charts[chartKey] = new Chart(canvas, {
       type: "doughnut",
       data: {
         labels: RISK_BAND_ORDER,
@@ -483,37 +661,24 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: "bottom",
-            labels: { color: "#a9adb8" },
-            // A thin slice (e.g. 2 of 48 transactions, ~15 degrees of
-            // arc) is a genuinely hard target to click precisely -- this
-            // is standard doughnut-chart behavior, not specific to this
-            // page (confirmed by testing exact arc-geometry clicks: 3 of
-            // 4 bands landed reliably, the smallest did not). The legend
-            // swatch is a much larger, reliable target for exactly that
-            // case, so it's wired to the SAME filter action instead of
-            // Chart.js's default (hiding the slice, which would
-            // misrepresent this batch's true composition -- see the
-            // "accurately reflect scope" requirement this page follows
-            // throughout).
-            onClick: (evt, legendItem) => toggleBandFilter(RISK_BAND_ORDER[legendItem.index]),
-          },
-        },
-        onClick: (evt, elements) => {
-          if (!elements.length) return;
-          toggleBandFilter(RISK_BAND_ORDER[elements[0].index]);
-        },
+        plugins: { legend: legendConfig },
+        onClick: interactive
+          ? (evt, elements) => {
+              if (!elements.length) return;
+              toggleBandFilter(RISK_BAND_ORDER[elements[0].index]);
+            }
+          : undefined,
       },
     });
   }
 
   function renderByProductChart(rows) {
+    const canvas = el("chart-by-product");
+    if (!canvas) return;
     const products = [...new Set(rows.map((t) => t.product_cd))].sort();
     const counts = products.map((p) => rows.filter((t) => t.product_cd === p && (t.risk_band === "High" || t.risk_band === "Critical")).length);
     destroyChart("byProduct");
-    state.charts.byProduct = new Chart(el("chart-by-product"), {
+    state.charts.byProduct = new Chart(canvas, {
       type: "bar",
       data: { labels: products, datasets: [{ label: "High + Critical", data: counts, backgroundColor: "#e05a5a" }] },
       options: baseOptions({
@@ -529,9 +694,36 @@
     });
   }
 
+  // Both the scatter and sequence charts below plot risk_score on the
+  // y-axis. A fixed 0-1 range is honest but, since scores in this
+  // project's synthetic batches typically cluster narrowly (documented
+  // in docs/DASHBOARD.md), it visually wastes most of the chart's
+  // height -- the exact same problem the risk-score distribution
+  // histogram already solved by auto-ranging to the batch's own observed
+  // range instead of a fixed axis. Reused here for the same honest
+  // reason: the shape stays readable without implying a spread that
+  // isn't there.
+  function scoreAxisRange(rows) {
+    if (!rows.length) return { min: 0, max: 1 };
+    const scores = rows.map((t) => t.risk_score);
+    const min = Math.min(...scores);
+    const max = Math.max(...scores);
+    const pad = (max - min) * 0.1 || 0.02;
+    return { min: Math.max(0, min - pad), max: Math.min(1, max + pad) };
+  }
+
   function renderAmountVsRiskChart(rows) {
+    const canvas = el("chart-amount-vs-risk");
+    if (!canvas) return;
     destroyChart("amountVsRisk");
-    state.charts.amountVsRisk = new Chart(el("chart-amount-vs-risk"), {
+    const yRange = scoreAxisRange(rows);
+    const noteEl = el("amount-risk-note");
+    if (noteEl) {
+      noteEl.textContent = rows.length
+        ? "Y-axis zoomed to this batch's observed score range (" + yRange.min.toFixed(3) + "–" + yRange.max.toFixed(3) + "), not a fixed 0–1 axis, for the same reason as the distribution chart."
+        : "No transactions match the current filters.";
+    }
+    state.charts.amountVsRisk = new Chart(canvas, {
       type: "scatter",
       data: {
         datasets: [
@@ -546,27 +738,44 @@
         plugins: { legend: { display: false } },
         scales: {
           x: { title: { display: true, text: "Amount ($)", color: "#a9adb8" }, ticks: { color: "#a9adb8" }, grid: { color: "#30343d" } },
-          y: { title: { display: true, text: "Risk score", color: "#a9adb8" }, min: 0, max: 1, ticks: { color: "#a9adb8" }, grid: { color: "#30343d" } },
+          y: {
+            title: { display: true, text: "Risk score", color: "#a9adb8" },
+            min: yRange.min,
+            max: yRange.max,
+            ticks: { color: "#a9adb8" },
+            grid: { color: "#30343d" },
+          },
         },
       }),
     });
   }
 
   function renderSequenceChart(rows) {
+    const canvas = el("chart-sequence");
+    if (!canvas) return;
     const bySeq = [...rows].sort((a, b) => a.sequence - b.sequence);
     destroyChart("sequence");
-    state.charts.sequence = new Chart(el("chart-sequence"), {
+    const yRange = scoreAxisRange(rows);
+    state.charts.sequence = new Chart(canvas, {
       type: "line",
       data: {
         labels: bySeq.map((t) => "#" + t.sequence),
         datasets: [{ label: "Risk score", data: bySeq.map((t) => t.risk_score), borderColor: "#b183f7", backgroundColor: "rgba(177,131,247,0.15)", tension: 0.25, pointRadius: 2 }],
       },
-      options: baseOptions({ plugins: { legend: { display: false } }, scales: { x: { ticks: { color: "#a9adb8", maxTicksLimit: 10 }, grid: { color: "#30343d" } }, y: { min: 0, max: 1, ticks: { color: "#a9adb8" }, grid: { color: "#30343d" } } } }),
+      options: baseOptions({
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: "#a9adb8", maxTicksLimit: 10 }, grid: { color: "#30343d" } },
+          y: { min: yRange.min, max: yRange.max, ticks: { color: "#a9adb8" }, grid: { color: "#30343d" } },
+        },
+      }),
     });
   }
 
   // ---------------------------------------------------------------------
-  // Detail drawer
+  // Detail drawer (shared across every view -- stays open across a
+  // navigation, since it's a fixed-position overlay, not part of any
+  // one view's content)
   // ---------------------------------------------------------------------
 
   function interpretationFor(band, score) {
@@ -685,16 +894,25 @@
       closeNav();
     });
 
+    el("kanban-board").addEventListener("scroll", updateKanbanScrollAffordance, { passive: true });
+    window.addEventListener("resize", updateKanbanScrollAffordance);
+
     el("nav-toggle").addEventListener("click", openNav);
     el("sidenav-close").addEventListener("click", closeNav);
     el("nav-backdrop").addEventListener("click", closeNav);
+    // Route links close the mobile nav on click; renderActiveView() (the
+    // hashchange listener) also calls closeNav() unconditionally, so this
+    // covers back/forward navigation too, not just direct link clicks.
     document.querySelectorAll(".sidenav-list a[href^='#']").forEach((link) => {
       link.addEventListener("click", closeNav);
     });
+
+    window.addEventListener("hashchange", renderActiveView);
   }
 
   async function init() {
     wireControls();
+    renderActiveView(); // show the correct view immediately, even before data loads
     await checkHealth();
     await loadQueue(state.seed);
   }
