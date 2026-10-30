@@ -1,6 +1,6 @@
 # Portfolio enhancement Stage 20 — Challenger Model Benchmarking
 
-**Status: Stage 20 implementation and verification complete locally; ready for owner review. No push, merge, deployment or model promotion.**
+**Status: Final release review verified. Owner authorised branch push and a GitHub PR targeting `render-dashboard-integration`. Merge, deployment and model promotion remain unauthorised.**
 
 This is a portfolio enhancement, separate from the original closed ML
 Stages 0–19. The owner requested Stage 20 on 2026-10-30. Work is confined
@@ -516,3 +516,59 @@ no known unresolved functional defect or local implementation blocker.
 An independent read-only final review of the complete diff found no Critical,
 Important or Minor findings. Its boundary, preservation and protocol checks
 are recorded in [independent-review.json](stage20_challenger_evidence/independent-review.json).
+
+
+## Owner-authorised GitHub release review
+
+The owner explicitly authorised final review, a fresh full regression run,
+branch push and a PR targeting `render-dashboard-integration`, starting from
+implementation commit `cf4fea1141c7f721f59300a8afb17dae48a73627`.
+Merge, deployment, Render settings changes and model promotion are not authorised.
+The earlier local-only delivery and its preservation evidence remain historical
+records; this section records the subsequent, separately authorised PR phase.
+
+The complete committed diff was reviewed. No implementation defect was found.
+The only new work is the reusable independent release verifier, fresh review
+evidence and this documentation/state update; trained models, experimental
+settings, measured results and dashboard implementation are unchanged.
+
+Fresh `.venv/bin/python -m pytest -q`: **453 passed, 0 failures, 0 skips**,
+five existing warnings, 197.72s. This includes all six heavy/data-contract
+checks and 31 real-Chrome cases. Full output:
+[release-review-regression.log](stage20_challenger_evidence/release-review-regression.log).
+The browser cases verify benchmark metric/chart/capacity/reset/navigation,
+responsive layouts, failure recovery and all existing dashboard/scoring flows.
+
+`.venv/bin/python scripts/verify_stage20_results.py` independently re-read
+**only authorised validation labels**, verified exact chronological ordering,
+75,560 eligible rows, 2,617 positives, identical validation-ID fingerprint
+`14e5f38141f4ea86cf6228d76bf9af398c7cc3116d1ca49ddecc3b502e9ff5bc`,
+and reloaded all four native models for inference on the same cached matrix.
+Reload differences were zero for challengers and 2.23e-16 at most for RF.
+Sklearn AP, ROC-AUC, separately labelled trapezoidal PR-AUC, top-1%/top-5%
+metrics and all **804** capacity confusion/precision/recall checkpoints match.
+
+The independent verifier reconstructs the 20 chronological tie-safe blocks
+and uses sklearn AP on **literal resampled row indices** for all 1,000 paired
+draws, rather than invoking the benchmark's weighted AP/bootstrap routines.
+All 1,000 draws were valid, none degenerate; every AP and paired-difference
+interval matches to absolute tolerance 1e-12. Evidence:
+[release-independent-verification.json](stage20_challenger_evidence/release-independent-verification.json).
+No challenger was retrained for release review.
+
+Preservation was rechecked against Stage 19 base
+`5b6e90d8bf5665d4a316c063e0a6a1b0737feab7`: frozen artifact checksum and
+manifest, original scientific record section, production preprocessing/scoring,
+Stage 19 simulator and production dependencies are unchanged. Shared server
+diffs contain only the new aggregate-router and static-asset additions;
+security handlers are otherwise byte-identical. No private model, matrix,
+row-level labels/scores or data file is tracked. Code inspection and current
+verification preserve the closed final-test boundary. `pip check`, Python
+compilation and `git diff --check` pass.
+
+Remote preflight found integration still at the approved Stage 19 base and
+main still at `52c01c919cb40cd2bedf1a41794a73e38c6cf737`; the Stage 20 remote
+branch did not yet exist. Only the Stage 20 branch will be pushed. PR metadata,
+exact head and changed-file inventory will be checked after creation. Existing
+selection/generalisation limitations and the explicitly disclosed technical
+fit retry remain unchanged. No unresolved implementation blocker was found.

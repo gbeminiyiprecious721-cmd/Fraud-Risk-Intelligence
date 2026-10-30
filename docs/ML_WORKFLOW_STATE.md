@@ -36,9 +36,17 @@ Frozen RF checksum remains
 `2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
 Original scientific records below are preserved verbatim. Closed final-test
 values/predictions were not used. Production scoring/security, deployment
-requirements, main and integration refs are unchanged. Local commits only;
-no push, merge, deployment or model promotion. Stage 20 implementation is
-ready for owner review; no Stage 21+ work or release is authorised.
+requirements, main and integration refs are unchanged. Initial implementation
+was committed locally only. The owner subsequently explicitly authorised final
+release review, branch push and a PR targeting `render-dashboard-integration`.
+Fresh full regression: **453 passed, zero failures/skips**, 197.72s, including
+all six heavy/data-contract checks and 31 real-Chrome cases. The independent
+release verifier re-read validation-only labels, reloaded native models and
+recomputed all 804 checkpoints plus 1,000 literal-row paired block bootstrap
+draws; all metrics/intervals match to 1e-12. Complete committed diff review
+found no implementation defect. Fresh evidence is linked in the Stage 20
+report. No merge, deployment, Render changes or model promotion is authorised;
+no Stage 21+ work is authorised.
 
 ## Portfolio enhancement Stage 19 — Investigation Capacity Simulator (2026-10-30)
 
