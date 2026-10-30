@@ -25,7 +25,7 @@
   },
   "artifact_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
   "ram_gib": 64.0,
-  "status": "approved_protocol_tool_review_usage_blocker",
+  "status": "implementation_verified_locally_owner_review_pending",
   "environment": {
     "numpy": "2.5.4",
     "pandas": "3.1.0",
@@ -57,11 +57,16 @@
       "version": "7.1.0"
     }
   ],
-  "dependencies_installed": false,
+  "dependencies_installed": true,
   "existing_package_upgrades_proposed": false,
   "protocol_and_dependencies_owner_approved": true,
   "approval_date": "2026-10-30",
-  "git_commit_created": false,
+  "git_commit_created": true,
   "review_failure_action_not_executed": "git branch --unset-upstream",
-  "review_retry_time_as_reported": "5:24 PM"
+  "review_retry_time_as_reported": "5:24 PM",
+  "protocol_commit": "bae94ca",
+  "review_blocker_resolved": true,
+  "full_regression_passed": 453,
+  "failed": 0,
+  "skipped": 0
 }

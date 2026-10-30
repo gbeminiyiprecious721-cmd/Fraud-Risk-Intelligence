@@ -1,22 +1,44 @@
 # ML Workflow State — Fraud-Risk-Intelligence
 
-## Portfolio enhancement Stage 20 — Challenger benchmarking (Phase A, 2026-10-30)
+## Portfolio enhancement Stage 20 — Challenger benchmarking (2026-10-30)
 
-Owner requested this separate enhancement stage. Branch
-`stage20-challenger-benchmark` starts from verified Stage 19 integration
-merge `5b6e90d8bf5665d4a316c063e0a6a1b0737feab7`.
-Inspection confirms the unchanged frozen RF and authorized chronological
-train/validation partitions. An inner chronological stopping split is
-feasible, but is not a new independent incumbent-comparison holdout.
-The protocol and exact dependency proposal are documented in
-[Stage 20 design](STAGE20_CHALLENGER_BENCHMARK.md).
-**Pre-training protocol and all five pinned dependencies explicitly approved
-by owner, 2026-10-30.** Automatic approval review hit a usage limit before
-the Git upstream mutation; that action was not executed. Dependency
-installation, challenger training, benchmark metrics and dashboard work
-have not begun. No push, merge or deployment occurred. Resume the approved
-protocol once tool review is available; do not ask for approval again. No Stage 21+ work is authorized.
-Original closed ML decisions and results below remain unchanged.
+The owner explicitly approved Stage 20, its pre-training protocol and five
+pinned optional dependencies. Implementation is verified locally on
+`stage20-challenger-benchmark`, based at Stage 19 merge
+`5b6e90d8bf5665d4a316c063e0a6a1b0737feab7`. The prior usage-limit
+interruption was recovered without discarding work or changing Git config.
+All 132 existing package versions remain unchanged; exactly five approved
+additions were installed. Training libraries are not runtime dependencies.
+
+Frozen RF inference and three bounded challengers share the authorised
+75,560-row validation population, 2,617 positives and 813 final features.
+Inner chronological train-only preprocessing/stopping precedes fixed-round
+full-train challenger fits. AP: RF 0.447002; LightGBM 0.545903;
+XGBoost 0.551777; CatBoost 0.490482. XGBoost has highest observed AP within
+this shared-representation budget, not proven future superiority. All three
+runs reached the round ceiling without establishing convergence. One identical
+XGBoost selection fit was repeated after a metadata serialization failure:
+seven executions for six scientific fits, no added candidate/retuning.
+Reused validation and selection optimism remain explicit limitations.
+
+The read-only eighth dashboard view serves verified aggregate evidence only.
+All 804 capacity checkpoints have independent confusion/precision/recall
+checks. All 1,000 paired chronological block draws were valid. Native reload,
+five-pass inference consistency, byte-identical aggregate reproduction and
+RF equivalence to Stage 19 evidence pass. Full suite: **453 passed, zero
+failures/skips**, including all six heavy/data-contract tests and 31 real-Chrome
+cases. Eighteen screenshots cover all eight desktop views at 1440×900 and
+1280×800 plus benchmark tablet/mobile layouts; default desktop outer content
+overflow is zero. See [Stage 20 report](STAGE20_CHALLENGER_BENCHMARK.md)
+for configurations, results, resource costs, evidence and limitations.
+
+Frozen RF checksum remains
+`2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+Original scientific records below are preserved verbatim. Closed final-test
+values/predictions were not used. Production scoring/security, deployment
+requirements, main and integration refs are unchanged. Local commits only;
+no push, merge, deployment or model promotion. Stage 20 implementation is
+ready for owner review; no Stage 21+ work or release is authorised.
 
 ## Portfolio enhancement Stage 19 — Investigation Capacity Simulator (2026-10-30)
 

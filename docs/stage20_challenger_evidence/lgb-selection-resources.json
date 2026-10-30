@@ -1,0 +1,10 @@
+{
+  "phase": "selection",
+  "model": "lgb",
+  "wall_seconds": 16.32233945799817,
+  "rss_peak_bytes": 3046768640,
+  "rss_baseline_bytes": 63422464,
+  "rss_increment_bytes": 2983346176,
+  "sampling_seconds": 0.1,
+  "exit_code": 0
+}

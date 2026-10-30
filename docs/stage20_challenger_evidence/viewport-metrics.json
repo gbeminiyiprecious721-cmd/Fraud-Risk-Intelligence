@@ -1,0 +1,272 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "overview",
+    "metrics": {
+      "bodyWidth": 1440,
+      "viewportWidth": 1440,
+      "bodyHeight": 900,
+      "viewportHeight": 900,
+      "contentHeight": 721,
+      "contentScrollHeight": 721,
+      "activeView": "overview"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "queue",
+    "metrics": {
+      "bodyWidth": 1440,
+      "viewportWidth": 1440,
+      "bodyHeight": 900,
+      "viewportHeight": 900,
+      "contentHeight": 721,
+      "contentScrollHeight": 721,
+      "activeView": "queue"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "analytics",
+    "metrics": {
+      "bodyWidth": 1440,
+      "viewportWidth": 1440,
+      "bodyHeight": 900,
+      "viewportHeight": 900,
+      "contentHeight": 721,
+      "contentScrollHeight": 721,
+      "activeView": "analytics"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "workflow",
+    "metrics": {
+      "bodyWidth": 1440,
+      "viewportWidth": 1440,
+      "bodyHeight": 900,
+      "viewportHeight": 900,
+      "contentHeight": 721,
+      "contentScrollHeight": 721,
+      "activeView": "workflow"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "insights",
+    "metrics": {
+      "bodyWidth": 1440,
+      "viewportWidth": 1440,
+      "bodyHeight": 900,
+      "viewportHeight": 900,
+      "contentHeight": 721,
+      "contentScrollHeight": 721,
+      "activeView": "insights"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "responsible-ai",
+    "metrics": {
+      "bodyWidth": 1440,
+      "viewportWidth": 1440,
+      "bodyHeight": 900,
+      "viewportHeight": 900,
+      "contentHeight": 721,
+      "contentScrollHeight": 721,
+      "activeView": "responsible-ai"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "capacity",
+    "metrics": {
+      "bodyWidth": 1440,
+      "viewportWidth": 1440,
+      "bodyHeight": 900,
+      "viewportHeight": 900,
+      "contentHeight": 721,
+      "contentScrollHeight": 721,
+      "activeView": "capacity"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "view": "benchmark",
+    "metrics": {
+      "bodyWidth": 1440,
+      "viewportWidth": 1440,
+      "bodyHeight": 900,
+      "viewportHeight": 900,
+      "contentHeight": 776,
+      "contentScrollHeight": 776,
+      "activeView": "benchmark"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "overview",
+    "metrics": {
+      "bodyWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyHeight": 800,
+      "viewportHeight": 800,
+      "contentHeight": 621,
+      "contentScrollHeight": 621,
+      "activeView": "overview"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "queue",
+    "metrics": {
+      "bodyWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyHeight": 800,
+      "viewportHeight": 800,
+      "contentHeight": 621,
+      "contentScrollHeight": 621,
+      "activeView": "queue"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "analytics",
+    "metrics": {
+      "bodyWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyHeight": 800,
+      "viewportHeight": 800,
+      "contentHeight": 621,
+      "contentScrollHeight": 621,
+      "activeView": "analytics"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "workflow",
+    "metrics": {
+      "bodyWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyHeight": 800,
+      "viewportHeight": 800,
+      "contentHeight": 621,
+      "contentScrollHeight": 621,
+      "activeView": "workflow"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "insights",
+    "metrics": {
+      "bodyWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyHeight": 800,
+      "viewportHeight": 800,
+      "contentHeight": 621,
+      "contentScrollHeight": 621,
+      "activeView": "insights"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "responsible-ai",
+    "metrics": {
+      "bodyWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyHeight": 800,
+      "viewportHeight": 800,
+      "contentHeight": 621,
+      "contentScrollHeight": 621,
+      "activeView": "responsible-ai"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "capacity",
+    "metrics": {
+      "bodyWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyHeight": 800,
+      "viewportHeight": 800,
+      "contentHeight": 621,
+      "contentScrollHeight": 621,
+      "activeView": "capacity"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "view": "benchmark",
+    "metrics": {
+      "bodyWidth": 1280,
+      "viewportWidth": 1280,
+      "bodyHeight": 800,
+      "viewportHeight": 800,
+      "contentHeight": 676,
+      "contentScrollHeight": 676,
+      "activeView": "benchmark"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "view": "benchmark",
+    "metrics": {
+      "bodyWidth": 753,
+      "viewportWidth": 768,
+      "bodyHeight": 1524,
+      "viewportHeight": 1024,
+      "contentHeight": 1250,
+      "contentScrollHeight": 1250,
+      "activeView": "benchmark"
+    },
+    "browser_exceptions": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "view": "benchmark",
+    "metrics": {
+      "bodyWidth": 375,
+      "viewportWidth": 390,
+      "bodyHeight": 2004,
+      "viewportHeight": 844,
+      "contentHeight": 1590,
+      "contentScrollHeight": 1590,
+      "activeView": "benchmark"
+    },
+    "browser_exceptions": []
+  }
+]

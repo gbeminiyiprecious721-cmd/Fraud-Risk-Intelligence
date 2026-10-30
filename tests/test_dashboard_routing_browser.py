@@ -543,3 +543,60 @@ def test_capacity_evidence_failure_is_explicit_and_retry_recovers(browser_env):
         assert not [x for x in page.console_messages if x[0]=='exception']
     finally:
         page.close()
+
+
+@pytest.mark.parametrize('width,height', [(1440,900),(1280,800),(768,1024),(390,844)])
+def test_benchmark_controls_charts_population_and_responsive_layout(page,width,height):
+    page.send('Emulation.setDeviceMetricsOverride',{'width':width,'height':height,'deviceScaleFactor':1,'mobile':False})
+    page.click('.sidenav-list a[data-view="benchmark"]')
+    deadline=time.monotonic()+10
+    while time.monotonic()<deadline and page.evaluate("document.getElementById('benchmark-workspace').hidden"):time.sleep(.1)
+    assert not page.evaluate("document.getElementById('benchmark-workspace').hidden")
+    assert page.evaluate("document.querySelector('.view.active').dataset.view")=='benchmark'
+    assert page.evaluate("document.querySelector('.topbar .badge-synthetic').textContent")=='Historical validation / portfolio'
+    assert page.evaluate("document.querySelectorAll('#benchmark-table tr').length")==4
+    assert page.evaluate("document.getElementById('benchmark-count').value")=='756'
+    page.evaluate("document.getElementById('benchmark-slider').value=0;document.getElementById('benchmark-slider').dispatchEvent(new Event('input'))")
+    assert 'Undefined' in page.evaluate("document.getElementById('benchmark-table').textContent")
+    page.evaluate("document.getElementById('benchmark-count').value=999999;document.getElementById('benchmark-count').dispatchEvent(new Event('change'))")
+    assert page.evaluate("document.getElementById('benchmark-count').value")=='75560'
+    assert page.evaluate("document.getElementById('benchmark-slider').value")=='200'
+    page.evaluate("document.getElementById('benchmark-metric').value='roc_auc';document.getElementById('benchmark-metric').dispatchEvent(new Event('change'))")
+    assert page.evaluate("Chart.getChart(document.getElementById('benchmark-metric-chart')).data.datasets[0].label")=='ROC-AUC'
+    page.click('#benchmark-reset')
+    assert page.evaluate("document.getElementById('benchmark-count').value")=='756'
+    assert page.evaluate("document.getElementById('benchmark-metric').value")=='average_precision'
+    page.evaluate("document.getElementById('benchmark-slider').focus()")
+    for event in ['keyDown','keyUp']:page.send('Input.dispatchKeyEvent',{'type':event,'key':'ArrowRight','code':'ArrowRight','windowsVirtualKeyCode':39})
+    assert page.evaluate("document.getElementById('benchmark-slider').value")=='3'
+    assert page.evaluate("document.body.scrollWidth<=innerWidth")
+    if width>900:
+        assert page.evaluate("document.querySelector('.view-container').scrollHeight<=document.querySelector('.view-container').clientHeight+1")
+        target=page.evaluate_json("""JSON.stringify((()=>{const c=Chart.getChart(document.getElementById('benchmark-capacity-chart'));const p=c.getDatasetMeta(0).data[100];const b=c.canvas.getBoundingClientRect();return {x:b.x+p.x,y:b.y+p.y}})())""")
+        for event in ['mouseMoved','mousePressed','mouseReleased']:page.send('Input.dispatchMouseEvent',{'type':event,'x':target['x'],'y':target['y'],'button':'left','clickCount':1})
+        time.sleep(.2)
+        assert page.evaluate("document.getElementById('benchmark-slider').value")=='100'
+    page.click('.benchmark-findings summary')
+    assert page.evaluate("document.querySelector('.benchmark-findings').open")
+    assert 'Paired AP differences' in page.evaluate("document.getElementById('benchmark-limits').textContent")
+    page.click('.benchmark-findings summary')
+    page.click('.sidenav-list a[data-view="capacity"]')
+    page.click('.sidenav-list a[data-view="benchmark"]')
+    assert not [item for item in page.console_messages if item[0] in {'exception','error'}]
+
+
+def test_benchmark_unavailable_evidence_and_retry(browser_env):
+    session=CDPSession(browser_env['cdp_port'],'about:blank')
+    try:
+        session.send('Network.enable')
+        session.send('Network.setBlockedURLs',{'urls':['*v1/dashboard/benchmark*']})
+        session.navigate(browser_env['static_origin']+'/dashboard.html#/benchmark')
+        assert session.evaluate("document.getElementById('benchmark-workspace').hidden")
+        assert not session.evaluate("document.getElementById('benchmark-retry').hidden")
+        assert 'No comparison' in session.evaluate("document.getElementById('benchmark-status').textContent")
+        session.send('Network.setBlockedURLs',{'urls':[]})
+        session.click('#benchmark-retry')
+        deadline=time.monotonic()+10
+        while time.monotonic()<deadline and session.evaluate("document.getElementById('benchmark-workspace').hidden"):time.sleep(.1)
+        assert not session.evaluate("document.getElementById('benchmark-workspace').hidden")
+    finally:session.close()
