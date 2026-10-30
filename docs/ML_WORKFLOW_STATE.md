@@ -1,5 +1,30 @@
 # ML Workflow State — Fraud-Risk-Intelligence
 
+## Dashboard UX recovery — 2026-10-30 (separate from ML stages)
+
+The owner authorized recovery and completion of dashboard **Stage 15: Live
+Dashboard UX, Navigation and Viewport Refinement** on
+`dashboard-viewport-refinement`, based at `9e9741a`. Existing uncommitted
+work was preserved. Recovery found and fixed two UI defects (a stale chart
+empty-state message and a collapsed queue region on short desktops).
+Final owner-requested verification: **408 passed, no exclusions or skips**,
+including **21 real-Chrome cases** and all six heavy/data-contract tests.
+The separate heavy/data-contract run also passed all six tests. Final
+review corrected Overview/Workflow/Queue sizing; all six views have zero
+outer overflow at 1440×900 and 1280×800. Twelve screenshots and test logs
+are recorded in `docs/stage15_ux_verification/`.
+See [Stage 15 UX recovery](STAGE15_UX_RECOVERY.md) for the recovered file
+inventory, requirement status, branch discrepancy and verification limits.
+Implementation and automated verification are complete for the recovered
+scope. The owner approved Stage 15 for release preparation on 2026-10-30
+and explicitly authorized dashboard Stage 16: commit, push and open a PR
+against `render-dashboard-integration`. Merge, deployment and Render setting
+changes remain unauthorized. This is separate from the approved ML roadmap.
+Original ML-stage approvals and scientific results below remain unchanged.
+No API/security source or frozen model changed. Stage 15 itself did not
+push, merge or deploy; Stage 16 authorizes only the feature-branch push and PR.
+
+
 ## Project Identity
 - Problem type: **Binary classification** (fraud detection), tabular, with a **confirmed chronological train/test holdout** (verified Stage 2 — see Dataset Findings; was inferred at Stage 0, now measured).
 - Business objective: not yet defined — this is the deliverable of Stage 1. Working premise (from the dataset and repo name): detect fraudulent transactions in e-commerce payment data, as a portfolio piece.

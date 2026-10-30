@@ -173,8 +173,7 @@
     }
     populateFilterOptions(body.transactions);
     renderHealthRow(body);
-    applyFiltersAndRender();
-    el("controls-status").textContent = "Scored " + body.count + " synthetic transactions.";
+    applyFiltersAndRender(); // also sets #controls-status / #global-scope-status via updateScopeStatus()
   }
 
   function renderHealthRow(body) {
@@ -265,12 +264,40 @@
     } else {
       count.hidden = true;
     }
+    updateScopeStatus(rows, n);
     renderKpis(rows, state.raw);
     renderTable(rows);
     renderPreviewTable(rows);
     renderCharts(rows, state.raw);
     renderKanban(rows);
     renderInsightsFeatureImportance();
+  }
+
+  // Stage 15: a single, always-visible (every view, not just Queue)
+  // statement of how much of the batch is currently on screen, plus
+  // making the Reset button visually come alive only once there's
+  // something for it to actually do.
+  function updateScopeStatus(rows, activeCount) {
+    const total = state.raw ? state.raw.transactions.length : 0;
+    const scopeEl = el("global-scope-status");
+    const resetBtn = el("reset-filters-btn");
+    if (scopeEl) {
+      if (activeCount > 0) {
+        scopeEl.textContent = `Showing ${rows.length} of ${total} transactions · ${activeCount} filter${activeCount === 1 ? "" : "s"} active`;
+        scopeEl.classList.add("filtered");
+      } else {
+        scopeEl.textContent = total ? `Showing all ${total} transactions` : "";
+        scopeEl.classList.remove("filtered");
+      }
+    }
+    if (resetBtn) resetBtn.classList.toggle("has-active-filters", activeCount > 0);
+    const statusEl = el("controls-status");
+    if (statusEl && state.raw) {
+      statusEl.textContent =
+        activeCount > 0
+          ? `Showing ${rows.length} of ${total} synthetic transactions (${activeCount} filter${activeCount === 1 ? "" : "s"} active).`
+          : `Scored ${total} synthetic transactions.`;
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -536,6 +563,19 @@
     }
   }
 
+  // Stage 15: a chart that previously just vanished (destroyed, blank
+  // canvas) or rendered with all-zero data (a visually empty donut/bars)
+  // when the current filters match nothing now shows an explicit message
+  // instead -- consistent with the table/Kanban board's existing empty
+  // states. `canvasId` + "-empty" is this file's own naming convention
+  // for each chart's paired empty-state element (see dashboard.html).
+  function toggleChartEmptyState(canvasId, isEmpty) {
+    const empty = el(canvasId + "-empty");
+    const canvas = el(canvasId);
+    if (empty) empty.hidden = !isEmpty;
+    if (canvas) canvas.style.visibility = isEmpty ? "hidden" : "visible";
+  }
+
   const CHART_COLORS = {
     Low: "#4caf7d",
     Medium: "#e0a93e",
@@ -579,6 +619,7 @@
     const canvas = el(opts.canvasId || "chart-distribution");
     const chartKey = opts.chartKey || "distribution";
     if (!canvas) return;
+    toggleChartEmptyState(opts.canvasId || "chart-distribution", !rows.length);
     if (!rows.length) {
       destroyChart(chartKey);
       return;
@@ -636,6 +677,8 @@
     const counts = RISK_BAND_ORDER.map((band) => rows.filter((t) => t.risk_band === band).length);
     destroyChart(chartKey);
     if (!canvas) return;
+    toggleChartEmptyState(opts.canvasId || "chart-band-breakdown", !rows.length);
+    if (!rows.length) return;
     const legendConfig = interactive
       ? {
           position: "bottom",
@@ -675,9 +718,27 @@
   function renderByProductChart(rows) {
     const canvas = el("chart-by-product");
     if (!canvas) return;
+    destroyChart("byProduct");
     const products = [...new Set(rows.map((t) => t.product_cd))].sort();
     const counts = products.map((p) => rows.filter((t) => t.product_cd === p && (t.risk_band === "High" || t.risk_band === "Critical")).length);
-    destroyChart("byProduct");
+    // Two distinct empty cases, worth telling apart rather than both
+    // rendering as the same blank chart: no rows match the filters at
+    // all, vs. rows exist but none happen to be High/Critical (a real,
+    // informative result -- not a bug -- that an all-zero bar chart would
+    // otherwise show as a confusing flat line with no explanation).
+    const emptyMsg = el("chart-by-product-empty");
+    if (!rows.length) {
+      if (emptyMsg) emptyMsg.textContent = "No synthetic transactions match the current filters.";
+      toggleChartEmptyState("chart-by-product", true);
+      return;
+    }
+    if (!counts.some((c) => c > 0)) {
+      if (emptyMsg) emptyMsg.textContent = "No High or Critical transactions in the current scope.";
+      toggleChartEmptyState("chart-by-product", true);
+      return;
+    }
+    if (emptyMsg) emptyMsg.textContent = "No synthetic transactions match the current filters.";
+    toggleChartEmptyState("chart-by-product", false);
     state.charts.byProduct = new Chart(canvas, {
       type: "bar",
       data: { labels: products, datasets: [{ label: "High + Critical", data: counts, backgroundColor: "#e05a5a" }] },
@@ -716,6 +777,7 @@
     const canvas = el("chart-amount-vs-risk");
     if (!canvas) return;
     destroyChart("amountVsRisk");
+    toggleChartEmptyState("chart-amount-vs-risk", !rows.length);
     const yRange = scoreAxisRange(rows);
     const noteEl = el("amount-risk-note");
     if (noteEl) {
@@ -723,6 +785,7 @@
         ? "Y-axis zoomed to this batch's observed score range (" + yRange.min.toFixed(3) + "–" + yRange.max.toFixed(3) + "), not a fixed 0–1 axis, for the same reason as the distribution chart."
         : "No transactions match the current filters.";
     }
+    if (!rows.length) return;
     state.charts.amountVsRisk = new Chart(canvas, {
       type: "scatter",
       data: {
@@ -753,8 +816,10 @@
   function renderSequenceChart(rows) {
     const canvas = el("chart-sequence");
     if (!canvas) return;
-    const bySeq = [...rows].sort((a, b) => a.sequence - b.sequence);
     destroyChart("sequence");
+    toggleChartEmptyState("chart-sequence", !rows.length);
+    if (!rows.length) return;
+    const bySeq = [...rows].sort((a, b) => a.sequence - b.sequence);
     const yRange = scoreAxisRange(rows);
     state.charts.sequence = new Chart(canvas, {
       type: "line",
