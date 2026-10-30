@@ -855,3 +855,155 @@ accessed; no performance metric or case outcome was fabricated — the
 only numbers shown anywhere (test pass counts, checksum, screenshot
 dimensions) are this session's own direct measurements. Nothing was
 pushed, merged, or deployed.
+
+## Stage 11: controlled dashboard deployment preparation (same branch)
+
+**Status: preparation complete, not deployed — awaiting user approval to
+actually deploy.** Reported 2026-10-30, after Stage 10's approval. Same
+numbering caveat as before: this is "Stage 11" of the **dashboard
+track**, unrelated to the ML roadmap's real Stage 11 (Explainability,
+`docs/STAGE11_EXPLAINABILITY_REPORT.md`, already closed) — kept in this
+file, not a new top-level `STAGE11_*.md`, to avoid confusing the two.
+
+### What was done
+
+1. **Branch/commit verification.** `dashboard-multiview-redesign` working
+   tree was clean; `git log` confirmed `7c7012d` (Stage 10) on top of
+   `a6b5e75` (Stage 9) on top of `4d4bccb` (Stage 8). `git fetch` +
+   `git rev-list --left-right --count origin/dashboard-multiview-redesign...dashboard-multiview-redesign`
+   showed the remote 2 commits behind, 0 ahead — a clean fast-forward,
+   no divergence to resolve.
+2. **Full regression re-run** immediately before pushing: **399/399
+   passed** (393 fast+browser in 27.6s, 6 heavy/data-contract in
+   136.1s). Frozen artifact checksum reconfirmed unchanged:
+   `2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+3. **Pushed** `dashboard-multiview-redesign` to `origin`
+   (fast-forward, `4d4bccb..7c7012d` — no force push, nothing rewritten).
+4. **Pull request**: an open PR targeting `render-dashboard-integration`
+   from this branch already existed (**PR #3**, opened 2026-10-29,
+   before Stage 9/10) — rather than opening a duplicate, the push above
+   updated it in place. It now carries all 3 commits (Stage 8/9/10),
+   shows `MERGEABLE`/no conflicts, and **remains open and unmerged**:
+   https://github.com/gbeminiyiprecious721-cmd/Fraud-Risk-Intelligence/pull/3
+5. **Render build/start compatibility** — verified by reading
+   `src/render_demo.py` and `docs/RENDER_DEPLOYMENT_PREPARATION.md`, not
+   by deploying (deployment is explicitly out of scope this stage):
+   - `/`, `/dashboard.html`, `/dashboard.css`, `/dashboard.js` all read
+     straight from `ui/dashboard.{html,css,js}` on disk at request time
+     (`FileResponse`/`.read_text()`), so the Stage 10 Kanban-affordance
+     changes need no code change to be served — confirmed by reading
+     the route handlers, not assumed.
+   - The public `/v1/dashboard/queue` route already allowlists the
+     exact same 5 seed values (101/202/303/404/505) the dashboard's
+     "Demo batch" dropdown sends, so all 5 sequences verified locally in
+     Stage 10 will produce the same batches on the public service.
+   - No new Python dependency was added (this stage's change is
+     HTML/CSS/JS only) — `requirements-render.txt` needs no update.
+   - Documented Build/Start commands (`docs/RENDER_DEPLOYMENT_PREPARATION.md`):
+     Build `bash deploy/render_fetch_artifact.sh && pip install -r requirements-render.txt`;
+     Start `uvicorn src.render_demo:app --host 0.0.0.0 --port $PORT`. Neither
+     script nor command was modified this stage.
+6. **Public single-transaction demo** (`/index.html`): route and
+   same-origin API rewrite in `render_demo.py` are untouched by this
+   stage's diff — `git diff` confirms zero changes to `src/render_demo.py`
+   — so its availability is structurally unaffected.
+
+### Honest gap: this session cannot see the live Render service
+
+This session has no Render dashboard or Render API access (no connector
+configured), and nothing was queried or changed on Render's side. That
+cuts both ways and needs to be said plainly rather than glossed over:
+- Nothing about the live service's actual Free-plan status, environment
+  variables, or Auto-Deploy setting was touched — if they're set a
+  certain way today, they remain exactly that way after this stage.
+- But this session also **cannot independently confirm** what those
+  settings currently are, or even that a live service exists yet in the
+  form this task describes. `docs/RENDER_DEPLOYMENT_PREPARATION.md`'s
+  own last update states plainly: "Render service not yet created. No
+  public demo URL exists. No hosted prediction has succeeded." That
+  predates this stage and was not re-verified or re-written here (doing
+  so would mean asserting a live-service state this session has no way
+  to observe). If a service has since been created directly in the
+  Render dashboard, its exact configuration is only visible there — the
+  user is the only one who can confirm it before deploying.
+
+### Deployment procedure (for the user to execute — not run this stage)
+
+1. Open PR #3 on GitHub, review the Stage 8/9/10 diff, and merge it into
+   `render-dashboard-integration` **only when ready** (this stage does
+   not do this).
+2. In the Render dashboard, confirm (do not change unless intentional):
+   plan = Free, Auto-Deploy = Off, and the three artifact-retrieval
+   environment variables (`ARTIFACT_SOURCE_REPO`,
+   `ARTIFACT_SOURCE_PATH`, `ARTIFACT_SOURCE_PAT`) are already set from
+   prior setup.
+3. Confirm Build Command is exactly
+   `bash deploy/render_fetch_artifact.sh && pip install -r requirements-render.txt`
+   and Start Command is exactly
+   `uvicorn src.render_demo:app --host 0.0.0.0 --port $PORT` (unchanged
+   by this stage — verify, don't retype, to avoid an incidental edit).
+4. With Auto-Deploy off, manually trigger a deploy of the merged commit
+   from the Render dashboard ("Manual Deploy" → the specific commit
+   SHA, not "latest" blindly, so the operator knows exactly what shipped).
+5. Watch the build log for the artifact-fetch step succeeding (checksum
+   match) before the service is marked live.
+
+### Rollback plan
+
+- Render's own deploy history keeps prior successful deploys; if the
+  new deploy fails health checks or a post-deploy check below fails,
+  use Render's "Rollback to this deploy" on the last known-good deploy
+  (pre-Stage-8, if needed) rather than trying to hotfix forward under
+  pressure.
+- Because Auto-Deploy stays Off throughout, a bad deploy cannot
+  cascade — no further commits will deploy themselves while the team
+  investigates.
+- The frozen model artifact itself is never part of a dashboard
+  rollback: it's fetched independently via
+  `deploy/render_fetch_artifact.sh` from the separate, checksummed
+  artifact repo, so rolling back the app code back to any prior commit
+  still fetches the same verified artifact.
+
+### Post-deployment browser checks (manual, against the live URL)
+
+Mirrors the local Stage 10 functional/visual checks, against the real
+hosted origin instead of `127.0.0.1`:
+- [ ] `GET /health` reports `artifact_loaded: true`.
+- [ ] `GET /version` returns the expected `artifact_sha256`
+  (`2fb0cbc4...`) and `artifact_version`.
+- [ ] `/index.html` single-transaction demo: real click, real score
+  returned, no console errors.
+- [ ] `/` (dashboard homepage) loads; all 6 views reachable via sidebar
+  at desktop width.
+- [ ] All 5 demo-batch sequences produce visibly different queues.
+- [ ] Chart click-to-filter and Reset filters both work.
+- [ ] Browser back/forward across views works.
+- [ ] Mobile width (real phone or responsive mode): Kanban edge-fade +
+  dot indicator appear, all 4 columns reachable by swiping.
+- [ ] No mixed-content/CORS console errors (the dashboard now talks to
+  its own origin, not `127.0.0.1:8000`).
+- [ ] Rate-limit behavior spot-checked (a 429 after rapid repeated
+  requests, service otherwise stays healthy).
+
+### Deployment blockers / open risks
+
+- PR #3 is open but **not merged** — nothing above happens until a
+  human merges it and separately triggers a manual deploy.
+- The "Honest gap" section above: this session cannot confirm the live
+  service's actual current settings or whether it already exists in a
+  deployable state.
+- All pre-existing Render risks from `docs/RENDER_DEPLOYMENT_PREPARATION.md`
+  remain open and unverified against a real deploy: exact Python/
+  scikit-learn/pandas/numpy/scipy/joblib version compatibility on
+  Render's build image; real artifact checksum/delivery over the
+  fine-grained PAT path; `X-Forwarded-For` rate-limit attribution
+  behind Render's actual proxy; no CI, so the Linux skip-path for the
+  browser test suite remains unverified outside this one macOS machine.
+
+### What this stage did NOT do
+
+No Render dashboard setting was viewed or changed (no access exists).
+No deploy was triggered. The PR was not merged. No new PR was opened
+(the existing PR #3 was reused). No code outside `git push` of the
+already-committed Stage 10 work was changed this stage — "preparation"
+here means verification and documentation, not new application code.
