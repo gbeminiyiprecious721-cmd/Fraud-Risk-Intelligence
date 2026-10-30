@@ -1007,3 +1007,113 @@ No deploy was triggered. The PR was not merged. No new PR was opened
 (the existing PR #3 was reused). No code outside `git push` of the
 already-committed Stage 10 work was changed this stage — "preparation"
 here means verification and documentation, not new application code.
+
+## Stage 12: final release preparation (same branch)
+
+**Status: preparation complete, not deployed — awaiting user decision to
+merge/deploy.** Reported 2026-10-30, after Stage 11's approval. Same
+numbering caveat as Stages 10/11: this is "Stage 12" of the
+**dashboard track**, unrelated to the ML roadmap's real Stage 12
+(Responsible AI Assessment, already closed) — kept in this file, not a
+new top-level `STAGE12_*.md`.
+
+### What was re-verified this stage
+
+1. **Stage 11 documentation committed and pushed**: commit `6b7121f`
+   ("Stage 11: document controlled dashboard deployment preparation"),
+   fast-forward push `7c7012d..6b7121f` to `origin/dashboard-multiview-redesign`.
+2. **PR #3 re-confirmed** via `gh pr view 3` after the push:
+   `state: OPEN`, `mergeStateStatus: CLEAN`, `mergeable: MERGEABLE`,
+   `baseRefName: render-dashboard-integration`,
+   `headRefName: dashboard-multiview-redesign`, now 4 commits
+   (Stage 8/9/10/11). Still unmerged.
+   https://github.com/gbeminiyiprecious721-cmd/Fraud-Risk-Intelligence/pull/3
+3. **Full regression suite re-run fresh**: **399/399 passed** (393 in
+   28.3s + 6 heavy/data-contract in 145.2s, zero failures). Frozen
+   artifact checksum reconfirmed unchanged:
+   `2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+
+### Render deployment configuration — what could actually be confirmed
+
+The user-provided configuration (service `fraud-risk-intelligence`,
+branch `render-dashboard-integration`, Auto-Deploy Off, Free instance,
+unchanged build/start commands) was checked **against this repository's
+own records only** — this session still has no Render dashboard or API
+access (unchanged from Stage 11's disclosed gap), so the live service
+itself was not queried:
+
+| Item | Repo-side consistency check | Result |
+|---|---|---|
+| Target branch `render-dashboard-integration` | Matches PR #3's actual `baseRefName` | **Consistent** |
+| Free instance | Matches `docs/RENDER_DEPLOYMENT_PREPARATION.md`'s documented plan | **Consistent with docs** |
+| Build command | `bash deploy/render_fetch_artifact.sh && pip install -r requirements-render.txt` — file exists, `git diff` shows it untouched by any dashboard-track commit | **Unchanged, verified in repo** |
+| Start command | `uvicorn src.render_demo:app --host 0.0.0.0 --port $PORT` — `src/render_demo.py` untouched by any dashboard-track commit | **Unchanged, verified in repo** |
+| Service name `fraud-risk-intelligence` | Not recorded anywhere in this repository (searched all of `docs/`) | **Cannot confirm from here** |
+| Auto-Deploy = Off | A dashboard-only toggle; not represented in any repo file | **Cannot confirm from here** |
+
+The two "cannot confirm" rows are exactly the kind of thing only visible
+in the Render dashboard itself — please verify those two directly before
+merging, since this session has no way to check them.
+
+**Addendum (Stage 13):** the user separately confirmed, outside this
+session's own tool access, that the live Render service is named
+`fraud-risk-intelligence`, targets this same `render-dashboard-integration`
+branch, Auto-Deploy is Off, and the instance is Free. That confirmation
+comes from the user directly inspecting the Render dashboard, not from
+anything this session independently verified — recorded here as the
+user's attestation, kept distinct from the repo-side checks above.
+
+### Final safe release procedure
+
+1. **Review and merge PR #3** into `render-dashboard-integration` on
+   GitHub (squash or merge commit, operator's preference) — not done by
+   this session.
+2. **Before touching Render**, note the current live restore point:
+   `render-dashboard-integration` is at `d413486` ("Stage 5: dashboard
+   becomes the homepage") *before* the merge — this is the exact commit
+   Render is currently (presumably) serving, and the one to roll back to
+   if anything below fails.
+3. In the Render dashboard for the `fraud-risk-intelligence` service,
+   verify (not blindly re-type) Auto-Deploy is still **Off**, plan is
+   **Free**, and Build/Start commands match section above exactly.
+4. With Auto-Deploy off, the merge in step 1 will **not** trigger
+   anything automatically. Only after confirming step 3, use **Manual
+   Deploy → Deploy specific commit**, selecting the merge commit SHA
+   explicitly (never "deploy latest" blindly).
+5. Watch the build log live: confirm `deploy/render_fetch_artifact.sh`
+   reports a successful checksum match before `pip install` runs, and
+   confirm the service reaches "Live" status.
+6. Immediately run every item in Stage 11's "Post-deployment browser
+   checks" checklist against the real hosted URL before considering the
+   release done.
+7. Only after all checks pass, treat the release as complete. If any
+   check fails, go straight to Rollback below rather than attempting a
+   forward fix under live traffic.
+
+### Preserving the existing functioning dashboard / restore procedure
+
+- **Nothing is deployed by this session or by merging PR #3 alone** —
+  Auto-Deploy Off means the live service keeps serving `d413486`
+  (Stage 5's dashboard) until someone explicitly runs Manual Deploy.
+- **If a deploy is attempted and fails** (build error, failed health
+  check, or a post-deployment check above fails): use Render's own
+  **"Rollback to this deploy"** on the last known-good deploy — which,
+  until this release, is the one currently serving `d413486`. This
+  requires no git operation at all; Render keeps its own deploy
+  history independently of which commit is newest on the branch.
+- **If a git-level revert is ever needed** (e.g. to stop a bad commit
+  from being the target of a future manual deploy): revert the merge
+  commit on `render-dashboard-integration` with `git revert -m 1
+  <merge-sha>` rather than a forced reset, preserving history — not
+  performed this stage, documented here only for when/if it's needed.
+- The frozen model artifact is never at risk in any of the above: it is
+  fetched independently from the separate, checksummed artifact repo on
+  every build (see Stage 11), so every rollback path still serves the
+  same verified, unchanged model.
+
+### What this stage did NOT do
+
+No Render dashboard setting was viewed, confirmed firsthand, or
+changed. PR #3 was not merged. No deploy, manual or automatic, was
+triggered. No application code changed — this stage is documentation
+and verification only, continuing Stage 11's same scope.
