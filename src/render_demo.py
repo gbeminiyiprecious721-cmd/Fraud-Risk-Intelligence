@@ -294,3 +294,8 @@ def public_dashboard_queue(n: int = 48, seed: int = 2024):
     else:
         effective_seed = PUBLIC_DASHBOARD_SEED_ALLOWLIST[abs(seed) % len(PUBLIC_DASHBOARD_SEED_ALLOWLIST)]
     return build_dashboard_queue_payload(artifact, manifest, PUBLIC_DASHBOARD_BATCH_SIZE, effective_seed)
+
+
+@app.get("/capacity.js", include_in_schema=False)
+def capacity_js():
+    return FileResponse(_UI_DIR / "capacity.js", media_type="application/javascript", headers={"Cache-Control": "no-store"})

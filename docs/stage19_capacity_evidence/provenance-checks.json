@@ -1,0 +1,9 @@
+{
+  "aggregate_sha256": "c2a0ebd0bca815a278c6c88ca9105bcd02ccc3e491e722177bb1c39b9ee6ca7d",
+  "aggregate_bytes": 56709,
+  "rebuild_byte_identical": true,
+  "model_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "base_commit": "3569473e649ed27ce21771d4b2d2c8cb41fa6547",
+  "main_before": "52c01c919cb40cd2bedf1a41794a73e38c6cf737",
+  "integration_local_before": "d413486e962368a5ad81a445f15549da3d8075fc"
+}

@@ -35,7 +35,7 @@
 
   const RISK_BAND_ORDER = ["Low", "Medium", "High", "Critical"];
   const WORKFLOW_STATUSES = ["New", "In Review", "Escalated", "Resolved"];
-  const VIEWS = ["overview", "queue", "analytics", "workflow", "insights", "responsible-ai"];
+  const VIEWS = ["overview", "queue", "analytics", "workflow", "insights", "responsible-ai", "capacity"];
   const DEFAULT_VIEW = "overview";
 
   // Fixed demo-batch seeds. These are the SAME values src/render_demo.py
@@ -93,6 +93,12 @@
   function renderActiveView() {
     const view = parseViewFromHash();
     state.currentView = view;
+    document.body.classList.toggle("capacity-active", view === "capacity");
+    const populationBadge = document.querySelector(".topbar .badge-synthetic");
+    populationBadge.textContent = view === "capacity" ? "Historical validation / portfolio" : "Synthetic / portfolio demonstration";
+    populationBadge.title = view === "capacity"
+      ? "Labelled historical validation estimates, separate from the synthetic demo batch."
+      : "Every transaction shown here is fabricated for this demo, never a real or training record.";
     document.querySelectorAll(".view").forEach((v) => {
       v.classList.toggle("active", v.dataset.view === view);
     });
@@ -115,6 +121,7 @@
     if (state.raw) applyFiltersAndRender();
     const heading = document.getElementById("view-heading-" + view);
     if (heading) heading.focus();
+    if (view === "capacity" && window.CapacitySimulator) window.CapacitySimulator.show();
   }
 
   // ---------------------------------------------------------------------

@@ -1,0 +1,302 @@
+[
+  {
+    "width": 1440,
+    "height": 900,
+    "metrics": {
+      "body": {
+        "height": 900,
+        "scrollHeight": 900,
+        "width": 1440,
+        "scrollWidth": 1440,
+        "top": 0,
+        "bottom": 900
+      },
+      ".view-container": {
+        "height": 721,
+        "scrollHeight": 721,
+        "width": 1208,
+        "scrollWidth": 1208,
+        "top": 143.890625,
+        "bottom": 864.8125
+      },
+      ".capacity-view": {
+        "height": 689,
+        "scrollHeight": 689,
+        "width": 1160,
+        "scrollWidth": 1160,
+        "top": 159.890625,
+        "bottom": 848.8125
+      },
+      "#capacity-workspace": {
+        "height": 607,
+        "scrollHeight": 607,
+        "width": 1160,
+        "scrollWidth": 1160,
+        "top": 241.453125,
+        "bottom": 848.8125
+      },
+      ".capacity-controls": {
+        "height": 61,
+        "scrollHeight": 61,
+        "width": 1158,
+        "scrollWidth": 1158,
+        "top": 267.6875,
+        "bottom": 330.96875
+      },
+      ".capacity-kpis": {
+        "height": 75,
+        "scrollHeight": 75,
+        "width": 1160,
+        "scrollWidth": 1160,
+        "top": 342.15625,
+        "bottom": 417.171875
+      },
+      ".capacity-charts": {
+        "height": 367,
+        "scrollHeight": 367,
+        "width": 1160,
+        "scrollWidth": 1160,
+        "top": 428.359375,
+        "bottom": 795.125
+      },
+      ".capacity-decision": {
+        "height": 41,
+        "scrollHeight": 41,
+        "width": 1158,
+        "scrollWidth": 1158,
+        "top": 806.3125,
+        "bottom": 848.8125
+      }
+    },
+    "browser_exceptions": [],
+    "plot_heights": [
+      197.2,
+      197.2
+    ]
+  },
+  {
+    "width": 1280,
+    "height": 800,
+    "metrics": {
+      "body": {
+        "height": 800,
+        "scrollHeight": 800,
+        "width": 1280,
+        "scrollWidth": 1280,
+        "top": 0,
+        "bottom": 800
+      },
+      ".view-container": {
+        "height": 621,
+        "scrollHeight": 621,
+        "width": 1048,
+        "scrollWidth": 1048,
+        "top": 143.890625,
+        "bottom": 764.8125
+      },
+      ".capacity-view": {
+        "height": 589,
+        "scrollHeight": 589,
+        "width": 1000,
+        "scrollWidth": 1000,
+        "top": 159.890625,
+        "bottom": 748.8125
+      },
+      "#capacity-workspace": {
+        "height": 507,
+        "scrollHeight": 507,
+        "width": 1000,
+        "scrollWidth": 1000,
+        "top": 241.453125,
+        "bottom": 748.8125
+      },
+      ".capacity-controls": {
+        "height": 61,
+        "scrollHeight": 61,
+        "width": 998,
+        "scrollWidth": 998,
+        "top": 267.6875,
+        "bottom": 330.96875
+      },
+      ".capacity-kpis": {
+        "height": 78,
+        "scrollHeight": 78,
+        "width": 1000,
+        "scrollWidth": 1000,
+        "top": 342.15625,
+        "bottom": 420.53125
+      },
+      ".capacity-charts": {
+        "height": 263,
+        "scrollHeight": 263,
+        "width": 1000,
+        "scrollWidth": 1000,
+        "top": 431.71875,
+        "bottom": 695.125
+      },
+      ".capacity-decision": {
+        "height": 41,
+        "scrollHeight": 41,
+        "width": 998,
+        "scrollWidth": 998,
+        "top": 706.3125,
+        "bottom": 748.8125
+      }
+    },
+    "browser_exceptions": [],
+    "plot_heights": [
+      94.2,
+      94.2
+    ]
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "metrics": {
+      "body": {
+        "height": 1462,
+        "scrollHeight": 1462,
+        "width": 753,
+        "scrollWidth": 753,
+        "top": 0,
+        "bottom": 1462.0625
+      },
+      ".view-container": {
+        "height": 1188,
+        "scrollHeight": 1188,
+        "width": 753,
+        "scrollWidth": 753,
+        "top": 188.109375,
+        "bottom": 1375.6875
+      },
+      ".capacity-view": {
+        "height": 1136,
+        "scrollHeight": 1136,
+        "width": 705,
+        "scrollWidth": 705,
+        "top": 208.109375,
+        "bottom": 1343.6875
+      },
+      "#capacity-workspace": {
+        "height": 1054,
+        "scrollHeight": 1054,
+        "width": 705,
+        "scrollWidth": 705,
+        "top": 289.671875,
+        "bottom": 1343.6875
+      },
+      ".capacity-controls": {
+        "height": 96,
+        "scrollHeight": 96,
+        "width": 703,
+        "scrollWidth": 703,
+        "top": 315.90625,
+        "bottom": 414.046875
+      },
+      ".capacity-kpis": {
+        "height": 189,
+        "scrollHeight": 189,
+        "width": 705,
+        "scrollWidth": 705,
+        "top": 425.234375,
+        "bottom": 614.703125
+      },
+      ".capacity-charts": {
+        "height": 645,
+        "scrollHeight": 645,
+        "width": 705,
+        "scrollWidth": 705,
+        "top": 625.890625,
+        "bottom": 1271.28125
+      },
+      ".capacity-decision": {
+        "height": 59,
+        "scrollHeight": 59,
+        "width": 703,
+        "scrollWidth": 703,
+        "top": 1282.46875,
+        "bottom": 1343.6875
+      }
+    },
+    "browser_exceptions": [],
+    "plot_heights": [
+      147.2,
+      147.2
+    ]
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "metrics": {
+      "body": {
+        "height": 1875,
+        "scrollHeight": 1875,
+        "width": 375,
+        "scrollWidth": 375,
+        "top": 0,
+        "bottom": 1874.90625
+      },
+      ".view-container": {
+        "height": 1461,
+        "scrollHeight": 1461,
+        "width": 375,
+        "scrollWidth": 375,
+        "top": 308.015625,
+        "bottom": 1769.34375
+      },
+      ".capacity-view": {
+        "height": 1409,
+        "scrollHeight": 1409,
+        "width": 343,
+        "scrollWidth": 343,
+        "top": 328.015625,
+        "bottom": 1737.34375
+      },
+      "#capacity-workspace": {
+        "height": 1270,
+        "scrollHeight": 1270,
+        "width": 343,
+        "scrollWidth": 343,
+        "top": 467.140625,
+        "bottom": 1737.34375
+      },
+      ".capacity-controls": {
+        "height": 148,
+        "scrollHeight": 148,
+        "width": 341,
+        "scrollWidth": 341,
+        "top": 511.609375,
+        "bottom": 662.0625
+      },
+      ".capacity-kpis": {
+        "height": 279,
+        "scrollHeight": 279,
+        "width": 343,
+        "scrollWidth": 343,
+        "top": 673.25,
+        "bottom": 952.203125
+      },
+      ".capacity-charts": {
+        "height": 683,
+        "scrollHeight": 683,
+        "width": 343,
+        "scrollWidth": 343,
+        "top": 963.390625,
+        "bottom": 1646.21875
+      },
+      ".capacity-decision": {
+        "height": 78,
+        "scrollHeight": 78,
+        "width": 341,
+        "scrollWidth": 341,
+        "top": 1657.40625,
+        "bottom": 1737.34375
+      }
+    },
+    "browser_exceptions": [],
+    "plot_heights": [
+      125.19999999999999,
+      125.19999999999999
+    ]
+  }
+]

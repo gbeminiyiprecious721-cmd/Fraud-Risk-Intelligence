@@ -26,6 +26,7 @@
       <li><a href="#/analytics" data-view="analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="20" x2="5" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="14"/></svg><span class="label">Analytics</span></a></li>
       <li><a href="#/workflow" data-view="workflow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="4.5" height="16" rx="1"/><rect x="9.75" y="4" width="4.5" height="10" rx="1"/><rect x="16.5" y="4" width="4.5" height="13" rx="1"/></svg><span class="label">Workflow board</span></a></li>
       <li><a href="#/insights" data-view="insights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg><span class="label">Model insights</span></a></li>
+      <li><a href="#/capacity" data-view="capacity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V4M4 20h16M7 16l4-5 4 2 5-8"/></svg><span class="label">Capacity simulator</span></a></li>
       <li><a href="#/responsible-ai" data-view="responsible-ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg><span class="label">Responsible use</span></a></li>
       <li><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg><span class="label">Single-transaction demo</span></a></li>
     </ul>
@@ -47,6 +48,7 @@
         <span class="badge badge-health" id="health-badge" role="status"><span class="dot" id="health-dot"></span><span id="health-text">Checking service&hellip;</span></span>
       </div>
       <div class="header-controls">
+        <span class="capacity-context">Historical validation workspace · synthetic batch filters do not apply</span>
         <div class="header-search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <label for="filter-search" class="visually-hidden">Search transaction ID (applies across every view)</label>
@@ -236,6 +238,32 @@
         </div>
       </section>
 
+      <!-- Stage 19: separate labelled validation population; never synthetic outcomes. -->
+      <section class="view capacity-view" data-view="capacity" aria-labelledby="view-heading-capacity">
+        <h2 id="view-heading-capacity" class="view-heading" tabindex="-1">Investigation Capacity Simulator</h2>
+        <p class="capacity-disclosure">Historical validation / development backtesting — previously used during model development. Estimates may be optimistic; future fraud capture is not guaranteed. Separate from the Stage 10 final-test results.</p>
+        <p id="capacity-status" role="status" aria-live="polite">Historical evidence loads when you open this view.</p>
+        <button type="button" class="ghost" id="capacity-retry" hidden>Retry loading evidence</button>
+        <div id="capacity-workspace" hidden>
+          <p class="capacity-population" id="capacity-population"></p>
+          <div class="capacity-controls panel">
+            <div class="capacity-slider-field">
+              <label for="capacity-slider">Investigation capacity <output id="capacity-percent" for="capacity-slider"></output></label>
+              <input id="capacity-slider" type="range" min="0" max="200" step="1" value="2" aria-describedby="capacity-step-note">
+            </div>
+            <div><label for="capacity-count">Transactions to review</label><input id="capacity-count" type="number" min="0" step="1" inputmode="numeric" aria-describedby="capacity-step-note"></div>
+            <button type="button" class="ghost" id="capacity-reset">Reset to 1%</button>
+            <span id="capacity-step-note">Numeric input snaps to 0.5% checkpoints.</span>
+          </div>
+          <div class="capacity-kpis" id="capacity-kpis" aria-live="polite"></div>
+          <div class="capacity-charts">
+            <div class="panel"><h3>Capacity vs. historical fraud capture</h3><p class="panel-note">Click a checkpoint to select capacity. Random review is an expectation.</p><div class="capacity-canvas"><canvas id="capacity-recall-chart" role="img" aria-label="Historical validation recall and expected random-review recall at computed investigation capacities"></canvas></div></div>
+            <div class="panel"><h3>Workload vs. precision</h3><p class="panel-note">Fraction of reviewed transactions historically labelled fraudulent.</p><div class="capacity-canvas"><canvas id="capacity-precision-chart" role="img" aria-label="Historical precision versus workload compared with expected random-review precision"></canvas></div></div>
+          </div>
+          <details class="capacity-decision panel" aria-label="Capacity decision support"><summary><strong>Decision support</strong> — <span id="capacity-brief"></span> <span class="ghost-link">Counts &amp; assumptions</span></summary><p id="capacity-decision"></p><p id="capacity-counts"></p><p class="panel-note">Fixed historical batch, not a staffing forecast. Uncalibrated ranks; no automated declines or monetary claims. Lines join computed checkpoints; metrics are never interpolated.</p></details>
+        </div>
+      </section>
+
       <!-- ===================== MODEL INSIGHTS ===================== -->
       <section class="view view-flex" data-view="insights" aria-labelledby="view-heading-insights">
         <h2 id="view-heading-insights" class="view-heading" tabindex="-1">Model Insights</h2>
@@ -282,7 +310,7 @@
               <li>This score is an <strong>investigation-prioritization signal only</strong> &mdash; it ranks transactions relative to one another, for a human investigator to triage.</li>
               <li>It must <strong>never</strong> be used to automatically decline, block, or flag a transaction as fraud without human review.</li>
               <li>It is <strong>not a calibrated probability</strong> &mdash; no reliability diagram, Brier score, or recalibration has been performed anywhere in this project.</li>
-              <li>Every record shown on this page is <strong>synthetic and portfolio-safe</strong>, fabricated for this demo and scored on request &mdash; none are real or training transactions.</li>
+              <li>Every queue record shown here is <strong>synthetic and portfolio-safe</strong>, fabricated for this demo and scored on request &mdash; none are real or training transactions.</li>
               <li>The <strong>historical Stage 10 metrics</strong> (Model Insights) are a separate, fixed, one-time measurement on held-out data &mdash; they describe the model in general, not any specific prediction shown on this page, and must never be read as if they applied to an individual transaction.</li>
               <li>This project makes <strong>no demographic fairness claim</strong>; a Responsible AI assessment was performed on the model (Stage 12) but is not re-run or re-validated by this dashboard.</li>
               <li>This is a <strong>portfolio demonstration</strong>, not production banking software, and was never evaluated, reviewed, or approved as one.</li>
@@ -301,7 +329,7 @@
 
     </div>
 
-    <footer class="page-footer">Fraud-Risk-Intelligence &mdash; portfolio presentation layer. No real transaction data is used anywhere on this page. <a href="index.html">Single-transaction demo &rarr;</a></footer>
+    <footer class="page-footer">Fraud-Risk-Intelligence &mdash; portfolio presentation layer. Synthetic queue; historical aggregates only, with no raw records exposed. <a href="index.html">Single-transaction demo &rarr;</a></footer>
 
   </div>
 </div>
@@ -327,5 +355,6 @@
 </aside>
 
 <script src="dashboard.js"></script>
+<script src="capacity.js"></script>
 </body>
 </html>

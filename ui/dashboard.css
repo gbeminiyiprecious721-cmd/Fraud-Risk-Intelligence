@@ -780,3 +780,51 @@ footer.page-footer { text-align: center; color: var(--muted); font-size: 0.8rem;
   .kpi-sub { font-size: 0.7rem; }
   .kpi-card-head svg { flex-shrink: 0; }
 }
+
+/* Stage 19: historical capacity is independent of the synthetic batch state. */
+.capacity-context { display: none; color: var(--muted); font-size: .82rem; padding: .5rem 0; }
+.capacity-active .capacity-context { display: inline; }
+.capacity-active .header-search, .capacity-active .header-batch-select-wrap,
+.capacity-active #reload-btn, .capacity-active #global-scope-status { display: none; }
+.capacity-disclosure { color: var(--warn); font-size: .8rem; margin: 0 0 .4rem; }
+#capacity-status, .capacity-population { font-size: .76rem; color: var(--muted); margin: 0 0 .5rem; }
+#capacity-status:empty { display: none; }
+.capacity-view .view-heading { margin-bottom: .5rem; }
+.capacity-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; padding: .7rem 1rem; margin-bottom: .7rem; }
+.capacity-controls label { display: block; font-size: .78rem; color: var(--muted); }
+.capacity-slider-field { flex: 1 1 240px; }
+#capacity-slider { width: 100%; accent-color: var(--accent); }
+#capacity-count { width: 130px; padding: .35rem; background: var(--panel-2); color: var(--text); border: 1px solid var(--border); border-radius: .3rem; }
+#capacity-step-note { width: 100%; font-size: .72rem; color: var(--muted); }
+.capacity-kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .7rem; margin-bottom: .7rem; }
+.capacity-kpis .kpi-card { padding: .6rem .75rem; }
+.capacity-kpis .kpi-label { min-height: 2.7em; }
+.capacity-charts { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-bottom: .7rem; }
+.capacity-charts .panel { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: .8rem 1rem; margin: 0; }
+.capacity-canvas { position: relative; min-width: 0; height: 230px; }
+.capacity-decision { padding: .65rem 1rem; margin: 0; }
+.capacity-decision summary { cursor: pointer; font-size: .78rem; }
+.capacity-decision h3 { font-size: .9rem; margin-bottom: .35rem; }
+.capacity-decision p { font-size: .76rem; margin: .3rem 0; }
+.capacity-decision .panel-note { margin: .3rem 0 0; font-size: .7rem; }
+#capacity-workspace[hidden], #capacity-retry[hidden] { display: none; }
+@media (min-width: 901px) {
+  .capacity-view.active { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+  .capacity-view > * { flex-shrink: 0; }
+  #capacity-workspace { display: flex; flex: 1 1 auto; flex-direction: column; min-height: 0; }
+  #capacity-workspace > * { flex-shrink: 0; }
+  #capacity-workspace > .capacity-charts { flex: 1 1 0; min-height: 230px; }
+  .capacity-controls { padding: .45rem .75rem; gap: .35rem 1rem; }
+  #capacity-step-note { width: auto; flex: 0 1 170px; }
+  .capacity-kpis .kpi-value { font-size: 1.25rem; }
+  .capacity-kpis .kpi-card { padding: .4rem .65rem; }
+  .capacity-canvas { flex: 1 1 auto; min-height: 0; height: auto; }
+}
+@media (max-width: 900px) {
+  .capacity-charts { grid-template-columns: 1fr; }
+  .capacity-kpis { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+@media (max-width: 480px) {
+  .capacity-kpis { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .capacity-controls { align-items: start; }
+}

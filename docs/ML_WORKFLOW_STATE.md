@@ -1,5 +1,23 @@
 # ML Workflow State — Fraud-Risk-Intelligence
 
+## Portfolio enhancement Stage 19 — Investigation Capacity Simulator (2026-10-30)
+
+This is separate from the original closed ML Stages 0–19 below. The owner
+explicitly authorized this local-only enhancement on a new branch from
+`3569473e649ed27ce21771d4b2d2c8cb41fa6547`.
+Branch: `stage19-investigation-capacity`; no push, merge or deployment.
+The trusted train-only frozen artifact supplies inference on the original
+validation population (75560 rows, 2617 positives), never on closed final-test
+outcomes. All 201 aggregate checkpoints have independent sklearn checks.
+Validation reuse/selection optimism is disclosed; no new independent
+performance, calibration, savings or production claim is made.
+Implementation and verification are complete; owner approval is pending.
+Full suite: 431 passed, zero skips/exclusions (26 real-Chrome cases plus all
+six heavy/data-contract tests). Desktop, tablet and mobile evidence and
+limitations are recorded in [the separate Stage 19 report](STAGE19_CAPACITY_SIMULATOR.md).
+No scientific decision or historical evaluation record below is changed.
+No Stage 20–25 work is authorized by this entry.
+
 ## Dashboard UX recovery — 2026-10-30 (separate from ML stages)
 
 The owner authorized recovery and completion of dashboard **Stage 15: Live

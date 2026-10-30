@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "population": "Chronological validation \u2014 development backtesting",
+  "population_id": "stage4-validation",
+  "n": 75560,
+  "positives": 2617,
+  "prevalence": 0.034634727368978296,
+  "average_precision": 0.44700194663110016,
+  "model_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "artifact_version": "1.0.0",
+  "validation_id_fingerprint": "14e5f38141f4ea86cf6228d76bf9af398c7cc3116d1ca49ddecc3b502e9ff5bc",
+  "train_id_fingerprint": "a39d2eeedd2b1c6f2f26bb26670e6a4b53973480806294524887ff56dbdc4470",
+  "split_metadata_sha256": "67596d5e304a9c43c12f8433f533943ccf81969254054b53effb8479d7ca3b18",
+  "ranking": "Descending frozen-model score rounded to 12 decimals; ascending TransactionID breaks ties",
+  "independent_checks": 201,
+  "checkpoint_count": 201,
+  "limitations": [
+    "Validation was consulted during model development: estimates may be optimistic.",
+    "Fixed historical batch, not a daily staffing forecast or future capture guarantee.",
+    "Scores are uncalibrated ranking signals; no automated declines or monetary claims.",
+    "Random baseline is an expectation under uniform sampling without replacement.",
+    "Only precomputed capacity checkpoints are selectable; metrics are never interpolated.",
+    "Synthetic demo filters and batches do not change this historical population."
+  ]
+}
