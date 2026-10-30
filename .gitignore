@@ -53,3 +53,6 @@ secrets.json
 # regenerated fresh by deploy/start_release.sh / scripts/run_stage17_*.py.
 deploy/run/
 deploy/release_candidates/
+
+# Stage 20 private training matrices, row-level outputs and challenger artifacts.
+artifacts/stage20/

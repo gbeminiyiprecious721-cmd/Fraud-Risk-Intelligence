@@ -1,5 +1,23 @@
 # ML Workflow State — Fraud-Risk-Intelligence
 
+## Portfolio enhancement Stage 20 — Challenger benchmarking (Phase A, 2026-10-30)
+
+Owner requested this separate enhancement stage. Branch
+`stage20-challenger-benchmark` starts from verified Stage 19 integration
+merge `5b6e90d8bf5665d4a316c063e0a6a1b0737feab7`.
+Inspection confirms the unchanged frozen RF and authorized chronological
+train/validation partitions. An inner chronological stopping split is
+feasible, but is not a new independent incumbent-comparison holdout.
+The protocol and exact dependency proposal are documented in
+[Stage 20 design](STAGE20_CHALLENGER_BENCHMARK.md).
+**Pre-training protocol and all five pinned dependencies explicitly approved
+by owner, 2026-10-30.** Automatic approval review hit a usage limit before
+the Git upstream mutation; that action was not executed. Dependency
+installation, challenger training, benchmark metrics and dashboard work
+have not begun. No push, merge or deployment occurred. Resume the approved
+protocol once tool review is available; do not ask for approval again. No Stage 21+ work is authorized.
+Original closed ML decisions and results below remain unchanged.
+
 ## Portfolio enhancement Stage 19 — Investigation Capacity Simulator (2026-10-30)
 
 This is separate from the original closed ML Stages 0–19 below. The owner
