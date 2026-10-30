@@ -20,6 +20,8 @@ docs/stage21_case_evidence/queue-1280x800.png
 docs/stage21_case_evidence/queue-1440x900.png
 docs/stage21_case_evidence/queue-390x844.png
 docs/stage21_case_evidence/queue-768x1024.png
+docs/stage21_case_evidence/release-review-regression.log
+docs/stage21_case_evidence/release-review.json
 docs/stage21_case_evidence/viewport-metrics.json
 docs/stage21_case_evidence/workflow-1280x800.png
 docs/stage21_case_evidence/workflow-1440x900.png

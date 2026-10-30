@@ -1,6 +1,6 @@
 # Stage 21 — Interactive Investigation Case Management
 
-Status: implementation and verification complete locally; ready for owner review. No push, merge or deployment.
+Status: final PR review verified. Owner authorised branch push and a PR to `render-dashboard-integration`; no merge, deployment or Render changes authorised.
 Base: `7ffe91f995bd4bea7296e04ef408d9c3600869a7`.
 Branch: `stage21-case-management`.
 
@@ -259,7 +259,7 @@ red-to-green regressions and are covered by the final complete suite.
 - [Independent review and fixes](stage21_case_evidence/independent-review.json)
 - [Public-batch and native keyboard smoke](stage21_case_evidence/public-and-keyboard-smoke.json)
 - [Preservation checks](stage21_case_evidence/preservation.json)
-- [Exact 37-file inventory](stage21_case_evidence/changed-files.txt)
+- [Current release inventory](stage21_case_evidence/changed-files.txt)
 
 Frozen Random Forest SHA256 before/after remains
 `2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
@@ -278,3 +278,65 @@ history, optimistic cross-tab conflicts and unverified assistive-technology/
 physical-device behaviour remain explicit limits above. Verified changes are
 committed locally only on `stage21-case-management`. No push, merge, deployment
 or Stage 22 work is authorised by this delivery.
+
+
+## Owner-authorised final review and GitHub PR preparation
+
+The owner explicitly authorised final review, branch push and a PR against
+`render-dashboard-integration`, starting from implementation commit
+`769c2c78b1448b6cd547a55e30d422ef84d896fb`. This supersedes the initial
+local-only delivery scope for push/PR only. Merge, deployment, Render changes,
+model replacement/retraining and Stage 22 work remain unauthorised.
+
+The complete committed 37-file diff and inventory were checked against base
+`7ffe91f995bd4bea7296e04ef408d9c3600869a7`. A fresh independent read-only
+source review found no concrete Critical, Important or Minor defect. Case
+creation, fictional assignment, priorities, legal status transitions, required
+resolution/reopening reasons, notes, bounded replay history, atomic edits,
+filters and native keyboard behaviour remain covered by the fresh suite.
+No implementation or styling correction was needed during this release review.
+
+Fresh full regression: **486 passed, 0 failed, 0 skipped**, five existing
+warnings, **249.27s**. All six heavy/data-contract tests and 63 real-Chrome cases
+are included. Evidence:
+[release-review-regression.log](stage21_case_evidence/release-review-regression.log).
+No test was excluded, no package was upgraded, and no frozen artifact was fit
+or overwritten by the independent temporary reference-training regression.
+
+Additional independent local-Chrome validation used two actual same-origin
+tabs with separate store instances. The second tab's stale edit was rejected
+without overwriting the first tab; full navigation restored notes, assignment,
+priority and status. Both resolution and reopening rejected missing reasons.
+Seed 202 remained isolated from seed 101. Reset cancellation preserved storage;
+confirmed reset removed only the current scope and retained the other seed.
+Malformed and unsupported schema data remained untouched until explicit reset.
+Quota failure kept new notes visibly memory-only; reload correctly restored
+only the earlier saved state. Hostile note markup produced no DOM image.
+
+CDP network capture observed **42 requests**, all GET, during case operations,
+reloads and seed changes. The synthetic note canary appeared in none of the
+request URLs, bodies or observed request metadata. No case notes or assignments
+were sent to the API. This complements the source inspection (no case-module
+network calls), no-fetch mutation regressions and absent backend case-write
+route tests. No actual sensitive records were used. The inherited browser-local
+and client-compromise limitations remain explicit, not a secure audit claim.
+Independent evidence:
+[release-review.json](stage21_case_evidence/release-review.json).
+
+Frozen SHA256, all prior scientific records, historical aggregates, production
+scoring/security and dependency/deployment files were rechecked unchanged.
+The server still differs only by two fixed read-only JavaScript asset routes.
+The original implementation inventory is preserved in `release-review.json`;
+the current inventory has **39 files**, adding only this JSON evidence and the
+fresh regression log to the initial 37. Existing report/state/inventory files
+are updated to record this authorised PR phase. No product or styling change
+was made after the reviewed implementation checkpoint.
+
+Remote preflight confirmed `main` at
+`52c01c919cb40cd2bedf1a41794a73e38c6cf737`, integration at the base above and
+no pre-existing Stage 21 remote branch. Only `stage21-case-management` will be
+pushed. The PR head, base, mergeability and complete file inventory will be
+verified after creation; neither main nor integration will be updated. No
+Render settings or live service are queried or changed in this PR review.
+No unresolved technical or functional release blocker was identified within
+the documented synthetic, browser-local portfolio scope.

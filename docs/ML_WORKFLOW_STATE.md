@@ -33,8 +33,18 @@ records, source scoring/security, historical aggregates, dependencies and
 protected refs remain unchanged. Stage 21 implementation is complete locally
 and ready for owner review; browser-local/audit/accessibility limitations are
 documented. All pre-existing workflow records below remain unchanged.
-No push, merge, deployment, model training/replacement/promotion or closed
-final-test access is authorised. No Stage 22+ work is authorised.
+Initial delivery was local-only. The owner subsequently explicitly authorised
+final review, feature-branch push and a PR to `render-dashboard-integration`.
+Fresh full regression: **486 passed, zero failures/skips**, five unchanged
+warnings, 249.27s; all six heavy/data-contract tests and 63 real-Chrome cases.
+An independent source review found no concrete defects; two-tab/CDP verification
+confirmed conflicts, persistence, scoped reset, schema/quota recovery and no
+case-note canary or non-GET case requests in 42 observed requests. The original
+37-file scope remains intact; two added review-evidence files produce a 39-file
+PR inventory. No product/styling correction was needed. Frozen model, science,
+historical aggregates and public safeguards remain unchanged. No merge,
+deployment, Render changes, frozen-model training/replacement/promotion or
+closed final-test access is authorised. No Stage 22+ work is authorised.
 
 ## Portfolio enhancement Stage 20 — Challenger benchmarking (2026-10-30)
 
