@@ -472,3 +472,74 @@ def test_kanban_chart_click_and_real_single_transaction_scoring(page, browser_en
     page.click('.back-link')
     page.wait_for_queue_data()
     assert page.evaluate("document.querySelector('.view.active').dataset.view") == 'overview'
+
+
+@pytest.mark.parametrize('width,height', [(1440, 900), (1280, 800), (768, 1024), (390, 844)])
+def test_capacity_workspace_controls_charts_and_layout(page, width, height):
+    page.send('Emulation.setDeviceMetricsOverride', {'width': width, 'height': height, 'deviceScaleFactor': 1, 'mobile': False})
+    page.click('.sidenav-list a[data-view="capacity"]')
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline and page.evaluate("document.getElementById('capacity-workspace').hidden"):
+        time.sleep(.1)
+    assert not page.evaluate("document.getElementById('capacity-workspace').hidden")
+    assert page.evaluate("document.querySelector('.view.active').dataset.view") == 'capacity'
+    assert page.evaluate("document.querySelector('.topbar .badge-synthetic').textContent") == 'Historical validation / portfolio'
+    assert page.evaluate("document.getElementById('capacity-count').value") == '756'
+    page.evaluate("document.getElementById('capacity-slider').value=0;document.getElementById('capacity-slider').dispatchEvent(new Event('input'))")
+    assert page.evaluate("document.getElementById('capacity-count').value") == '0'
+    assert 'Not defined' in page.evaluate("document.getElementById('capacity-kpis').textContent")
+    page.evaluate("document.getElementById('capacity-count').value=75560;document.getElementById('capacity-count').dispatchEvent(new Event('change'))")
+    assert page.evaluate("document.getElementById('capacity-slider').value") == '200'
+    assert '100.00%' in page.evaluate("document.getElementById('capacity-kpis').textContent")
+    page.evaluate("document.getElementById('capacity-count').value=999999;document.getElementById('capacity-count').dispatchEvent(new Event('change'))")
+    assert page.evaluate("document.getElementById('capacity-count').value") == '75560'
+    page.click('#capacity-reset')
+    assert page.evaluate("document.getElementById('capacity-count').value") == '756'
+    assert page.evaluate("document.body.scrollWidth <= innerWidth")
+    assert page.evaluate("Chart.getChart(document.getElementById('capacity-recall-chart')).data.datasets.length") == 3
+    if width > 900:
+        assert page.evaluate("document.querySelector('.view-container').scrollHeight <= document.querySelector('.view-container').clientHeight+1")
+        assert page.evaluate("['capacity-recall-chart','capacity-precision-chart'].every(id => {const c=Chart.getChart(document.getElementById(id));return c.chartArea.bottom-c.chartArea.top >= 70;})")
+        # Genuine pointer input to the measured curve at the 50% checkpoint.
+        target = page.evaluate_json("""JSON.stringify((()=>{const c=Chart.getChart(document.getElementById('capacity-recall-chart'));const p=c.getDatasetMeta(0).data[100];const b=c.canvas.getBoundingClientRect();return {x:b.x+p.x,y:b.y+p.y}})())""")
+        for event in ['mouseMoved','mousePressed','mouseReleased']:
+            page.send('Input.dispatchMouseEvent', {'type':event,'x':target['x'],'y':target['y'],'button':'left','clickCount':1})
+        time.sleep(.2)
+        assert page.evaluate("document.getElementById('capacity-slider').value") == '100'
+    page.click('.capacity-decision summary')
+    assert page.evaluate("document.querySelector('.capacity-decision').open")
+    assert page.evaluate("document.getElementById('capacity-counts').getBoundingClientRect().height > 0")
+    page.click('.capacity-decision summary')
+    page.click('.sidenav-list a[data-view="overview"]')
+    time.sleep(.2)
+    page.click('.sidenav-list a[data-view="capacity"]')
+    time.sleep(.2)
+    assert page.evaluate("document.querySelector('.view.active').dataset.view") == 'capacity'
+    assert not [x for x in page.console_messages if x[0] in {'exception', 'error'}]
+
+
+def test_capacity_evidence_failure_is_explicit_and_retry_recovers(browser_env):
+    page = CDPSession(browser_env['cdp_port'], 'about:blank')
+    try:
+        page.send('Network.enable')
+        page.send('Network.setBlockedURLs', {'urls':['*v1/dashboard/capacity*']})
+        page.navigate(browser_env['static_origin'] + '/dashboard.html#/capacity')
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline and page.evaluate("document.getElementById('capacity-retry').hidden"):
+            time.sleep(.1)
+        assert page.evaluate("document.getElementById('capacity-workspace').hidden")
+        assert not page.evaluate("document.getElementById('capacity-retry').hidden")
+        assert 'No simulator results' in page.evaluate("document.getElementById('capacity-status').textContent")
+        page.send('Network.setBlockedURLs', {'urls':[]})
+        page.click('#capacity-retry')
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline and page.evaluate("document.getElementById('capacity-workspace').hidden"):
+            time.sleep(.1)
+        assert not page.evaluate("document.getElementById('capacity-workspace').hidden")
+        page.evaluate("document.getElementById('capacity-slider').focus()")
+        page.send('Input.dispatchKeyEvent', {'type':'keyDown','key':'ArrowRight','code':'ArrowRight','windowsVirtualKeyCode':39})
+        page.send('Input.dispatchKeyEvent', {'type':'keyUp','key':'ArrowRight','code':'ArrowRight','windowsVirtualKeyCode':39})
+        assert page.evaluate("document.getElementById('capacity-slider').value") == '3'
+        assert not [x for x in page.console_messages if x[0]=='exception']
+    finally:
+        page.close()

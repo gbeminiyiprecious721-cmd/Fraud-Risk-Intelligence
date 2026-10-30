@@ -228,7 +228,13 @@ def test_repeated_identical_requests_return_identical_probabilities(client):
     payload = _valid_payload()
     resp1 = client.post("/v1/predict", json=payload)
     resp2 = client.post("/v1/predict", json=payload)
-    assert resp1.json()["fraud_probability"] == resp2.json()["fraud_probability"]
+    assert resp1.status_code == resp2.status_code == 200
+    # Parallel RF summation varies at ~1e-15 on macOS (already covered by
+    # test_production_pipeline's tolerance-based repeated-inference check).
+    # Keep production scoring unchanged; reject differences above 1e-12.
+    assert resp1.json()["fraud_probability"] == pytest.approx(
+        resp2.json()["fraud_probability"], rel=0, abs=1e-12
+    )
 
 
 def test_artifact_identity_is_consistent_across_health_version_and_predict(client):

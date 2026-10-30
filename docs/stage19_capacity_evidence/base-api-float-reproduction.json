@@ -1,0 +1,11 @@
+{
+  "base_commit": "3569473e649ed27ce21771d4b2d2c8cb41fa6547",
+  "base_api_loaded_from_git": true,
+  "requests": 100,
+  "concurrent_workers": 4,
+  "unique_scores": [
+    0.5201984944879683
+  ],
+  "max_abs_difference": 0.0,
+  "model_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
+}
