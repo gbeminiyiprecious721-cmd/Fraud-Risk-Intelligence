@@ -5,7 +5,10 @@
 This is separate from the original closed ML Stages 0–19 below. The owner
 explicitly authorized this local-only enhancement on a new branch from
 `3569473e649ed27ce21771d4b2d2c8cb41fa6547`.
-Branch: `stage19-investigation-capacity`; no push, merge or deployment.
+Branch: `stage19-investigation-capacity`. Initial delivery was local only;
+the owner has now explicitly authorized release preparation, branch push
+and a PR against `render-dashboard-integration`. Merge, deployment and
+Render setting changes remain unauthorized.
 The trusted train-only frozen artifact supplies inference on the original
 validation population (75560 rows, 2617 positives), never on closed final-test
 outcomes. All 201 aggregate checkpoints have independent sklearn checks.

@@ -4,7 +4,9 @@ This is an extension of the existing application, separate from the original
 closed ML Stages 0–19. The owner authorized this stage on 2026-10-30.
 Base: `3569473e649ed27ce21771d4b2d2c8cb41fa6547` on the verified Render
 integration branch. Development branch: `stage19-investigation-capacity`.
-No push, merge or deployment is authorized by this stage.
+The initial implementation delivery was local only. Subsequent owner
+authorization for branch push and PR preparation is recorded in the
+release-preparation addendum below; merge/deployment remain unauthorized.
 
 ## Business problem and intended user
 
@@ -257,6 +259,8 @@ of this delivery. No additional stage is begun.
 - `docs/stage19_capacity_evidence/full-regression-tests.txt`
 - `docs/stage19_capacity_evidence/full-tests-initial.txt`
 - `docs/stage19_capacity_evidence/provenance-checks.json`
+- `docs/stage19_capacity_evidence/release-preparation-checks.json`
+- `docs/stage19_capacity_evidence/release-preparation-tests.txt`
 - `docs/stage19_capacity_evidence/screenshot-checksums.json`
 - `docs/stage19_capacity_evidence/viewport-metrics.json`
 - `docs/superpowers/plans/2026-10-30-investigation-capacity.md`
@@ -309,3 +313,67 @@ regression log above records this successful run on the delivered tree.
 The extra API test-file change is retained because it corrects a demonstrated
 flaky regression assertion using the project's established numerical
 contract; no unrelated product change is included.
+
+
+## Stage 19 release preparation — owner authorized 2026-10-30
+
+The owner authorized review, verification, feature-branch push and a pull
+request targeting `render-dashboard-integration`. Earlier local-only and
+pending-approval statements are historical implementation snapshots, not
+restrictions on this explicitly authorized release-preparation task.
+Merge, deployment, Render setting changes, frozen-model retraining and
+closed final-test evaluation remain prohibited.
+
+### Committed-tree and scientific review
+
+Started on the exact requested implementation commit
+`6191cf79d5a88487e7e9431bab71088d27bba0a4`. The working tree and index
+were clean: no additional changes remained uncommitted. The historical
+badge/footer wording, expandable counts/assumptions panel, browser tests
+and API float-tolerance assertion correction are already incorporated
+in that commit. The complete committed diff and this report were reviewed;
+no further product or scientific correction was required.
+
+A fresh validation-only inference build passed all 201 independent sklearn
+checkpoint checks and reproduced the **exact committed aggregate bytes**
+(SHA-256 `c2a0ebd0bca815a278c6c88ca9105bcd02ccc3e491e722177bb1c39b9ee6ca7d`).
+N=75560, positives=2617, population=`stage4-validation`; checkpoint K values
+match ceil(N×i/200), i=0…200. Published final-test metrics and the synthetic
+queue supply no labels or scores to this generation path.
+
+The public response was audited against explicit top-level and point-field
+allowlists. It contains only the approved aggregate statistics and provenance
+metadata, with no per-transaction IDs, labels, scores or feature values.
+The local/public GET uses a fixed file path, rejects POST and performs no
+inference. Existing public scoring restrictions, size limits, seed allowlist,
+rate limits and CORS remain unchanged. Only route registration and a fixed
+JavaScript asset route were added to the API adapters.
+
+The original scientific workflow tail, frozen artifact and schema manifest,
+approved preprocessing/production pipeline, leakage/evaluation controls,
+dependencies and deployment files remain unchanged. All four committed
+screenshot hashes match. Existing limitations above are retained in full.
+[Release-preparation checks](stage19_capacity_evidence/release-preparation-checks.json).
+
+
+### Fresh release-preparation regression and handoff
+
+`.venv/bin/python -m pytest tests/ -q` passed with **431 passed, 5 warnings
+in 187.53s (3:07)**, exit code 0; no skips, exclusions or failures.
+This includes all **26 real-Chrome cases**, all six heavy/data-contract tests,
+and the original six-view and single-transaction scoring regression tests.
+The simulator navigation, slider/keyboard, numeric input, chart selection,
+Reset, disclosure and failure/retry checks pass at the required widths.
+The warnings are the same existing Starlette/httpx and sklearn warnings.
+[Fresh release-preparation test log](stage19_capacity_evidence/release-preparation-tests.txt).
+
+The frozen artifact SHA-256 was recomputed after testing and is unchanged:
+`2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+The PR target remains `3569473e649ed27ce21771d4b2d2c8cb41fa6547`; main
+remains `52c01c919cb40cd2bedf1a41794a73e38c6cf737`. No Render settings or
+live deployment were changed. The follow-up release commit contains only
+this documentation/authorization update and fresh verification evidence;
+the verified implementation and aggregate remain exactly as in `6191cf7`.
+No remaining implementation blocker was found. Scientific and browser/
+accessibility limitations above remain applicable and must remain visible
+in the PR. Merge and deployment require separate owner authorization.
