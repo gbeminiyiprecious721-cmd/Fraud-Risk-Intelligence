@@ -25,6 +25,8 @@ docs/stage23_explainability_evidence/pre-fallback-verification-regression.log
 docs/stage23_explainability_evidence/preservation.json
 docs/stage23_explainability_evidence/public-browser-verification.json
 docs/stage23_explainability_evidence/public-browser.log
+docs/stage23_explainability_evidence/release-regression.log
+docs/stage23_explainability_evidence/release-review.json
 docs/stage23_explainability_evidence/resources-first.json
 docs/stage23_explainability_evidence/resources.json
 docs/stage23_explainability_evidence/scientific-api-tests.log
@@ -35,6 +37,7 @@ explainability_assets/local-v1.json
 scripts/build_explainability_assets.py
 scripts/run_explainability_build.py
 scripts/verify_explainability_browser.py
+scripts/verify_explainability_release.py
 src/api.py
 src/deployed_explainability.py
 src/explanation_assets.py

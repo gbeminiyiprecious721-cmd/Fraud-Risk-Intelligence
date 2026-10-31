@@ -2,6 +2,19 @@
 
 ## Portfolio Stage 23 — Frozen-artifact model explainability (2026-10-31)
 
+Release-review update: owner authorises pushing the feature branch and opening
+a PR against `render-dashboard-integration`, superseding the local-only note
+below. Independent fitted-transformer metadata reconstruction verifies813-to-392
+mapping; fresh SHAP reproduces512 global and240 local examples. Both assets are
+byte-identical. Public scope is exhaustively120 allowed/120 denied with no SHAP
+import, inference or transforms in serving. Fresh full suite:555 passed, zero
+failures/skips, five inherited warnings,313.06s; includes84 real-Chrome and all
+six heavy/data-contract tests. No runtime correction is needed. Release inventory
+is52 files (original49 plus an independent audit and two fresh evidence records).
+Merge, deployment, Render changes, challenger promotion and Stage24 remain
+prohibited pending separate approval.
+
+
 The owner explicitly authorised Stage23 and approved the concrete MDI+offline
 TreeSHAP protocol. This supersedes earlier historical notes prohibiting Stage23.
 Branch `stage23-model-explainability` starts at approved integration/live
