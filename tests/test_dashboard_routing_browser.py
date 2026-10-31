@@ -687,11 +687,11 @@ def test_stage21_search_all_case_filters_and_empty_state(page,browser_env):
     band=page.evaluate("document.getElementById('drawer-band-pill').textContent")
     _stage21_select(page,'case-priority','High');page.click('#case-save');page.click('#drawer-close')
     _stage21_select(page,'filter-search',case_id,'input')
-    _stage21_select(page,'case-status-filter','New');_stage21_select(page,'case-priority-filter','High');_stage21_select(page,'case-risk-filter',band)
+    _stage21_select(page,'case-status-filter','New');_stage21_select(page,'case-priority-filter','High');_stage21_select(page,'filter-band',band)
     assert page.evaluate("document.querySelectorAll('.kanban-card').length")==1
     _stage21_select(page,'case-status-filter','Resolved')
     assert page.evaluate("document.querySelectorAll('.kanban-card').length")==0
-    assert 'No matching transactions' in page.evaluate("document.getElementById('kanban-board').textContent")
+    assert 'No opened cases match' in page.evaluate("document.getElementById('kanban-board').textContent")
     page.click('#reset-filters-btn')
     assert page.evaluate("document.querySelectorAll('.kanban-card').length")==48
     page.evaluate('localStorage.clear()')
@@ -744,3 +744,133 @@ def test_stage21_native_keyboard_creation_keeps_focus_in_case_controls(page,brow
     page.send('Input.dispatchKeyEvent',{'type':'keyDown','key':'Tab','code':'Tab','windowsVirtualKeyCode':9})
     assert page.evaluate("document.getElementById('detail-drawer').contains(document.activeElement)")
     page.evaluate('localStorage.clear()')
+
+
+def test_queue_correction_clean_case_scope_and_single_risk_control(page,browser_env):
+    _stage21_ready(page,browser_env);page.click('.sidenav-list a[data-view="queue"]')
+    assert page.evaluate("Array.from(document.querySelectorAll('#queue-tbody .status-pill')).filter(e=>e.dataset.status==='Not opened').length")==48
+    assert page.evaluate("document.querySelectorAll('select#filter-band').length")==1
+    assert page.evaluate("document.getElementById('case-risk-filter')===null")
+    assert 'opened' in page.evaluate("document.getElementById('case-filter-help').textContent").lower()
+    for id,value in [('case-status-filter','New'),('case-analyst-filter','Unassigned'),('case-priority-filter','Normal')]:
+        _stage21_select(page,id,value)
+        assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==0
+        assert 'No opened investigation cases' in page.evaluate("document.getElementById('queue-tbody').textContent")
+        assert '48 synthetic transactions' in page.evaluate("document.getElementById('queue-tbody').textContent")
+        assert 'Showing 0 of 48' in page.evaluate("document.getElementById('global-scope-status').textContent")
+        page.click('#case-clear-filters')
+    _stage21_select(page,'case-status-filter','Not opened')
+    assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==48
+    _stage21_select(page,'case-analyst-filter','Unassigned')
+    assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==0
+    assert 'Not opened cannot match' in page.evaluate("document.getElementById('queue-tbody').textContent")
+
+
+def test_queue_correction_reset_scopes_and_case_assignment_filters(page,browser_env):
+    _stage21_ready(page,browser_env);page.click('.sidenav-list a[data-view="queue"]')
+    first=page.evaluate("document.querySelector('#queue-tbody tr[data-id]').dataset.id")
+    page.click(f'.inspect-btn[data-id="{first}"]');page.click('#case-open')
+    _stage21_select(page,'case-note','Synthetic saved note; filter clears must preserve it');page.click('#case-add-note');page.click('#drawer-close')
+    second=page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]')[1].dataset.id")
+    page.click(f'.inspect-btn[data-id="{second}"]');page.click('#case-open')
+    for id,value in [('case-analyst','Fictional Analyst C'),('case-priority','Urgent'),('case-status','Escalated')]:_stage21_select(page,id,value)
+    page.click('#case-save');page.click('#drawer-close')
+    before=page.evaluate("localStorage.getItem('fri.demo.cases.v1.101.48')")
+    for id,value,target in [('case-analyst-filter','Unassigned',first),('case-analyst-filter','Fictional Analyst C',second),('case-priority-filter','Normal',first),('case-priority-filter','Urgent',second),('case-status-filter','Escalated',second)]:
+        page.click('#case-clear-filters');_stage21_select(page,id,value)
+        assert page.evaluate("[...document.querySelectorAll('#queue-tbody tr[data-id]')].map(r=>r.dataset.id)")==[target]
+        page.click('.sidenav-list a[data-view="workflow"]')
+        assert page.evaluate("[...document.querySelectorAll('.kanban-card')].map(r=>r.dataset.id)")==[target]
+        page.click('.sidenav-list a[data-view="queue"]')
+    page.click('#case-clear-filters');_stage21_select(page,'case-status-filter','New');_stage21_select(page,'case-priority-filter','Urgent')
+    assert 'No opened cases match' in page.evaluate("document.getElementById('queue-tbody').textContent")
+    page.click('#case-clear-filters');_stage21_select(page,'filter-band','High')
+    _stage21_select(page,'case-priority-filter','Normal');page.click('#case-clear-filters')
+    assert page.evaluate("document.getElementById('filter-band').value")=='High'
+    page.click('#reset-filters-btn')
+    assert page.evaluate("document.getElementById('filter-band').value")==''
+    assert page.evaluate("localStorage.getItem('fri.demo.cases.v1.101.48')")==before
+    page.evaluate('localStorage.clear()')
+
+
+def test_queue_correction_transaction_intersections_and_counts(page,browser_env):
+    _stage21_ready(page,browser_env);page.click('.sidenav-list a[data-view="queue"]')
+    context=page.evaluate_json("""JSON.stringify((()=>{const r=document.querySelector('#queue-tbody tr[data-id]');return {id:r.dataset.id,product:r.cells[1].textContent,amount:Number(r.cells[2].textContent.replace(/[^0-9.]/g,'')),band:r.cells[4].textContent}})())""")
+    page.click(f'.inspect-btn[data-id="{context["id"]}"]');page.click('#case-open')
+    card=page.evaluate("document.getElementById('drawer-card').textContent.split(' / ')[0]");page.click('#drawer-close')
+    fields=[('case-status-filter','New','change'),('case-analyst-filter','Unassigned','change'),('case-priority-filter','Normal','change'),('filter-band',context['band'],'change'),('filter-product',context['product'],'change'),('filter-card-network',card,'change'),('filter-search',context['id'],'input'),('filter-amount-max',str(min(4995, __import__('math').ceil(context['amount']/5)*5)),'input')]
+    for id,value,event in fields:_stage21_select(page,id,value,event)
+    assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==1
+    assert '8 filters active' in page.evaluate("document.getElementById('global-scope-status').textContent")
+    _stage21_select(page,'filter-amount-max','5','input')
+    assert 'Transaction filters exclude' in page.evaluate("document.getElementById('queue-tbody').textContent")
+    page.click('.sidenav-list a[data-view="workflow"]')
+    assert page.evaluate("document.querySelectorAll('.kanban-card').length")==0
+    assert 'Transaction filters exclude' in page.evaluate("document.getElementById('kanban-board').textContent")
+    page.click('#reset-filters-btn')
+    assert page.evaluate("document.querySelectorAll('.kanban-card').length")==48
+    page.evaluate('localStorage.clear()')
+
+
+def test_queue_correction_batch_switch_and_destructive_reset_are_distinct(page,browser_env):
+    _stage21_ready(page,browser_env);page.click('.sidenav-list a[data-view="queue"]')
+    page.click('#queue-tbody .inspect-btn');page.click('#case-open')
+    _stage21_select(page,'case-note','Synthetic case must survive filter clearing');page.click('#case-add-note');page.click('#drawer-close')
+    before=page.evaluate("localStorage.getItem('fri.demo.cases.v1.101.48')")
+    _stage21_select(page,'case-status-filter','New')
+    _stage21_select(page,'batch-select','202')
+    deadline=time.monotonic()+10
+    while time.monotonic()<deadline and page.evaluate("document.getElementById('health-row-seed').textContent")!='202':time.sleep(.1)
+    assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==0
+    assert 'No opened investigation cases' in page.evaluate("document.getElementById('queue-tbody').textContent")
+    assert 'Showing 0 of 48' in page.evaluate("document.getElementById('global-scope-status').textContent")
+    page.click('#case-clear-filters')
+    assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==48
+    _stage21_select(page,'batch-select','101')
+    deadline=time.monotonic()+10
+    while time.monotonic()<deadline and page.evaluate("document.getElementById('health-row-seed').textContent")!='101':time.sleep(.1)
+    _stage21_select(page,'case-status-filter','New')
+    assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==1
+    page.click('#case-clear-filters');page.click('#reset-filters-btn')
+    assert page.evaluate("localStorage.getItem('fri.demo.cases.v1.101.48')")==before
+    page.evaluate("window.originalConfirm=window.confirm;window.confirm=message=>{window.resetCasePrompt=message;return false}")
+    page.click('#case-reset')
+    prompt=page.evaluate('resetCasePrompt')
+    assert all(word in prompt.lower() for word in ['locally','notes','assignments','history','discard'])
+    assert page.evaluate("localStorage.getItem('fri.demo.cases.v1.101.48')")==before
+    page.evaluate('window.confirm=originalConfirm;localStorage.clear()')
+
+
+@pytest.mark.parametrize('width,height',[(1440,900),(1280,800),(768,1024),(390,844)])
+def test_queue_correction_native_keyboard_dropdowns_and_recovery(page,browser_env,width,height):
+    _stage21_ready(page,browser_env);page.click('.sidenav-list a[data-view="queue"]')
+    page.send('Emulation.setDeviceMetricsOverride',{'width':width,'height':height,'deviceScaleFactor':1,'mobile':False})
+    def press(key,code,vk,text=None):
+        params={'type':'keyDown','key':key,'code':code,'windowsVirtualKeyCode':vk}
+        if text is not None:params.update(text=text,unmodifiedText=text)
+        page.send('Input.dispatchKeyEvent',params)
+        page.send('Input.dispatchKeyEvent',{'type':'keyUp','key':key,'code':code,'windowsVirtualKeyCode':vk})
+    for id,value in [('case-status-filter','New'),('case-analyst-filter','Unassigned'),('case-priority-filter','Normal')]:
+        page.evaluate(f'document.getElementById({id!r}).focus()')
+        # Native select type-ahead works in macOS headless Chrome; synthetic
+        # ArrowDown events alone do not commit its platform popup selection.
+        for character in value.lower():press(character,'Key'+character.upper(),ord(character.upper()),character)
+        press('Enter','Enter',13,'\r')
+        assert page.evaluate(f'document.getElementById({id!r}).value')==value
+        assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==0
+        assert 'No opened investigation cases' in page.evaluate("document.getElementById('queue-tbody').textContent")
+        page.evaluate("document.getElementById('case-clear-filters').focus()")
+        press('Enter','Enter',13,'\r')
+        assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==48
+    page.evaluate("document.getElementById('filter-band').focus()")
+    for character in 'critical':press(character,'Key'+character.upper(),ord(character.upper()),character)
+    press('Enter','Enter',13,'\r')
+    assert page.evaluate("document.getElementById('filter-band').value")=='Critical'
+    assert 0<page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")<48
+    assert page.evaluate("[...document.querySelectorAll('#queue-tbody tr[data-id]')].every(r=>r.cells[4].textContent==='Critical')")
+    assert '1 filter active' in page.evaluate("document.getElementById('global-scope-status').textContent")
+    page.evaluate("document.getElementById('reset-filters-btn').focus()")
+    press('Enter','Enter',13,'\r')
+    assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==48
+    assert page.evaluate('document.body.scrollWidth<=innerWidth')
+    if width>900:assert page.evaluate("document.querySelector('.view-container').scrollHeight<=document.querySelector('.view-container').clientHeight+1")

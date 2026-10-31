@@ -1,5 +1,47 @@
 # ML Workflow State — Fraud-Risk-Intelligence
 
+## Stage 21 correction — Investigation Queue filters (2026-10-31)
+
+Release-preparation update: the owner now authorises pushing this correction
+branch and opening a PR against `render-dashboard-integration`; this supersedes
+the original local-only delivery restriction below. Fresh full regression:
+494 passed, zero failures/skips, five existing warnings, 266.02 seconds, including
+71 real-Chrome cases and all six heavy/data-contract checks. Independent source
+review and four-viewport public-app refresh/seed/reset verification found no
+blocking defect. Frozen model and prior science/security boundaries are unchanged.
+Release inventory is35 files (original33 plus two fresh evidence files).
+No merge, deployment, Render change or Stage22 work is authorised.
+
+
+The owner authorised a targeted correction, not Stage 22 or a redesign.
+Branch `stage21-queue-filter-corrections` starts from the verified integration
+and owner-identified live commit `d419da2dfa11ff0dda85f99a094e114f4e733e3e`.
+Real clean-Chrome reproduction against the LOCAL public entrypoint documented
+that zero-case Status/Priority/fictional-analyst filters were deliberately
+case-only but badly explained. Unassigned wrongly included unopened records.
+Risk Band was duplicated; Clear case filters also wrongly cleared risk.
+
+Corrections retain actual-case status/analyst/priority semantics, define
+Unassigned only for opened cases, explain empty/intersecting filters and show
+seeded display labels neutrally, separate from actual analyst decisions.
+One shared risk selector and distinct non-destructive case/all filter clears
+remain separate from confirmed local case-data reset. No store/schema change,
+backend routes, dependencies or model/scientific change was made.
+
+Four focused correction and four native-keyboard viewport regressions pass;
+public 24-record checks and 16 screenshots verify required viewports and exact
+case preservation when clearing filters. Final full regression: **494 passed,
+zero failures/skips**, five existing warnings, 263.81 seconds; includes all six
+heavy/data-contract tests and 71 real-Chrome cases. Frozen checksum, original
+case store/schema, API safeguards, historical aggregates, prior workflow text
+and protected refs remain unchanged. All supplied Phases A–F requirements are
+verified; the correction is complete locally and ready for owner review.
+See [correction report](STAGE21_QUEUE_FILTER_CORRECTIONS.md). The owner supplied
+the initially truncated Phases C–F continuation during this task, explicitly
+authorising verification and local commit only. Four additional native-keyboard
+viewport variants are included in the expanded final suite. No push, merge,
+deployment, Render change or Stage 22 work is authorised or attempted.
+
 ## Portfolio enhancement Stage 21 — Browser-local case management (2026-10-30)
 
 The owner explicitly authorised Stage 21 implementation, tests and local-only

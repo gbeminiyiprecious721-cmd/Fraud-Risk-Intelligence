@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const el=id=>document.getElementById(id);
-  let store=null, selected=null, repaint=()=>{}, feedback='';
+  let store=null, selected=null, repaint=()=>{}, feedback='',batchRows=[];
   const options=(id,values)=>el(id).replaceChildren(...values.map(value=>{const o=document.createElement('option');o.value=value;o.textContent=value;return o;}));
   options('case-analyst',CaseStore.analysts);options('case-priority',CaseStore.priorities);options('case-status',CaseStore.statuses);
   function get(id){return store?.get(id)||null;}
@@ -29,12 +29,27 @@
   }
   function filter(t) {
     const c=get(t.transaction_id),status=el('case-status-filter').value,analyst=el('case-analyst-filter').value,priority=el('case-priority-filter').value;
-    return (!status||(status==='Not opened'?!c:c?.status===status))&&(!analyst||(c?.analyst||'Unassigned')===analyst)&&(!priority||c?.priority===priority);
+    return (!status||(status==='Not opened'?!c:c?.status===status))&&(!analyst||c?.analyst===analyst)&&(!priority||c?.priority===priority);
+  }
+  function emptyMessage() {
+    const total=batchRows.length,cases=store?.list()||[];
+    const status=el('case-status-filter').value,analyst=el('case-analyst-filter').value,priority=el('case-priority-filter').value;
+    if(status==='Not opened'&&(analyst||priority))return `Not opened cannot match an analyst or priority: these belong to opened cases only. ${total} synthetic transactions remain in this batch. Clear case filters; saved cases are unchanged.`;
+    if(status||analyst||priority) {
+      if(!cases.length&&status!=='Not opened')return `No opened investigation cases in this batch. ${total} synthetic transactions are available. Clear case filters, then inspect a transaction to open a case. Seeded lane labels are not analyst decisions.`;
+      const matches=batchRows.filter(filter).length;
+      if(!matches)return status==='Not opened'
+        ? `Every transaction in this ${total}-transaction batch already has an opened case. Clear case filters to view them.`
+        : `No opened cases match the selected case filters. ${cases.length} opened cases and ${total} synthetic transactions exist in this batch. Clear case filters or inspect and update an existing case.`;
+      return `Transaction filters exclude all ${matches} transactions matching the case selection in this ${total}-transaction batch. Clear all filters to broaden the view; notes, assignments and history are unchanged.`;
+    }
+    return `No synthetic transactions match the transaction filters. ${total} transactions remain available in this batch. Clear all filters to broaden the view; no cases were deleted.`;
   }
   function workload(rows) {
     const visible=new Set(rows.map(t=>t.transaction_id)),cases=(store?.list()||[]).filter(c=>visible.has(c.transactionId));
     const values=[['Opened cases',cases.length],['Active',cases.filter(c=>c.status!=='Resolved').length],['Unassigned active',cases.filter(c=>c.status!=='Resolved'&&c.analyst==='Unassigned').length],['Resolved',cases.filter(c=>c.status==='Resolved').length]];
     el('case-workload').replaceChildren(...values.map(([label,value])=>{const p=document.createElement('p');p.textContent=`${label}: ${value}`;return p;}));
+    el('case-filter-help').textContent=`Case filters use opened cases only: ${store?.list().length||0} opened / ${batchRows.length} transactions. Seeded lane labels are not analyst decisions.`;
     el('case-storage-status').textContent=store?.warning()||'Browser-local synthetic cases · no server persistence · no real customer data';
   }
   el('case-open').addEventListener('click',()=>run(()=>store.open(selected)));
@@ -54,16 +69,15 @@
   }));
   el('case-add-note').addEventListener('click',()=>run(()=>{store.change(selected,'note',el('case-note').value);el('case-note').value='';}));
   el('case-reset').addEventListener('click',()=>{
-    if(store&&window.confirm('Reset all demo cases for this seed and batch size in this browser? Notes and local history will be deleted.'))run(()=>store.reset());
+    if(store&&window.confirm('Discard all locally saved demo case changes for the current seed and batch size? Notes, analyst assignments, priorities and case history will be deleted. Other demo batches are unchanged.'))run(()=>store.reset());
   });
   for(const id of ['case-status-filter','case-analyst-filter','case-priority-filter'])el(id).addEventListener('change',()=>repaint());
-  el('case-risk-filter').addEventListener('change',()=>{el('filter-band').value=el('case-risk-filter').value;repaint();});
-  el('case-clear-filters').addEventListener('click',()=>{for(const id of ['case-status-filter','case-analyst-filter','case-priority-filter','case-risk-filter','filter-band'])el(id).value='';repaint();});
+  el('case-clear-filters').addEventListener('click',()=>{for(const id of ['case-status-filter','case-analyst-filter','case-priority-filter'])el(id).value='';repaint();});
   window.CaseUI={
-    setBatch(batch,refresh){repaint=refresh;selected=null;feedback='';el('case-reason').value='';el('case-note').value='';try{store=CaseStore.create(batch,{getItem:k=>localStorage.getItem(k),setItem:(k,v)=>localStorage.setItem(k,v),removeItem:k=>localStorage.removeItem(k)});}catch(error){store=null;feedback='Case management unavailable: '+error.message;}render();},
+    setBatch(batch,refresh){batchRows=batch.transactions;repaint=refresh;selected=null;feedback='';el('case-reason').value='';el('case-note').value='';try{store=CaseStore.create(batch,{getItem:k=>localStorage.getItem(k),setItem:(k,v)=>localStorage.setItem(k,v),removeItem:k=>localStorage.removeItem(k)});}catch(error){store=null;feedback='Case management unavailable: '+error.message;}render();},
     show(id){if(selected!==id){el('case-note').value='';el('case-reason').value='';}selected=id;feedback='';render();},
     close(){selected=null;el('case-note').value='';el('case-reason').value='';},
-    get,filter,workload,status:t=>get(t.transaction_id)?.status||t.status,
+    get,filter,emptyMessage,workload,status:t=>get(t.transaction_id)?.status||t.status,
     label:t=>{const c=get(t.transaction_id);return c?`${c.status} · ${c.analyst} · ${c.priority}`:'Not opened · seeded '+t.status;}
   };
 })();

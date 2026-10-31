@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-31",
+  "reviewed_commit": "aadd4c01719dd0f4928109ab0b2be3d992812a2a",
+  "base": "d419da2dfa11ff0dda85f99a094e114f4e733e3e",
+  "original_inventory_count": 33,
+  "independent_source_review": "No concrete defects found. Actual-case predicates, single risk selector, AND counts, recovery guidance, non-destructive clears and confirmed scoped reset verified.",
+  "public_browser": {
+    "entrypoint": "src.render_demo:app (local only)",
+    "batch_rows": 24,
+    "seed": 101,
+    "clean_case_scope_verified": true,
+    "opened_assignment_priority_and_status_intersections_verified": true,
+    "one_shared_risk_filter": true,
+    "clear_actions_preserve_exact_case_storage_bytes": true,
+    "native_reset_cancel_and_accept_verified": true,
+    "refresh_preserves_exact_case_storage": true,
+    "seed_202_isolated_from_101": true,
+    "return_to_101_restores_case": true,
+    "viewports": [
+      [
+        1440,
+        900
+      ],
+      [
+        1280,
+        800
+      ],
+      [
+        768,
+        1024
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "desktop_outer_content_overflow_px": 0,
+    "runtime_errors": 0
+  },
+  "preservation": {
+    "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+    "prior_workflow_text_verbatim": true,
+    "backend_store_dependencies_historical_aggregates_unchanged": true,
+    "closed_final_test_accessed": false,
+    "main_remote": "52c01c919cb40cd2bedf1a41794a73e38c6cf737"
+  },
+  "fresh_regression": {
+    "passed": 494,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 5,
+    "seconds": 266.02,
+    "real_chrome_cases": 71,
+    "heavy_data_contract_tests": 6
+  }
+}
