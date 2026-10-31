@@ -1,6 +1,6 @@
 # Stage 21 — Queue filter and UX corrections
 
-Date: 2026-10-31 (Europe/London). Status: correction complete and verified locally; ready for owner review. The root-cause record below was written before implementation.
+Date: 2026-10-31 (Europe/London). Status: correction complete; release review verified for the owner-authorised branch push and PR. The root-cause record below was written before implementation.
 Base: `d419da2dfa11ff0dda85f99a094e114f4e733e3e`.
 Branch: `stage21-queue-filter-corrections`.
 
@@ -217,7 +217,7 @@ pre-keyboard-extension evidence, superseded by this complete 494-test run.
 - [1280×800 explained empty state](stage21_queue_filter_evidence/queue-case-empty-1280x800.png)
 - [390×844 matched case](stage21_queue_filter_evidence/queue-case-matching-390x844.png)
 - [Preservation](stage21_queue_filter_evidence/preservation.json)
-- [Exact 33-file inventory](stage21_queue_filter_evidence/changed-files.txt)
+- [Changed-file inventory (35 after release review)](stage21_queue_filter_evidence/changed-files.txt)
 
 Sixteen screenshots verify public 24-record Queue and Workflow at all four
 required sizes. Desktop outer content overflow is 0px; no body horizontal
@@ -240,3 +240,38 @@ unresolved correction defect or local implementation blocker remains. Existing
 browser-local security/persistence and physical-device/accessibility limits
 above remain. Verified changes are committed locally on
 `stage21-queue-filter-corrections`; release and Stage 22 are not authorised.
+
+## Release preparation review (2026-10-31)
+
+The owner subsequently authorised pushing the correction branch and opening a
+PR against `render-dashboard-integration`, superseding the local-only delivery
+restriction above. Merge, deployment and Render changes remain prohibited.
+Reviewed implementation commit: `aadd4c01719dd0f4928109ab0b2be3d992812a2a`.
+The complete original 33-file inventory matched exactly. Independent source
+review found no concrete defects; no runtime correction was necessary.
+
+Fresh complete regression: **494 passed, 0 failed, 0 skipped**, five existing
+warnings, **266.02 seconds**. All **71 real-Chrome cases** and **six heavy/data-contract
+tests** ran. See [release regression](stage21_queue_filter_evidence/release-regression.log).
+The warnings remain the existing Starlette deprecation and sklearn logistic
+penalty/convergence warnings; they do not concern the frozen production model.
+
+An additional clean-profile local public-app check passed at 1440×900, 1280×800,
+768×1024 and 390×844. It independently verified refresh persistence, seed202
+isolation and restoration of seed101, matching Queue/Workflow intersections,
+byte-identical case storage after both filter clears, and native reset cancel
+and accept. Desktop content overflow was zero; no runtime errors were seen.
+The existing 16 committed screenshots remain applicable. See
+[release review evidence](stage21_queue_filter_evidence/release-review.json).
+
+Frozen model SHA256 was independently rechecked and unchanged. Backend routes,
+production scoring/security, case-store schema, dependencies, historical
+aggregates and all earlier scientific workflow text remain unchanged. No closed
+final-test data was accessed. Remote `main` remains
+`52c01c919cb40cd2bedf1a41794a73e38c6cf737`; target integration remains
+`d419da2dfa11ff0dda85f99a094e114f4e733e3e` before the PR.
+
+Release inventory is **35 files**: the approved original33 plus two fresh
+release evidence files. The report, workflow note and inventory were updated
+in place. No product-code changes were required during release review.
+The limitations above remain; there are no identified blocking defects.

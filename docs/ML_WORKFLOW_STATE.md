@@ -2,6 +2,17 @@
 
 ## Stage 21 correction — Investigation Queue filters (2026-10-31)
 
+Release-preparation update: the owner now authorises pushing this correction
+branch and opening a PR against `render-dashboard-integration`; this supersedes
+the original local-only delivery restriction below. Fresh full regression:
+494 passed, zero failures/skips, five existing warnings, 266.02 seconds, including
+71 real-Chrome cases and all six heavy/data-contract checks. Independent source
+review and four-viewport public-app refresh/seed/reset verification found no
+blocking defect. Frozen model and prior science/security boundaries are unchanged.
+Release inventory is35 files (original33 plus two fresh evidence files).
+No merge, deployment, Render change or Stage22 work is authorised.
+
+
 The owner authorised a targeted correction, not Stage 22 or a redesign.
 Branch `stage21-queue-filter-corrections` starts from the verified integration
 and owner-identified live commit `d419da2dfa11ff0dda85f99a094e114f4e733e3e`.
