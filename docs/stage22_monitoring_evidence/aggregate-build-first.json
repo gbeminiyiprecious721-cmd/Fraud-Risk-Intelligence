@@ -1,0 +1,41 @@
+{
+  "population": "authorised validation features only; no outcomes",
+  "n": 75560,
+  "model_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "validation_id_sha256": "14e5f38141f4ea86cf6228d76bf9af398c7cc3116d1ca49ddecc3b502e9ff5bc",
+  "aggregate_sha256": "715f88fdd67c6065d7bbe9702241c28041aab67ada72096283561d58372f3f37",
+  "independent_distribution_checks": 14,
+  "identical_to_previous_build": null,
+  "windows": [
+    {
+      "id": "V1",
+      "n": 25186,
+      "start": 11093842,
+      "end": 11915077,
+      "id_sha256": "8b9e394395fe3759b08927ac56a95235058590f0f60938862f885db0bdb04470",
+      "duplicate_ids": 0,
+      "negative_amounts": 0,
+      "schema_valid": true
+    },
+    {
+      "id": "V2",
+      "n": 25187,
+      "start": 11915125,
+      "end": 12739542,
+      "id_sha256": "270ecc5d1fa436a5db474473da41a52474582e55da52ac337b5b63541299c0ea",
+      "duplicate_ids": 0,
+      "negative_amounts": 0,
+      "schema_valid": true
+    },
+    {
+      "id": "V3",
+      "n": 25187,
+      "start": 12739588,
+      "end": 13452406,
+      "id_sha256": "841b7d86a9aad08ebb83a64545e5e2bf11b93e04f56a0ddba624208b7af85ec4",
+      "duplicate_ids": 0,
+      "negative_amounts": 0,
+      "schema_valid": true
+    }
+  ]
+}

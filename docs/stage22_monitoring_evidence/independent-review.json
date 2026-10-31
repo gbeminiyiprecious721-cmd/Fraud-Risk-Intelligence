@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-31",
+  "scope": "Stage22 source/scientific/security review against approved validation-first protocol",
+  "initial_findings": [
+    {
+      "severity": "Important",
+      "finding": "Aggregate score bounds and cross-field invariants incomplete",
+      "resolution": "Added score0\u20131, window/comparison summary equality, tail/bin invariants and mutation tests."
+    },
+    {
+      "severity": "Important",
+      "finding": "Zero finite numeric count produced undefined0/0 chart shares",
+      "resolution": "Shares become null with insufficient-evidence guidance; real-Chrome regression added."
+    },
+    {
+      "severity": "Minor",
+      "finding": "Rounded summary values labelled exact",
+      "resolution": "Caption now discloses four-decimal display precision."
+    }
+  ],
+  "re_review": "No residual source/scientific/security blockers. Independent20 numerical tests passed; diff-check passed.",
+  "reviewer_access": "Synthetic fixtures and source only; no real data/model, browser/server or external mutations.",
+  "final_review": "No new blockers after horizontal six-label charts, disabled score-mode feature selector and contained methodology expansion; protected paths and prior workflow text preserved."
+}

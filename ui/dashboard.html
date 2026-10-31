@@ -27,6 +27,7 @@
       <li><a href="#/workflow" data-view="workflow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="4.5" height="16" rx="1"/><rect x="9.75" y="4" width="4.5" height="10" rx="1"/><rect x="16.5" y="4" width="4.5" height="13" rx="1"/></svg><span class="label">Workflow board</span></a></li>
       <li><a href="#/insights" data-view="insights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg><span class="label">Model insights</span></a></li>
       <li><a href="#/benchmark" data-view="benchmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V4M4 20h16M8 17V9M13 17V5M18 17v-6"/></svg><span class="label">Model benchmarking</span></a></li>
+      <li><a href="#/monitoring" data-view="monitoring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="label">Model monitoring</span></a></li>
       <li><a href="#/capacity" data-view="capacity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V4M4 20h16M7 16l4-5 4 2 5-8"/></svg><span class="label">Capacity simulator</span></a></li>
       <li><a href="#/responsible-ai" data-view="responsible-ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg><span class="label">Responsible use</span></a></li>
       <li><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg><span class="label">Single-transaction demo</span></a></li>
@@ -250,6 +251,29 @@
         </div>
       </section>
 
+      <section class="view monitoring-view" data-view="monitoring" aria-labelledby="view-heading-monitoring">
+        <h2 id="view-heading-monitoring" class="view-heading" tabindex="-1">Model Monitoring</h2>
+        <p class="capacity-disclosure">Historical validation demonstration · not live production monitoring. Distribution shifts do not prove performance deterioration. Scores are uncalibrated ranks; no new verified fraud labels or current precision/recall.</p>
+        <p id="monitoring-status" role="status" aria-live="polite">Open this view to load historical aggregates.</p>
+        <button type="button" class="ghost" id="monitoring-retry" hidden>Retry monitoring evidence</button>
+        <div id="monitoring-workspace" hidden>
+          <div class="monitoring-controls panel">
+            <label>Comparison window<select id="monitoring-window"><option value="V2">V2 vs reference V1</option><option value="V3">V3 vs reference V1</option></select></label>
+            <label>Monitoring dimension<select id="monitoring-mode"><option value="features">Feature drift</option><option value="scores">Score drift</option><option value="quality">Data quality</option></select></label>
+            <label>Feature detail<select id="monitoring-feature"><option value="TransactionAmt">Transaction amount</option><option value="ProductCD">Product code</option><option value="card4">Card network</option><option value="C1">C1 · anonymised count</option><option value="dist1">dist1 · dataset distance</option><option value="daily_phase">Relative daily phase</option></select></label>
+            <button type="button" class="ghost" id="monitoring-reset">Reset monitoring filters</button>
+          </div>
+          <p id="monitoring-population" class="panel-note"></p>
+          <div id="monitoring-kpis" class="monitoring-kpis" aria-live="polite"></div>
+          <div class="monitoring-charts">
+            <div class="panel"><h3 id="monitoring-chart-title">Feature drift indicators</h3><p id="monitoring-chart-note" class="panel-note"></p><div class="monitoring-canvas"><canvas id="monitoring-main-chart" role="img" aria-label="Selected monitoring dimension comparison; exact values follow"></canvas></div></div>
+            <div class="panel"><h3 id="monitoring-detail-title">Feature distribution</h3><div class="monitoring-canvas"><canvas id="monitoring-detail-chart" role="img" aria-label="Reference and comparison distributions; exact values follow"></canvas></div></div>
+          </div>
+          <div class="panel monitoring-detail"><p id="monitoring-detail" aria-live="polite"></p><div class="monitoring-table-wrap"><table><caption id="monitoring-table-caption">Exact selected distribution counts</caption><thead><tr><th scope="col">Bucket / quantile</th><th scope="col">Reference V1</th><th scope="col" id="monitoring-column">Comparison</th></tr></thead><tbody id="monitoring-table"></tbody></table></div></div>
+          <details class="panel monitoring-method"><summary>Methodology, investigation guidance and limitations</summary><p>Reference V1 is the earliest validation third; later V2/V3 are disjoint chronological windows. All scores are out-of-sample for the frozen Random Forest, but validation was reused during development. Relative seconds are not calendar dates.</p><p>Numeric: reference-only quantile bins, PSI with additive 0.0001 smoothing, KS empirical distance. Categorical: base2 Jensen–Shannon divergence. Demonstration investigation rules: PSI ≥0.20 or KS ≥0.10; JS ≥0.05. Minimum sample 200; no IID p-values or significance claims. Missingness increase ≥5 percentage points and invalid values warrant quality investigation. Inspect upstream changes before considering any model response; never retrain automatically.</p><p>Score-tail criterion is strictly greater than fixed reference q95, not a calibrated fraud probability. Histogram bins have open-ended extremes; ties may reduce the number of quantile bins. Missing/nonfinite numeric values are tracked separately.</p><div id="monitoring-limits"></div></details>
+        </div>
+      </section>
+
       <section class="view benchmark-view" data-view="benchmark" aria-labelledby="view-heading-benchmark">
         <h2 id="view-heading-benchmark" class="view-heading" tabindex="-1">Model Benchmarking</h2>
         <p class="capacity-disclosure">Historical validation / development backtesting. Reused validation may overstate performance. Shared features and bounded training; no independent future-performance or promotion claim. Random Forest remains deployed.</p>
@@ -416,5 +440,6 @@
 <script src="dashboard.js"></script>
 <script src="capacity.js"></script>
 <script src="benchmark.js"></script>
+<script src="monitoring.js"></script>
 </body>
 </html>
