@@ -1,0 +1,22 @@
+{
+  "baseline": "942b6d53ae004b847a8c0eca9a9298f1fe0c3024",
+  "refs_before_commit": {
+    "HEAD": "942b6d53ae004b847a8c0eca9a9298f1fe0c3024",
+    "main": "52c01c919cb40cd2bedf1a41794a73e38c6cf737",
+    "render-dashboard-integration": "d413486e962368a5ad81a445f15549da3d8075fc",
+    "origin/render-dashboard-integration": "942b6d53ae004b847a8c0eca9a9298f1fe0c3024"
+  },
+  "tracked_changed_paths": [
+    "README.md",
+    "docs/ML_WORKFLOW_STATE.md"
+  ],
+  "workflow_historical_body_preserved": true,
+  "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "runtime_source_unchanged": true,
+  "scientific_records_and_aggregates_unchanged": true,
+  "model_manifest_unchanged": true,
+  "dependency_manifests_unchanged": true,
+  "case_storage_source_unchanged": true,
+  "closed_final_test_data_or_predictions_accessed": false,
+  "notes": "Only published registry summaries, approved aggregates and metadata used for documentation. Existing regression tests include synthetic final_test guard fixtures and train-only heavy fits; no replacement artifact is saved."
+}
