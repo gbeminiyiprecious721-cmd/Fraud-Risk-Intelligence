@@ -1,0 +1,31 @@
+....                                                                     [100%]
+4 passed, 86 deselected in 5.19s
+
+# Independent review: permanent cold-load regression BEFORE correction
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_final_polish_cold_reduced_motion_and_preference_roundtrip ________
+
+page = <test_dashboard_routing_browser.CDPSession object at 0x107eec8f0>
+browser_env = {'cdp_port': 64648, 'static_origin': 'http://127.0.0.1:8080'}
+
+    def test_final_polish_cold_reduced_motion_and_preference_roundtrip(page, browser_env):
+        """Type-specific doughnut defaults must not override a cold-load preference."""
+        try:
+            page.send('Emulation.setEmulatedMedia', {'features':[{'name':'prefers-reduced-motion','value':'reduce'}]})
+            page.navigate(browser_env['static_origin']+'/dashboard.html?cold-motion=1#/overview')
+            page.wait_for_queue_data()
+            assert page.evaluate('Chart.defaults.animation===false')
+>           assert page.evaluate('Object.values(Chart.instances).every(c=>c.options.animation===false && c._animationsDisabled)')
+E           AssertionError: assert False
+E            +  where False = evaluate('Object.values(Chart.instances).every(c=>c.options.animation===false && c._animationsDisabled)')
+E            +    where evaluate = <test_dashboard_routing_browser.CDPSession object at 0x107eec8f0>.evaluate
+
+tests/test_dashboard_routing_browser.py:1135: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_dashboard_routing_browser.py::test_final_polish_cold_reduced_motion_and_preference_roundtrip
+1 failed, 90 deselected in 4.76s
+
+# Independent review: all five focused polish regressions AFTER correction
+.....                                                                    [100%]
+5 passed, 86 deselected in 7.99s
