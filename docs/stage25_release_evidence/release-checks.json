@@ -1,0 +1,109 @@
+{
+  "base": "3fd88535b89d554c8955c0dcf0a4333f06ca6e92",
+  "closed_final_test_partition_or_predictions_opened": false,
+  "documentation": {
+    "files": [
+      "README.md",
+      "docs/ARCHITECTURE.md",
+      "docs/PORTFOLIO_WALKTHROUGH.md",
+      "docs/PORTFOLIO_CASE_STUDY.md",
+      "docs/ML_WORKFLOW_STATE.md",
+      "docs/STAGE19_CAPACITY_SIMULATOR.md",
+      "docs/STAGE20_CHALLENGER_BENCHMARK.md",
+      "docs/STAGE21_CASE_MANAGEMENT.md",
+      "docs/STAGE21_QUEUE_FILTER_CORRECTIONS.md",
+      "docs/STAGE22_MODEL_MONITORING.md",
+      "docs/STAGE23_MODEL_EXPLAINABILITY.md",
+      "docs/STAGE24_PORTFOLIO_DOCUMENTATION.md",
+      "docs/STAGE25_FINAL_RELEASE_REPORT.md"
+    ],
+    "internal_targets": 233,
+    "inline_images": 2,
+    "all_mermaid_blocks_in_scope": 3,
+    "errors": []
+  },
+  "numerical": {
+    "stage10_published_metrics": {
+      "ap": 0.42784,
+      "roc_auc": 0.86637,
+      "precision_top1": 0.8583,
+      "recall_top1": 0.2461
+    },
+    "reused_validation_rows": 75560,
+    "capacity_checkpoints": 201,
+    "benchmark_checkpoints": 804,
+    "monitoring_window_counts": [
+      25186,
+      25187,
+      25187
+    ],
+    "global_label_free_sample": 512,
+    "local_synthetic_records": 240,
+    "historical_metrics_or_assets_recomputed": false
+  },
+  "preservation": {
+    "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+    "protected_sources_and_assets_unchanged": true,
+    "original_workflow_body_preserved": true,
+    "main": "52c01c919cb40cd2bedf1a41794a73e38c6cf737"
+  },
+  "access_control": {
+    "approved_ids": 120,
+    "denied_nonpublic_ids": 120,
+    "runtime_inference_or_transforms_for_explanations": 0,
+    "shap_imported": false,
+    "private_asset_paths_denied": 5,
+    "case_write_methods_denied": 8,
+    "unsupported_input_generic_403": true,
+    "audit_warnings": [
+      {
+        "category": "StarletteDeprecationWarning",
+        "message": "Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead."
+      }
+    ]
+  },
+  "deployment_checks": {
+    "shell_syntax": "passed",
+    "minimal_runtime": {
+      "pins": {
+        "fastapi": "0.162.0",
+        "uvicorn": "0.54.0",
+        "numpy": "2.5.4",
+        "pandas": "3.1.0",
+        "scikit-learn": "1.9.1",
+        "scipy": "1.18.1",
+        "joblib": "1.6.0"
+      },
+      "offline_modules_present": {
+        "shap": false,
+        "xgboost": false,
+        "lightgbm": false,
+        "catboost": false
+      }
+    },
+    "pip_check": "No broken requirements found.",
+    "private_artifact_fetch_executed": false,
+    "render_or_external_deployment_triggered": false
+  },
+  "public_urls": [
+    {
+      "url": "https://fraud-risk-intelligence.onrender.com/health",
+      "status": 200,
+      "attempts": [
+        {
+          "status": 200
+        }
+      ]
+    },
+    {
+      "url": "https://www.kaggle.com/competitions/ieee-fraud-detection/data",
+      "status": 404,
+      "attempts": [
+        {
+          "status": 404
+        }
+      ]
+    }
+  ],
+  "audit_completed": true
+}

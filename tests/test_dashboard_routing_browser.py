@@ -474,6 +474,46 @@ def test_kanban_chart_click_and_real_single_transaction_scoring(page, browser_en
     assert page.evaluate("document.querySelector('.view.active').dataset.view") == 'overview'
 
 
+def test_review_queue_kpi_follows_opened_case_status_not_seeded_label(page, browser_env):
+    """An opened New case must not stay excluded by its seeded Resolved label."""
+    page.evaluate('localStorage.clear()')
+    page.navigate(browser_env['static_origin'] + '/dashboard.html#/queue')
+    page.wait_for_queue_data()
+    transaction = page.evaluate("Array.from(document.querySelectorAll('#queue-tbody tr[data-id]')).find(r=>r.textContent.includes('Not opened · seeded Resolved')).dataset.id")
+    _stage21_select(page, 'filter-search', transaction, 'input')
+    value = "Array.from(document.querySelectorAll('#kpi-grid .kpi-card')).find(c=>c.querySelector('.kpi-label').textContent==='Review queue size').querySelector('.kpi-value').textContent"
+    assert page.evaluate(value) == '0'
+    page.click('#queue-tbody .inspect-btn')
+    page.click('#case-open')
+    assert page.evaluate("document.getElementById('case-status').value") == 'New'
+    assert page.evaluate(value) == '1'
+    _stage21_select(page, 'case-status', 'Resolved')
+    _stage21_select(page, 'case-reason', 'Synthetic QA resolution')
+    page.click('#case-save')
+    assert page.evaluate(value) == '0'
+    _stage21_select(page, 'case-status', 'In Review')
+    _stage21_select(page, 'case-reason', 'Synthetic QA reopening')
+    page.click('#case-save')
+    assert page.evaluate(value) == '1'
+    page.click('#drawer-close')
+    page.click('.sidenav-list a[data-view="overview"]')
+    assert page.evaluate(value) == '1'
+    page.evaluate('localStorage.clear()')
+
+
+def test_empty_case_scope_marks_score_statistics_undefined(page, browser_env):
+    page.evaluate('localStorage.clear()')
+    page.navigate(browser_env['static_origin'] + '/dashboard.html#/queue')
+    page.wait_for_queue_data()
+    _stage21_select(page, 'case-status-filter', 'New')
+    assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length") == 0
+    page.click('.sidenav-list a[data-view="overview"]')
+    values = page.evaluate_json("JSON.stringify(Object.fromEntries(Array.from(document.querySelectorAll('#kpi-grid .kpi-card')).map(c=>[c.querySelector('.kpi-label').textContent,c.querySelector('.kpi-value').textContent])))")
+    assert values['Average risk score'] == '–'
+    assert values['Highest risk score'] == '–'
+    assert values['Review queue size'] == '0'
+
+
 @pytest.mark.parametrize('width,height', [(1440, 900), (1280, 800), (768, 1024), (390, 844)])
 def test_capacity_workspace_controls_charts_and_layout(page, width, height):
     page.send('Emulation.setDeviceMetricsOverride', {'width': width, 'height': height, 'deviceScaleFactor': 1, 'mobile': False})

@@ -1,0 +1,15 @@
+{
+  "environment": "local minimal serving process only",
+  "deployment_script": "deploy/health_check.sh",
+  "exit_code": 0,
+  "readiness_output": "READY: {\"status\":\"ok\",\"artifact_loaded\":true}",
+  "unsupported_synthetic_note_status": 403,
+  "request_body_marker_in_logs": false,
+  "structured_event_fields": [
+    "artifact_loaded",
+    "event",
+    "startup_seconds"
+  ],
+  "render_triggered_or_changed": false,
+  "private_artifact_fetch_executed": false
+}

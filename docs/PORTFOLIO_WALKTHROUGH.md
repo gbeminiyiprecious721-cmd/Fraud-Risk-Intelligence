@@ -117,7 +117,7 @@ verified reconstruction of the frozen procedure, so I keep its identity and the
 historical evaluation record separate. I also learned that transformed-column
 order matters for a Random Forest that samples features by position.”
 
-Point to the [Stage 24 verification report](STAGE24_PORTFOLIO_DOCUMENTATION.md)
+Point to the [Stage 25 verification report](STAGE25_FINAL_RELEASE_REPORT.md)
 for fresh tests, preservation checks and documentation validation. Do not imply
 that local test logs establish hosted CI, a production SLA or verified savings.
 
