@@ -35,7 +35,7 @@
 
   const RISK_BAND_ORDER = ["Low", "Medium", "High", "Critical"];
   const WORKFLOW_STATUSES = ["New", "In Review", "Escalated", "Resolved"];
-  const VIEWS = ["overview", "queue", "analytics", "workflow", "insights", "responsible-ai", "capacity", "benchmark"];
+  const VIEWS = ["overview", "queue", "analytics", "workflow", "insights", "responsible-ai", "capacity", "benchmark", "monitoring"];
   const DEFAULT_VIEW = "overview";
 
   // Fixed demo-batch seeds. These are the SAME values src/render_demo.py
@@ -93,14 +93,14 @@
   function renderActiveView() {
     const view = parseViewFromHash();
     state.currentView = view;
-    const historical = view === "capacity" || view === "benchmark";
+    const historical = ["capacity", "benchmark", "monitoring"].includes(view);
     document.body.classList.toggle("capacity-active", historical);
     document.body.classList.toggle("benchmark-active", view === "benchmark");
     document.body.classList.toggle("case-workspace-active", ["queue","workflow"].includes(view));
     const populationBadge = document.querySelector(".topbar .badge-synthetic");
     populationBadge.textContent = historical ? "Historical validation / portfolio" : "Synthetic / portfolio demonstration";
     populationBadge.title = historical
-      ? "Labelled historical validation estimates, separate from the synthetic demo batch."
+      ? "Historical validation aggregates, separate from the synthetic demo batch; monitoring uses no outcomes."
       : "Every transaction shown here is fabricated for this demo, never a real or training record.";
     document.querySelectorAll(".view").forEach((v) => {
       v.classList.toggle("active", v.dataset.view === view);
@@ -126,6 +126,7 @@
     if (heading) heading.focus();
     if (view === "capacity" && window.CapacitySimulator) window.CapacitySimulator.show();
     if (view === "benchmark" && window.ModelBenchmark) window.ModelBenchmark.show();
+    if (view === "monitoring" && window.ModelMonitoring) window.ModelMonitoring.show();
   }
 
   // ---------------------------------------------------------------------

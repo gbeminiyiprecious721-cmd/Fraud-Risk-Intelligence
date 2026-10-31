@@ -874,3 +874,89 @@ def test_queue_correction_native_keyboard_dropdowns_and_recovery(page,browser_en
     assert page.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==48
     assert page.evaluate('document.body.scrollWidth<=innerWidth')
     if width>900:assert page.evaluate("document.querySelector('.view-container').scrollHeight<=document.querySelector('.view-container').clientHeight+1")
+
+
+def _monitoring_wait(page):
+    deadline=time.monotonic()+12
+    while time.monotonic()<deadline:
+        if page.evaluate("document.getElementById('monitoring-workspace').hidden===false"):return
+        time.sleep(.1)
+    raise AssertionError(page.evaluate("document.getElementById('monitoring-status').textContent"))
+
+
+@pytest.mark.parametrize('width,height',[(1440,900),(1280,800),(768,1024),(390,844)])
+def test_monitoring_interactions_keyboard_navigation_storage_and_layout(page,browser_env,width,height):
+    page.send('Emulation.setDeviceMetricsOverride',{'width':width,'height':height,'deviceScaleFactor':1,'mobile':False})
+    _stage21_ready(page,browser_env)
+    page.click('.sidenav-list a[data-view="queue"]');page.click('#queue-tbody .inspect-btn');page.click('#case-open');page.click('#drawer-close')
+    stored=page.evaluate("localStorage.getItem('fri.demo.cases.v1.101.48')")
+    page.click('.sidenav-list a[data-view="monitoring"]');_monitoring_wait(page)
+    assert page.evaluate("document.querySelector('.view.active').dataset.view")=='monitoring'
+    assert page.evaluate("document.getElementById('filter-band').getBoundingClientRect().height")==0
+    assert 'No overlap; no labels used' in page.evaluate("document.getElementById('monitoring-population').textContent")
+    assert page.evaluate("Chart.getChart('monitoring-main-chart').data.datasets[0].data.length")==6
+    _stage21_select(page,'monitoring-window','V3')
+    _stage21_select(page,'monitoring-feature','dist1')
+    assert 'V3: 25,187' in page.evaluate("document.getElementById('monitoring-population').textContent")
+    for mode in ['scores','quality','features']:
+        _stage21_select(page,'monitoring-mode',mode)
+        assert page.evaluate("Chart.getChart('monitoring-detail-chart').width")>0
+        assert page.evaluate("document.querySelectorAll('#monitoring-table tr').length")>0
+    # Native keyboard selection, not programmatic value dispatch.
+    page.evaluate("document.getElementById('monitoring-mode').focus()")
+    page.send('Input.dispatchKeyEvent',{'type':'keyDown','key':'s','text':'s'});page.send('Input.dispatchKeyEvent',{'type':'keyUp','key':'s'})
+    page.send('Input.dispatchKeyEvent',{'type':'keyDown','key':'Enter','code':'Enter','windowsVirtualKeyCode':13,'text':'\r','unmodifiedText':'\r'});page.send('Input.dispatchKeyEvent',{'type':'keyUp','key':'Enter','code':'Enter','windowsVirtualKeyCode':13})
+    assert page.evaluate("document.getElementById('monitoring-mode').value")=='scores'
+    assert 'uncalibrated ranks' in page.evaluate("document.getElementById('monitoring-table-caption').textContent")
+    page.evaluate("document.getElementById('monitoring-reset').focus()")
+    page.send('Input.dispatchKeyEvent',{'type':'keyDown','key':'Enter','code':'Enter','windowsVirtualKeyCode':13,'text':'\r','unmodifiedText':'\r'});page.send('Input.dispatchKeyEvent',{'type':'keyUp','key':'Enter','code':'Enter','windowsVirtualKeyCode':13})
+    assert page.evaluate("document.getElementById('monitoring-window').value")=='V2'
+    assert page.evaluate("document.getElementById('monitoring-feature').value")=='TransactionAmt'
+    assert page.evaluate("document.getElementById('monitoring-mode').value")=='features'
+    metrics=page.evaluate_json("JSON.stringify({width:innerWidth,scroll:document.body.scrollWidth,h:document.querySelector('.view-container').clientHeight,sh:document.querySelector('.view-container').scrollHeight})")
+    assert metrics['scroll']<=width
+    if width>900:
+        assert metrics['sh']<=metrics['h']+1,metrics
+        assert page.evaluate("Chart.getChart('monitoring-main-chart').chartArea.bottom-Chart.getChart('monitoring-main-chart').chartArea.top")>=40
+        assert page.evaluate("Chart.getChart('monitoring-detail-chart').chartArea.bottom-Chart.getChart('monitoring-detail-chart').chartArea.top")>=40
+    page.click('.monitoring-method summary')
+    assert page.evaluate("document.querySelector('.monitoring-method').open")
+    if width>900:assert page.evaluate("document.querySelector('.view-container').scrollHeight<=document.querySelector('.view-container').clientHeight+1")
+    page.click('.monitoring-method summary')
+    assert not [m for m in page.console_messages if m[0] in ['error','exception']]
+    for view in ['capacity','benchmark','workflow','queue','monitoring']:
+        page.click(f'.sidenav-list a[data-view="{view}"]')
+        assert page.evaluate("document.querySelector('.view.active').dataset.view")==view
+    assert page.evaluate("localStorage.getItem('fri.demo.cases.v1.101.48')")==stored
+    page.evaluate('localStorage.clear()')
+
+
+def test_monitoring_failure_retry_and_unsupported_selection(browser_env):
+    p=CDPSession(browser_env['cdp_port'],'about:blank')
+    try:
+        p.send('Page.addScriptToEvaluateOnNewDocument',{'source':"window.realFetch=window.fetch;window.fetch=(url,...args)=>String(url).includes('/v1/dashboard/monitoring')?Promise.resolve(new Response('{}',{status:503})):window.realFetch(url,...args);"})
+        p.navigate(browser_env['static_origin']+'/dashboard.html#/monitoring');p.wait_for_queue_data()
+        deadline=time.monotonic()+10
+        while time.monotonic()<deadline and p.evaluate("document.getElementById('monitoring-retry').hidden"):time.sleep(.1)
+        assert p.evaluate("document.getElementById('monitoring-workspace').hidden")
+        assert 'unavailable or invalid' in p.evaluate("document.getElementById('monitoring-status').textContent")
+        p.evaluate('window.fetch=window.realFetch');p.click('#monitoring-retry');_monitoring_wait(p)
+        p.evaluate("document.getElementById('monitoring-feature').value='unsupported';document.getElementById('monitoring-feature').dispatchEvent(new Event('change'))")
+        assert 'Unsupported monitoring selection' in p.evaluate("document.getElementById('monitoring-status').textContent")
+        p.click('#monitoring-reset')
+        assert p.evaluate("document.getElementById('monitoring-status').textContent")==''
+    finally:p.close()
+
+
+def test_monitoring_all_missing_feature_omits_undefined_chart_shares(browser_env):
+    p=CDPSession(browser_env['cdp_port'],'about:blank')
+    try:
+        # Test-only controlled aggregate mutation; never persisted as historical evidence.
+        source="""const original=window.fetch;window.fetch=async(url,...args)=>{const response=await original(url,...args);if(!String(url).includes('/v1/dashboard/monitoring'))return response;const a=await response.json();const r=a.comparisons[0].features.dist1;const n=r.comparison_quality.n;r.comparison_quality={n,missing:n,missing_rate:1,parse_failures:0,nonfinite:0,finite:0};r.comparison_counts=r.comparison_counts.map(()=>0);r.comparison_summary={n:0,mean:null,quantiles:[null,null,null,null,null,null]};r.missing_delta=1-r.reference_quality.missing_rate;r.psi=null;r.ks=null;r.signal='Insufficient evidence';return new Response(JSON.stringify(a),{status:200});};"""
+        p.send('Page.addScriptToEvaluateOnNewDocument',{'source':source})
+        p.navigate(browser_env['static_origin']+'/dashboard.html#/monitoring');p.wait_for_queue_data();_monitoring_wait(p)
+        _stage21_select(p,'monitoring-feature','dist1')
+        assert 'Insufficient evidence' in p.evaluate("document.getElementById('monitoring-detail').textContent")
+        assert p.evaluate("Chart.getChart('monitoring-detail-chart').data.datasets[1].data.every(v=>v===null)")
+        assert not [m for m in p.console_messages if m[0] in ['error','exception']]
+    finally:p.close()

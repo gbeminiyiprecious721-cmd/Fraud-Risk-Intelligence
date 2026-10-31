@@ -38,6 +38,7 @@ from pydantic import BaseModel, ConfigDict
 
 from src.capacity_routes import router as capacity_router
 from src.benchmark_routes import router as benchmark_router
+from src.monitoring_routes import router as monitoring_router
 
 from src.production_pipeline import (
     ArtifactIntegrityError,
@@ -151,6 +152,7 @@ def create_app(artifact_path: Path | str = DEFAULT_ARTIFACT_PATH) -> FastAPI:
 
     app.include_router(capacity_router)
     app.include_router(benchmark_router)
+    app.include_router(monitoring_router)
 
     app.add_middleware(
         CORSMiddleware,

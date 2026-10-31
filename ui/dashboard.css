@@ -904,3 +904,54 @@ footer.page-footer { text-align: center; color: var(--muted); font-size: 0.8rem;
 /* Stage 21 correction: explain case-only scope, retain one shared risk control. */
 .case-filter-help { width:100%; margin:0; color:var(--muted); font-size:.71rem; line-height:1.4; }
 .capacity-active #reset-filters-btn { display:none; }
+
+/* Stage22: contained historical monitoring workspace, existing design tokens. */
+.monitoring-controls {display:flex;flex-wrap:wrap;gap:0.6rem;align-items:end;padding:0.65rem;}
+.monitoring-controls label {display:grid;gap:0.2rem;flex:1;min-width:140px;color:var(--muted);font-size:0.75rem;}
+.monitoring-controls select {width:100%;min-width:0;}
+.monitoring-kpis {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.6rem;}
+.monitoring-kpis .kpi-value {font-size:1.3rem;}
+.monitoring-charts {display:grid;grid-template-columns:1fr 1fr;gap:0.65rem;}
+.monitoring-charts .panel {min-width:0;padding:0.65rem;}
+.monitoring-charts h3 {font-size:0.85rem;margin:0 0 0.35rem;}
+.monitoring-canvas {height:175px;position:relative;min-width:0;}
+.monitoring-detail,.monitoring-method {padding:0.6rem;font-size:0.75rem;}
+.monitoring-detail p {margin:0 0 0.4rem;}
+.monitoring-table-wrap {max-height:115px;overflow:auto;}
+.monitoring-table-wrap table {width:100%;font-size:0.72rem;}
+.monitoring-table-wrap td,.monitoring-table-wrap th {padding:0.3rem;text-align:left;}
+.monitoring-view.active {display:flex;flex-direction:column;gap:0.45rem;min-height:0;}
+#monitoring-workspace {display:flex;flex-direction:column;gap:0.5rem;min-height:0;}
+#monitoring-workspace[hidden] {display:none;}
+.monitoring-method[open] {max-height:140px;overflow:auto;}
+@media(min-width:901px) and (max-height:850px) {.monitoring-canvas {height:130px;}.monitoring-table-wrap {max-height:85px;}.monitoring-kpis .kpi-card {padding:0.55rem;}.monitoring-view .capacity-disclosure {font-size:0.7rem;}}
+@media(max-width:900px) {.monitoring-kpis {grid-template-columns:repeat(2,minmax(0,1fr));}.monitoring-charts {grid-template-columns:1fr;}.monitoring-canvas {height:190px;}.monitoring-controls label {min-width:130px;}.monitoring-method[open] {max-height:none;}.monitoring-table-wrap {max-height:190px;}}
+.monitoring-view .panel {margin:0;}
+.monitoring-view .view-heading {margin:0 0 .25rem;}
+.monitoring-view .capacity-disclosure {margin:0;}
+#monitoring-status:empty,#monitoring-retry[hidden] {display:none;}
+#monitoring-population {margin:0;font-size:.73rem;color:var(--muted);}
+.monitoring-kpis .kpi-card {padding:.4rem .6rem;}
+.monitoring-kpis .kpi-label {font-size:.7rem;margin:0 0 .15rem;}
+.monitoring-kpis .kpi-value {margin:0;}
+.monitoring-controls select {background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:.35rem;}
+@media(min-width:901px) {
+ .monitoring-view.active {height:100%;}
+ #monitoring-workspace {flex:1 1 auto;}
+ #monitoring-workspace>* {flex-shrink:0;}
+ .monitoring-view .monitoring-charts {flex:1 1 auto;min-height:140px;}
+ .monitoring-charts .panel {display:flex;flex-direction:column;min-height:0;}
+ .monitoring-canvas {flex:1;height:auto;min-height:0;}
+ .monitoring-view .monitoring-detail {max-height:170px;overflow:auto;}
+ .monitoring-method[open] {max-height:110px;}
+}
+@media(min-width:901px) {
+ #monitoring-workspace > .monitoring-charts {flex:1 1 0;min-height:130px;}
+ .monitoring-view .monitoring-detail {max-height:110px;}
+ .monitoring-controls {padding:.4rem .6rem;}
+ .monitoring-charts .panel-note {font-size:.69rem;margin:0 0 .25rem;}
+}
+@media(min-width:901px) {
+ .monitoring-view {position:relative;}
+ .monitoring-view .monitoring-method[open] {position:absolute;bottom:0;left:0;right:0;max-height:220px;overflow:auto;z-index:4;}
+}

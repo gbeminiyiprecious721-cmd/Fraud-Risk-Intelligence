@@ -1,0 +1,164 @@
+{
+  "entrypoint": "local src.render_demo:app",
+  "synthetic_queue_rows": 24,
+  "case_storage_unchanged": true,
+  "runtime_errors": 0,
+  "screenshots": [
+    {
+      "image": "monitoring-features-1440x900.png",
+      "mode": "features",
+      "metrics": {
+        "bodyWidth": 1440,
+        "width": 1440,
+        "height": 900,
+        "contentHeight": 721,
+        "contentScrollHeight": 721,
+        "mainChart": 196,
+        "detailChart": 216
+      }
+    },
+    {
+      "image": "monitoring-scores-1440x900.png",
+      "mode": "scores",
+      "metrics": {
+        "bodyWidth": 1440,
+        "width": 1440,
+        "height": 900,
+        "contentHeight": 721,
+        "contentScrollHeight": 721,
+        "mainChart": 196,
+        "detailChart": 216
+      }
+    },
+    {
+      "image": "monitoring-quality-1440x900.png",
+      "mode": "quality",
+      "metrics": {
+        "bodyWidth": 1440,
+        "width": 1440,
+        "height": 900,
+        "contentHeight": 721,
+        "contentScrollHeight": 721,
+        "mainChart": 179,
+        "detailChart": 216
+      }
+    },
+    {
+      "image": "monitoring-features-1280x800.png",
+      "mode": "features",
+      "metrics": {
+        "bodyWidth": 1280,
+        "width": 1280,
+        "height": 800,
+        "contentHeight": 621,
+        "contentScrollHeight": 621,
+        "mainChart": 100,
+        "detailChart": 121
+      }
+    },
+    {
+      "image": "monitoring-scores-1280x800.png",
+      "mode": "scores",
+      "metrics": {
+        "bodyWidth": 1280,
+        "width": 1280,
+        "height": 800,
+        "contentHeight": 621,
+        "contentScrollHeight": 621,
+        "mainChart": 100,
+        "detailChart": 121
+      }
+    },
+    {
+      "image": "monitoring-quality-1280x800.png",
+      "mode": "quality",
+      "metrics": {
+        "bodyWidth": 1280,
+        "width": 1280,
+        "height": 800,
+        "contentHeight": 621,
+        "contentScrollHeight": 621,
+        "mainChart": 84,
+        "detailChart": 121
+      }
+    },
+    {
+      "image": "monitoring-features-768x1024.png",
+      "mode": "features",
+      "metrics": {
+        "bodyWidth": 753,
+        "width": 768,
+        "height": 1024,
+        "contentHeight": 1232,
+        "contentScrollHeight": 1232,
+        "mainChart": 190,
+        "detailChart": 190
+      }
+    },
+    {
+      "image": "monitoring-scores-768x1024.png",
+      "mode": "scores",
+      "metrics": {
+        "bodyWidth": 753,
+        "width": 768,
+        "height": 1024,
+        "contentHeight": 1250,
+        "contentScrollHeight": 1250,
+        "mainChart": 190,
+        "detailChart": 190
+      }
+    },
+    {
+      "image": "monitoring-quality-768x1024.png",
+      "mode": "quality",
+      "metrics": {
+        "bodyWidth": 753,
+        "width": 768,
+        "height": 1024,
+        "contentHeight": 1269,
+        "contentScrollHeight": 1269,
+        "mainChart": 190,
+        "detailChart": 190
+      }
+    },
+    {
+      "image": "monitoring-features-390x844.png",
+      "mode": "features",
+      "metrics": {
+        "bodyWidth": 375,
+        "width": 390,
+        "height": 844,
+        "contentHeight": 1454,
+        "contentScrollHeight": 1454,
+        "mainChart": 190,
+        "detailChart": 190
+      }
+    },
+    {
+      "image": "monitoring-scores-390x844.png",
+      "mode": "scores",
+      "metrics": {
+        "bodyWidth": 375,
+        "width": 390,
+        "height": 844,
+        "contentHeight": 1490,
+        "contentScrollHeight": 1490,
+        "mainChart": 190,
+        "detailChart": 190
+      }
+    },
+    {
+      "image": "monitoring-quality-390x844.png",
+      "mode": "quality",
+      "metrics": {
+        "bodyWidth": 375,
+        "width": 390,
+        "height": 844,
+        "contentHeight": 1530,
+        "contentScrollHeight": 1530,
+        "mainChart": 190,
+        "detailChart": 190
+      }
+    }
+  ]
+}

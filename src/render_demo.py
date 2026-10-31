@@ -314,3 +314,8 @@ def case_store_js():
 @app.get("/case-ui.js", include_in_schema=False)
 def case_ui_js():
     return FileResponse(_UI_DIR / "case-ui.js", media_type="application/javascript", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/monitoring.js", include_in_schema=False)
+def monitoring_js():
+    return FileResponse(_UI_DIR / "monitoring.js", media_type="application/javascript", headers={"Cache-Control": "no-store"})

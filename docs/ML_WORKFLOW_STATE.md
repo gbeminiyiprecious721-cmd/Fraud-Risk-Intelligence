@@ -1,5 +1,53 @@
 # ML Workflow State — Fraud-Risk-Intelligence
 
+## Portfolio Stage 22 — Historical model monitoring (2026-10-31)
+
+Release-review update: the owner authorises feature-branch push and a PR against
+`render-dashboard-integration`, superseding the local-only delivery note below.
+Independent release audit verifies395 numerical/population assertions; fresh
+aggregate regeneration is byte-identical and the four-viewport public-app check
+passes. No runtime correction is necessary. Release inventory51 files: original48
+plus an independent audit script and two fresh evidence records. Merge, deployment,
+Render changes and Stage23 remain prohibited. Fresh full-suite evidence is
+525 passed, zero failures/skips, five existing warnings,317.00s, including77
+real-Chrome cases and all six heavy/data-contract tests. Controlled merge
+requires separate owner approval.
+
+
+The owner explicitly authorised Stage22 implementation and supplied the complete
+Phases F–H/testing/local-delivery continuation, superseding earlier notes that
+Stage22 was not authorised. Work is isolated on `stage22-model-monitoring`, based
+on approved integration `cad3c70ead38ec50623f0743f40d998ef1dd6326`.
+The owner chose earliest validation third as reference. Three disjoint,
+timestamp-tie-safe windows contain25,186/25,187/25,187 rows; all frozen-model
+scores are out-of-sample, but this is repeatedly reused development validation.
+No closed final-test rows/predictions or outcome columns were accessed.
+
+The protocol, calculations, predeclared investigation heuristics and limitations
+are in [Stage22 monitoring](STAGE22_MODEL_MONITORING.md). Two offline builds of
+feature/score/quality aggregates are byte-identical and each has14 independent
+numerical distribution checks. All selected drift statistics are below fixed
+demonstration rules. dist1 missingness rises3.00/3.41pp, below the5pp quality rule.
+Neither observation proves model health, equivalence or performance stability.
+No current precision/recall or production-monitoring claim is made.
+
+A fixed read-only validated aggregate endpoint and Model Monitoring view add
+window/feature/dimension selectors, reset/retry, charts, exact counts and
+methodology. All production scoring/security, prior science, historical
+capacity/benchmark evidence and browser-local case-store contracts are
+preserved. Frozen SHA256 remains
+`2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+No new dependencies, paid infrastructure, model fit/replacement or Render
+changes. Final verification: **525 passed, zero failures/skips, five inherited
+warnings,292.42 seconds**, including77 real-Chrome cases and all six heavy/data-
+contract checks. Six focused monitoring browser tests and25 numerical/API tests
+pass;18 screenshots cover all dimensions/four sizes and full mobile/tablet views.
+Three aggregate builds are byte-identical; the final one additionally verifies
+KS directly from empirical CDFs. Independent final review found no blockers.
+Stage22 historical demonstration is complete locally, awaiting owner review.
+Local verified commit only; no push, merge or deployment. Stage23 is not
+authorised. Original closed workflow record follows verbatim.
+
 ## Stage 21 correction — Investigation Queue filters (2026-10-31)
 
 Release-preparation update: the owner now authorises pushing this correction
