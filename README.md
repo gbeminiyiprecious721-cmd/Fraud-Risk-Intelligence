@@ -8,9 +8,9 @@ The original held-out evaluation reported **85.83% precision and 24.61% recall w
 
 [Open the dashboard](https://fraud-risk-intelligence.onrender.com) · [5–7 minute walkthrough](docs/PORTFOLIO_WALKTHROUGH.md) · [Case study](docs/PORTFOLIO_CASE_STUDY.md) · [Architecture diagrams](docs/ARCHITECTURE.md)
 
-![Dashboard Overview: a 24-transaction synthetic batch, relative risk bands and unopened seeded statuses](docs/stage24_portfolio_evidence/overview-1440x900.png)
+![Dashboard Overview: a 24-transaction synthetic batch, relative risk bands and unopened seeded statuses](docs/stage25_release_evidence/overview-1440x900.png)
 
-*Stage 24 local desktop capture using the public synthetic adapter. Screenshots are versioned implementation evidence, not live service telemetry.*
+*Stage 25 local verification capture using the public synthetic adapter. Screenshots are versioned implementation evidence, not live service telemetry.*
 
 ## Business problem and objectives
 
@@ -114,7 +114,7 @@ The existing captures below show implemented workspaces at their respective veri
 
 | Workspace | Verified capture |
 |---|---|
-| Overview | [Current public-adapter synthetic batch](docs/stage24_portfolio_evidence/overview-1440x900.png) |
+| Overview | [Current public-adapter synthetic batch](docs/stage25_release_evidence/overview-1440x900.png) |
 | Investigation Queue | [Opened case with combined filters](docs/stage21_queue_filter_evidence/queue-case-matching-1440x900.png) |
 | Capacity simulator | [Historical review-capacity curves](docs/stage20_challenger_evidence/screenshots/capacity-1440x900.png) |
 | Benchmarking | [Four-model comparison and limitations](docs/stage20_challenger_evidence/screenshots/benchmark-1440x900.png) |
@@ -187,7 +187,7 @@ For authorised local research/testing, install `requirements.txt` in the project
 
 ## Testing and reproducibility
 
-The fresh Stage 24 full regression run completed with **555 passed, zero failures/skips**, including **84 real-Chrome tests** and **all six heavy/data-contract tests**, with five inherited warnings. This is versioned local evidence, not a hosted CI claim. [Stage 24 verification and command scope](docs/STAGE24_PORTFOLIO_DOCUMENTATION.md).
+The fresh Stage 25 full regression run completed with **561 passed, zero failures/skips**, including **86 real-Chrome tests** and **all six heavy/data-contract tests**, with five inherited warnings. This is versioned local evidence, not a hosted CI claim. [Stage 25 verification and command scope](docs/STAGE25_FINAL_RELEASE_REPORT.md).
 
 In the existing authorised research/test environment:
 

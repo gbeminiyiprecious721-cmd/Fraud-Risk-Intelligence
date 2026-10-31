@@ -1,0 +1,12 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_empty_case_scope_marks_score_statistics_undefined ____________
+tests/test_dashboard_routing_browser.py:512: in test_empty_case_scope_marks_score_statistics_undefined
+    assert values['Average risk score'] == '–'
+E   AssertionError: assert '0.0000' == '–'
+E
+E     - –
+E     + 0.0000
+=========================== short test summary info ============================
+FAILED tests/test_dashboard_routing_browser.py::test_empty_case_scope_marks_score_statistics_undefined
+1 failed, 85 deselected in 4.41s

@@ -355,7 +355,9 @@
     const isFiltered = scope.length !== all.length;
     const scopeNote = isFiltered ? `of ${scope.length} filtered` : "of full batch";
     const highRisk = scope.filter((t) => t.risk_band === "High" || t.risk_band === "Critical").length;
-    const reviewQueue = scope.filter((t) => t.status !== "Resolved").length;
+    const reviewQueue = scope.filter((t) =>
+      (window.CaseUI ? window.CaseUI.status(t) : t.status) !== "Resolved"
+    ).length;
     const avgScore = scope.length ? scope.reduce((s, t) => s + t.risk_score, 0) / scope.length : 0;
     const maxScore = scope.length ? Math.max(...scope.map((t) => t.risk_score)) : 0;
 
@@ -376,9 +378,9 @@
         accent: "var(--err)",
         sub: scope.length ? Math.round((100 * highRisk) / scope.length) + "% " + scopeNote : scopeNote,
       },
-      { label: "Review queue size", value: reviewQueue, cls: "warn", icon: "list", accent: "var(--warn)", sub: "status ≠ Resolved, " + scopeNote },
-      { label: "Average risk score", value: fmtScore(avgScore), cls: "", icon: "gauge", accent: "var(--accent-2)", sub: scopeNote },
-      { label: "Highest risk score", value: fmtScore(maxScore), cls: "err", icon: "flame", accent: "var(--critical)", sub: scopeNote },
+      { label: "Review queue size", value: reviewQueue, cls: "warn", icon: "list", accent: "var(--warn)", sub: "case/seeded status ≠ Resolved, " + scopeNote },
+      { label: "Average risk score", value: scope.length ? fmtScore(avgScore) : "–", cls: "", icon: "gauge", accent: "var(--accent-2)", sub: scopeNote },
+      { label: "Highest risk score", value: scope.length ? fmtScore(maxScore) : "–", cls: "err", icon: "flame", accent: "var(--critical)", sub: scopeNote },
       { label: "Model artifact version", value: (raw && raw.model.artifact_version) || "–", cls: "", icon: "tag", accent: "var(--muted)" },
       { label: "API / service status", value: raw ? "Online" : "Unknown", cls: raw ? "ok" : "warn", icon: "pulse", accent: raw ? "var(--ok)" : "var(--warn)" },
     ];

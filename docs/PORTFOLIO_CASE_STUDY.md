@@ -103,7 +103,7 @@ packages. Public scoring remains constrained; notes stay in the browser, and no
 historical row-level evidence is exposed through the new aggregate endpoints.
 Versioned tests cover numerical contracts, public safeguards, persistence,
 responsive layouts and real-Chrome interactions. Fresh verification is recorded
-in the [Stage 24 report](STAGE24_PORTFOLIO_DOCUMENTATION.md), rather than assumed
+in the [Stage 25 report](STAGE25_FINAL_RELEASE_REPORT.md), rather than assumed
 from the application screenshots.
 
 Sources: [case management](STAGE21_CASE_MANAGEMENT.md),

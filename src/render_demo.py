@@ -140,6 +140,47 @@ def _demo_payload() -> dict:
 
 DEMO_TRANSACTION = _demo_payload()
 
+
+class _DemoBodyTooLarge(Exception):
+    """Stop receiving before an oversized body enters Starlette's cache."""
+
+
+class _PublicPredictBodyLimit:
+    """Bound ASGI input while preserving normal Request.body() replay.
+
+    The existing HTTP middleware still owns rate limits, JSON validation and
+    the exact synthetic allowlist. Limiting its receive channel avoids private
+    Request cache manipulation and never consumes later chunks after rejection.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if (scope["type"] != "http" or scope.get("path") != "/v1/predict"
+                or scope.get("method") != "POST"):
+            return await self.app(scope, receive, send)
+
+        received_bytes = 0
+
+        async def bounded_receive():
+            nonlocal received_bytes
+            message = await receive()
+            if message["type"] == "http.request":
+                received_bytes += len(message.get("body", b""))
+                if received_bytes > MAX_PREDICT_BODY_BYTES:
+                    raise _DemoBodyTooLarge
+            return message
+
+        try:
+            await self.app(scope, bounded_receive, send)
+        except _DemoBodyTooLarge:
+            response = JSONResponse(
+                status_code=413,
+                content={"detail": "Request body too large for this demo."},
+            )
+            await response(scope, receive, send)
+
 # Reuses the same FRAUD_API_ARTIFACT_PATH override Stage 17's
 # deploy/asgi_launcher.py already established, so the hosted artifact's
 # location (delivered out-of-band -- see docs/RENDER_DEPLOYMENT_PREPARATION.md)
@@ -158,22 +199,11 @@ async def synthetic_only_public_demo(request: Request, call_next):
     see `_is_dashboard_rate_limited`); that route itself is what bounds
     `n`/the seed, so no body/payload check is needed here for it.
 
-    For /v1/predict: enforces (public-demo-only) rate limiting and a
-    request-body size cap. Body size is checked both via the declared
-    Content-Length (fast
-    path, rejects before any read) and against the actually-buffered body
-    (catches a Content-Length that understates the real size). This
-    deliberately still uses `request.body()` -- not `request.stream()` --
-    so Starlette's body cache is populated exactly as before and the real
-    `/v1/predict` handler downstream can still read it; switching to a
-    raw stream read here would exhaust the ASGI receive channel before
-    the real handler gets a chance to read it. A residual gap this does
-    NOT close: a chunked-transfer body with no Content-Length is still
-    fully buffered by `request.body()` before our size check runs, so an
-    adversarial client bypassing Content-Length can still force buffering
-    up to whatever `request.body()` itself is willing to read. Declared
-    as a known, disclosed limitation rather than solved with unverified
-    stream-interception code that risks breaking real browser requests.
+    For /v1/predict: enforces public-demo-only rate limiting and checks
+    declared and buffered body lengths. The outer ASGI receive limiter also
+    rejects at the first cap-crossing chunk, including absent or understated
+    Content-Length. Normal Request.body() caching remains intact so the real
+    prediction handler can read the approved synthetic payload downstream.
     """
     if request.url.path == "/v1/dashboard/queue" and request.method == "GET":
         if _is_dashboard_rate_limited(request):
@@ -215,6 +245,11 @@ async def synthetic_only_public_demo(request: Request, call_next):
                 content={"detail": "Public portfolio demo accepts its fixed synthetic transaction only."},
             )
     return await call_next(request)
+
+
+# Added after the decorator so this receive limiter wraps the HTTP middleware
+# that buffers/parses the request, without changing the separate local API.
+app.add_middleware(_PublicPredictBodyLimit)
 
 
 @app.get("/index.html", response_class=HTMLResponse, include_in_schema=False)

@@ -1,0 +1,30 @@
+{
+  "scope": "Read-only observed Stage24 live baseline; not a post-Stage25 deployment/load-test claim",
+  "resourceId": "srv-dbg9mdmgekts738a7ga0",
+  "metrics": [
+    {
+      "type": "memory_usage",
+      "unit": "bytes",
+      "samples": 23,
+      "first": "2026-10-31T14:46:00Z",
+      "last": "2026-10-31T15:08:00Z",
+      "min": 186126340,
+      "max": 201064450
+    },
+    {
+      "type": "memory_limit",
+      "unit": "bytes",
+      "samples": 23,
+      "first": "2026-10-31T14:46:00Z",
+      "last": "2026-10-31T15:08:00Z",
+      "min": 536870900,
+      "max": 536870900
+    },
+    {
+      "type": "instance_count",
+      "samples": 0,
+      "min": null,
+      "max": null
+    }
+  ]
+}

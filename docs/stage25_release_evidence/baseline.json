@@ -1,0 +1,189 @@
+{
+  "stage": 25,
+  "status": "in_progress_pending_brief_continuation",
+  "date": "2026-10-31",
+  "branch": "stage25-final-integration-release",
+  "approved_integration_commit": "3fd88535b89d554c8955c0dcf0a4333f06ca6e92",
+  "branch_base": "3fd88535b89d554c8955c0dcf0a4333f06ca6e92",
+  "main": "52c01c919cb40cd2bedf1a41794a73e38c6cf737",
+  "live_deploy": {
+    "id": "dep-dbivtes9v7es738oc7rg",
+    "commit": "3fd88535b89d554c8955c0dcf0a4333f06ca6e92",
+    "status": "live",
+    "trigger": "manual",
+    "finished_at_utc": "2026-10-31T14:45:41.859472Z"
+  },
+  "render": {
+    "plan": "free",
+    "auto_deploy": "no",
+    "auto_deploy_trigger": "off",
+    "pr_previews": "off",
+    "configuration_changed": false,
+    "deploy_triggered_by_this_audit": false
+  },
+  "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "routes": [
+    {
+      "path": "/",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/benchmark.js",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/capacity.js",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/case-store.js",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/case-ui.js",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/dashboard.css",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/dashboard.html",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/dashboard.js",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/docs",
+      "methods": [
+        "GET",
+        "HEAD"
+      ]
+    },
+    {
+      "path": "/docs/oauth2-redirect",
+      "methods": [
+        "GET",
+        "HEAD"
+      ]
+    },
+    {
+      "path": "/explainability.js",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/health",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/index.html",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/monitoring.js",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/openapi.json",
+      "methods": [
+        "GET",
+        "HEAD"
+      ]
+    },
+    {
+      "path": "/redoc",
+      "methods": [
+        "GET",
+        "HEAD"
+      ]
+    },
+    {
+      "path": "/v1/dashboard/benchmark",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/v1/dashboard/capacity",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/v1/dashboard/explainability",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/v1/dashboard/explanation",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/v1/dashboard/monitoring",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/v1/dashboard/queue",
+      "methods": [
+        "GET"
+      ]
+    },
+    {
+      "path": "/v1/predict",
+      "methods": [
+        "POST"
+      ]
+    },
+    {
+      "path": "/version",
+      "methods": [
+        "GET"
+      ]
+    }
+  ],
+  "requirements_render": "# Minimal runtime dependencies for the hosted synthetic-only portfolio demo.\n# Preserve the artifact-producing environment versions for joblib compatibility.\nfastapi==0.162.0\nuvicorn==0.54.0\nnumpy==2.5.4\npandas==3.1.0\nscikit-learn==1.9.1\nscipy==1.18.1\njoblib==1.6.0\n",
+  "requirements_benchmark": "# Stage 20 only \u2014 owner-approved additions, excluded from production requirements.\n# Install with --no-deps to preserve every existing project distribution.\nlightgbm==4.7.0\nxgboost==3.4.1\ncatboost==1.2.10\ngraphviz==0.21\nplotly==7.1.0\n",
+  "source_hashes": {
+    "src/api.py": "2886644b3f72b4864f41001ace5793b0be1e8a2259a6cccc0f5ff7c151fa773d",
+    "src/production_pipeline.py": "5eebe7358d5b4d072fdd066e1900d83fce73ed06a261fa4cf66138e1d0605951",
+    "ui/case-store.js": "f5bbdb867168962da96c69eb61a7faaa2f7f2278ad89ca7075f723cfa034c6e3",
+    "ui/case-ui.js": "d66abe5c3c5bf4eebbc4013cf388b5449f0ec80225e0ce3aa40f70ab75902b3b",
+    "ui/capacity-v1.json": "c2a0ebd0bca815a278c6c88ca9105bcd02ccc3e491e722177bb1c39b9ee6ca7d",
+    "ui/benchmark-v1.json": "ba765f9d1058f51f54c8becf8e938e5a430f585cc4f1eb6fa8ad0ed9f25d3fc6",
+    "ui/monitoring-v1.json": "715f88fdd67c6065d7bbe9702241c28041aab67ada72096283561d58372f3f37",
+    "explainability_assets/global-v1.json": "b6985a81087cba786d927e59967038da87804db27794429ee78f53649d84a44c",
+    "explainability_assets/local-v1.json": "facb66f0d1f19d1bf3c3d60e3f9c2f69fc535d17df84555afa139fd83129b168"
+  },
+  "record_kind": "Initial baseline snapshot before the complete brief continuation; final status is in the final release report"
+}

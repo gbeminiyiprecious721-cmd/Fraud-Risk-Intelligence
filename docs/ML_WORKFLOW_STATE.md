@@ -1,5 +1,60 @@
 # ML Workflow State — Fraud-Risk-Intelligence
 
+## Portfolio Stage 25 — Final integration, security, QA and release (2026-10-31)
+
+Independent PR-review authorisation update (2026-10-31): the owner now permits
+pushing this feature branch and opening a PR against
+`render-dashboard-integration`, superseding the original local-only delivery
+restriction below. Merge, deployment, Render changes, model promotion and any
+additional development stage remain prohibited. The reviewed implementation is
+`45edc309f7b175b5961b6a7467d7758798704e83`; fresh evidence is appended to existing
+records, preserving the 75-file scope and original scientific history.
+Fresh complete regression: 561 passed, zero failures/errors/skips, five inherited
+warnings, 299.44s; 86 real-Chrome and six heavy/data-contract tests. Independent
+public QA again passes 40 viewports/four workflows; 120 approved explanation IDs
+allowed / 120 nonpublic denied with zero inference/transforms or SHAP import.
+252 documentation targets/two images pass. No runtime correction is required.
+
+Stage 25, the final development stage, is locally complete with verdict
+READY WITH DOCUMENTED LIMITATIONS. The owner explicitly authorises a verified
+local commit only on `stage25-final-integration-release`, from approved/live
+`3fd88535b89d554c8955c0dcf0a4333f06ca6e92`. No push, PR, merge, deployment,
+Render configuration change or additional development stage is authorised.
+Historical stage restrictions below are retained as their original chronology.
+
+Verified corrections only: an outer ASGI receive counter enforces the existing
+16 KiB public body cap before unlimited buffering; the review KPI shares the
+existing case/seeded status resolver; empty-cohort score statistics display an
+undefined marker rather than fabricated zero. Frozen inference/preprocessing,
+synthetic allowlists/rate budgets, original scientific records, approved
+aggregates, case storage schema/keys and dependency manifests remain unchanged.
+
+Final complete regression: 561 passed, zero failures/errors/skips, five inherited
+warnings, 299.81s; includes 86 real-Chrome and all six heavy/data-contract cases.
+Separate public-app Chrome QA passes 40 view/viewport and 4 case/scoring workflow
+checks at 1440x900, 1280x800, 768x1024, 390x844, with no runtime errors or unnecessary
+desktop outer overflow. Local exhaustive explanations allow 120 / deny 120 with
+zero prediction/transform calls and no SHAP import. Five private paths/eight
+case-write methods are denied. Independent read-only runtime/UI review passes.
+
+Documentation: 252 internal targets/two images across 13 documents, three actual
+Chrome Mermaid SVGs and successful non-publishing GFM. Inventory: 75 files includes
+40 viewport captures and directly related source/tests/docs/verification assets.
+Measured local startup 1.37253s and sampled server peak 220561408 bytes are native
+local evidence, not a Render load guarantee. Render baseline observed 177.5–191.8
+MiB against reported 512 MiB. Minimal runtime works without SHAP/challenger modules.
+
+Live baseline and frozen checksum match; Free and Auto-Deploy Off are observed
+read-only. One transient 45-second health read timeout recovers to healthy 200;
+Kaggle's canonical page remains a documented direct-client 404 despite verified
+primary attribution. Private artifact provisioning, scientific/operational and
+untested-platform limitations remain explicit. No closed final partition or
+row-level final predictions are opened; no frozen retraining/replacement or
+challenger promotion occurs. Local owner handoff/independent review is the next
+release-control action, not another development stage or deployment approval.
+
+Report: [Stage25 final release](STAGE25_FINAL_RELEASE_REPORT.md).
+
 ## Portfolio Stage 24 — Professional portfolio documentation (2026-10-31)
 
 Release-review authorisation update: the owner explicitly permits pushing
