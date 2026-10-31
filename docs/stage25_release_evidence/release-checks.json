@@ -1,0 +1,1253 @@
+{
+  "base": "3fd88535b89d554c8955c0dcf0a4333f06ca6e92",
+  "closed_final_test_partition_or_predictions_opened": false,
+  "documentation": {
+    "files": [
+      "README.md",
+      "docs/ARCHITECTURE.md",
+      "docs/PORTFOLIO_WALKTHROUGH.md",
+      "docs/PORTFOLIO_CASE_STUDY.md",
+      "docs/ML_WORKFLOW_STATE.md",
+      "docs/STAGE19_CAPACITY_SIMULATOR.md",
+      "docs/STAGE20_CHALLENGER_BENCHMARK.md",
+      "docs/STAGE21_CASE_MANAGEMENT.md",
+      "docs/STAGE21_QUEUE_FILTER_CORRECTIONS.md",
+      "docs/STAGE22_MODEL_MONITORING.md",
+      "docs/STAGE23_MODEL_EXPLAINABILITY.md",
+      "docs/STAGE24_PORTFOLIO_DOCUMENTATION.md",
+      "docs/STAGE25_FINAL_RELEASE_REPORT.md"
+    ],
+    "internal_targets": 233,
+    "inline_images": 2,
+    "all_mermaid_blocks_in_scope": 3,
+    "errors": []
+  },
+  "numerical": {
+    "stage10_published_metrics": {
+      "ap": 0.42784,
+      "roc_auc": 0.86637,
+      "precision_top1": 0.8583,
+      "recall_top1": 0.2461
+    },
+    "reused_validation_rows": 75560,
+    "capacity_checkpoints": 201,
+    "benchmark_checkpoints": 804,
+    "monitoring_window_counts": [
+      25186,
+      25187,
+      25187
+    ],
+    "global_label_free_sample": 512,
+    "local_synthetic_records": 240,
+    "historical_metrics_or_assets_recomputed": false
+  },
+  "preservation": {
+    "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+    "protected_sources_and_assets_unchanged": true,
+    "original_workflow_body_preserved": true,
+    "main": "52c01c919cb40cd2bedf1a41794a73e38c6cf737"
+  },
+  "access_control": {
+    "approved_ids": 120,
+    "denied_nonpublic_ids": 120,
+    "runtime_inference_or_transforms_for_explanations": 0,
+    "shap_imported": false,
+    "private_asset_paths_denied": 5,
+    "case_write_methods_denied": 8,
+    "unsupported_input_generic_403": true,
+    "audit_warnings": [
+      {
+        "category": "StarletteDeprecationWarning",
+        "message": "Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead."
+      }
+    ]
+  },
+  "deployment_checks": {
+    "shell_syntax": "passed",
+    "minimal_runtime": {
+      "pins": {
+        "fastapi": "0.162.0",
+        "uvicorn": "0.54.0",
+        "numpy": "2.5.4",
+        "pandas": "3.1.0",
+        "scikit-learn": "1.9.1",
+        "scipy": "1.18.1",
+        "joblib": "1.6.0"
+      },
+      "offline_modules_present": {
+        "shap": false,
+        "xgboost": false,
+        "lightgbm": false,
+        "catboost": false
+      }
+    },
+    "pip_check": "No broken requirements found.",
+    "private_artifact_fetch_executed": false,
+    "render_or_external_deployment_triggered": false
+  },
+  "public_urls": [
+    {
+      "url": "https://fraud-risk-intelligence.onrender.com/health",
+      "status": 200,
+      "attempts": [
+        {
+          "status": 200
+        }
+      ]
+    },
+    {
+      "url": "https://www.kaggle.com/competitions/ieee-fraud-detection/data",
+      "status": 404,
+      "attempts": [
+        {
+          "status": 404
+        }
+      ]
+    }
+  ],
+  "audit_completed": true,
+  "independent_pr_review": {
+    "date": "2026-10-31",
+    "reviewed_implementation": "45edc309f7b175b5961b6a7467d7758798704e83",
+    "runtime_corrections_needed": false,
+    "scope_files": 75,
+    "regression": {
+      "passed": 561,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "warnings": 5,
+      "seconds": 299.44,
+      "browser": 86,
+      "heavy_or_data_contract_full": 6
+    },
+    "public_browser": {
+      "entrypoint": "src.render_demo:app",
+      "historical_data_access": false,
+      "viewports": [
+        {
+          "image": "overview-1440x900.png",
+          "view": "overview",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": [
+            {
+              "id": "chart-band-breakdown-mini",
+              "rendered": true,
+              "width": 539,
+              "height": 110
+            },
+            {
+              "id": "chart-distribution-mini",
+              "rendered": true,
+              "width": 539,
+              "height": 110
+            }
+          ]
+        },
+        {
+          "image": "queue-1440x900.png",
+          "view": "queue",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 644,
+          "containerScrollHeight": 644,
+          "charts": []
+        },
+        {
+          "image": "analytics-1440x900.png",
+          "view": "analytics",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": [
+            {
+              "id": "chart-distribution",
+              "rendered": true,
+              "width": 526,
+              "height": 173
+            },
+            {
+              "id": "chart-band-breakdown",
+              "rendered": true,
+              "width": 526,
+              "height": 192
+            },
+            {
+              "id": "chart-by-product",
+              "rendered": true,
+              "width": 526,
+              "height": 192
+            },
+            {
+              "id": "chart-amount-vs-risk",
+              "rendered": true,
+              "width": 526,
+              "height": 173
+            },
+            {
+              "id": "chart-sequence",
+              "rendered": true,
+              "width": 1107,
+              "height": 190
+            }
+          ]
+        },
+        {
+          "image": "workflow-1440x900.png",
+          "view": "workflow",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 644,
+          "containerScrollHeight": 644,
+          "charts": []
+        },
+        {
+          "image": "insights-1440x900.png",
+          "view": "insights",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": []
+        },
+        {
+          "image": "benchmark-1440x900.png",
+          "view": "benchmark",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 776,
+          "containerScrollHeight": 776,
+          "charts": [
+            {
+              "id": "benchmark-metric-chart",
+              "rendered": true,
+              "width": 546,
+              "height": 216
+            },
+            {
+              "id": "benchmark-capacity-chart",
+              "rendered": true,
+              "width": 546,
+              "height": 216
+            }
+          ]
+        },
+        {
+          "image": "explainability-1440x900.png",
+          "view": "explainability",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": [
+            {
+              "id": "explanation-global-chart",
+              "rendered": true,
+              "width": 553,
+              "height": 268
+            },
+            {
+              "id": "explanation-local-chart",
+              "rendered": true,
+              "width": 553,
+              "height": 214
+            }
+          ]
+        },
+        {
+          "image": "monitoring-1440x900.png",
+          "view": "monitoring",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": [
+            {
+              "id": "monitoring-main-chart",
+              "rendered": true,
+              "width": 552,
+              "height": 196
+            },
+            {
+              "id": "monitoring-detail-chart",
+              "rendered": true,
+              "width": 552,
+              "height": 216
+            }
+          ]
+        },
+        {
+          "image": "capacity-1440x900.png",
+          "view": "capacity",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": [
+            {
+              "id": "capacity-recall-chart",
+              "rendered": true,
+              "width": 539,
+              "height": 280
+            },
+            {
+              "id": "capacity-precision-chart",
+              "rendered": true,
+              "width": 539,
+              "height": 280
+            }
+          ]
+        },
+        {
+          "image": "responsible-ai-1440x900.png",
+          "view": "responsible-ai",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": []
+        },
+        {
+          "image": "overview-1280x800.png",
+          "view": "overview",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": [
+            {
+              "id": "chart-band-breakdown-mini",
+              "rendered": true,
+              "width": 459,
+              "height": 110
+            },
+            {
+              "id": "chart-distribution-mini",
+              "rendered": true,
+              "width": 459,
+              "height": 110
+            }
+          ]
+        },
+        {
+          "image": "queue-1280x800.png",
+          "view": "queue",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 544,
+          "containerScrollHeight": 544,
+          "charts": []
+        },
+        {
+          "image": "analytics-1280x800.png",
+          "view": "analytics",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": [
+            {
+              "id": "chart-distribution",
+              "rendered": true,
+              "width": 446,
+              "height": 123
+            },
+            {
+              "id": "chart-band-breakdown",
+              "rendered": true,
+              "width": 446,
+              "height": 142
+            },
+            {
+              "id": "chart-by-product",
+              "rendered": true,
+              "width": 446,
+              "height": 142
+            },
+            {
+              "id": "chart-amount-vs-risk",
+              "rendered": true,
+              "width": 446,
+              "height": 123
+            },
+            {
+              "id": "chart-sequence",
+              "rendered": true,
+              "width": 947,
+              "height": 190
+            }
+          ]
+        },
+        {
+          "image": "workflow-1280x800.png",
+          "view": "workflow",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 544,
+          "containerScrollHeight": 544,
+          "charts": []
+        },
+        {
+          "image": "insights-1280x800.png",
+          "view": "insights",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": []
+        },
+        {
+          "image": "benchmark-1280x800.png",
+          "view": "benchmark",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 676,
+          "containerScrollHeight": 676,
+          "charts": [
+            {
+              "id": "benchmark-metric-chart",
+              "rendered": true,
+              "width": 466,
+              "height": 116
+            },
+            {
+              "id": "benchmark-capacity-chart",
+              "rendered": true,
+              "width": 466,
+              "height": 116
+            }
+          ]
+        },
+        {
+          "image": "explainability-1280x800.png",
+          "view": "explainability",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": [
+            {
+              "id": "explanation-global-chart",
+              "rendered": true,
+              "width": 473,
+              "height": 205
+            },
+            {
+              "id": "explanation-local-chart",
+              "rendered": true,
+              "width": 473,
+              "height": 152
+            }
+          ]
+        },
+        {
+          "image": "monitoring-1280x800.png",
+          "view": "monitoring",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": [
+            {
+              "id": "monitoring-main-chart",
+              "rendered": true,
+              "width": 472,
+              "height": 100
+            },
+            {
+              "id": "monitoring-detail-chart",
+              "rendered": true,
+              "width": 472,
+              "height": 121
+            }
+          ]
+        },
+        {
+          "image": "capacity-1280x800.png",
+          "view": "capacity",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": [
+            {
+              "id": "capacity-recall-chart",
+              "rendered": true,
+              "width": 459,
+              "height": 177
+            },
+            {
+              "id": "capacity-precision-chart",
+              "rendered": true,
+              "width": 459,
+              "height": 177
+            }
+          ]
+        },
+        {
+          "image": "responsible-ai-1280x800.png",
+          "view": "responsible-ai",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": []
+        },
+        {
+          "image": "overview-768x1024.png",
+          "view": "overview",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 753,
+          "bodyHeight": 1283,
+          "containerHeight": 965,
+          "containerScrollHeight": 965,
+          "charts": [
+            {
+              "id": "chart-band-breakdown-mini",
+              "rendered": true,
+              "width": 308,
+              "height": 120
+            },
+            {
+              "id": "chart-distribution-mini",
+              "rendered": true,
+              "width": 308,
+              "height": 120
+            }
+          ]
+        },
+        {
+          "image": "queue-768x1024.png",
+          "view": "queue",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 753,
+          "bodyHeight": 1379,
+          "containerHeight": 978,
+          "containerScrollHeight": 978,
+          "charts": []
+        },
+        {
+          "image": "analytics-768x1024.png",
+          "view": "analytics",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 753,
+          "bodyHeight": 2224,
+          "containerHeight": 1906,
+          "containerScrollHeight": 1906,
+          "charts": [
+            {
+              "id": "chart-distribution",
+              "rendered": true,
+              "width": 667,
+              "height": 220
+            },
+            {
+              "id": "chart-band-breakdown",
+              "rendered": true,
+              "width": 667,
+              "height": 220
+            },
+            {
+              "id": "chart-by-product",
+              "rendered": true,
+              "width": 667,
+              "height": 220
+            },
+            {
+              "id": "chart-amount-vs-risk",
+              "rendered": true,
+              "width": 667,
+              "height": 220
+            },
+            {
+              "id": "chart-sequence",
+              "rendered": true,
+              "width": 667,
+              "height": 190
+            }
+          ]
+        },
+        {
+          "image": "workflow-768x1024.png",
+          "view": "workflow",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 753,
+          "bodyHeight": 1349,
+          "containerHeight": 948,
+          "containerScrollHeight": 948,
+          "charts": []
+        },
+        {
+          "image": "insights-768x1024.png",
+          "view": "insights",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 753,
+          "bodyHeight": 1632,
+          "containerHeight": 1314,
+          "containerScrollHeight": 1314,
+          "charts": []
+        },
+        {
+          "image": "benchmark-768x1024.png",
+          "view": "benchmark",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 753,
+          "bodyHeight": 1524,
+          "containerHeight": 1250,
+          "containerScrollHeight": 1250,
+          "charts": [
+            {
+              "id": "benchmark-metric-chart",
+              "rendered": true,
+              "width": 677,
+              "height": 200
+            },
+            {
+              "id": "benchmark-capacity-chart",
+              "rendered": true,
+              "width": 677,
+              "height": 200
+            }
+          ]
+        },
+        {
+          "image": "explainability-768x1024.png",
+          "view": "explainability",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 753,
+          "bodyHeight": 1955,
+          "containerHeight": 1681,
+          "containerScrollHeight": 1681,
+          "charts": [
+            {
+              "id": "explanation-global-chart",
+              "rendered": true,
+              "width": 683,
+              "height": 290
+            },
+            {
+              "id": "explanation-local-chart",
+              "rendered": true,
+              "width": 683,
+              "height": 290
+            }
+          ]
+        },
+        {
+          "image": "monitoring-768x1024.png",
+          "view": "monitoring",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 753,
+          "bodyHeight": 1507,
+          "containerHeight": 1232,
+          "containerScrollHeight": 1232,
+          "charts": [
+            {
+              "id": "monitoring-main-chart",
+              "rendered": true,
+              "width": 682,
+              "height": 190
+            },
+            {
+              "id": "monitoring-detail-chart",
+              "rendered": true,
+              "width": 682,
+              "height": 190
+            }
+          ]
+        },
+        {
+          "image": "capacity-768x1024.png",
+          "view": "capacity",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 753,
+          "bodyHeight": 1462,
+          "containerHeight": 1188,
+          "containerScrollHeight": 1188,
+          "charts": [
+            {
+              "id": "capacity-recall-chart",
+              "rendered": true,
+              "width": 671,
+              "height": 230
+            },
+            {
+              "id": "capacity-precision-chart",
+              "rendered": true,
+              "width": 671,
+              "height": 230
+            }
+          ]
+        },
+        {
+          "image": "responsible-ai-768x1024.png",
+          "view": "responsible-ai",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 753,
+          "bodyHeight": 1080,
+          "containerHeight": 762,
+          "containerScrollHeight": 762,
+          "charts": []
+        },
+        {
+          "image": "overview-390x844.png",
+          "view": "overview",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 375,
+          "bodyHeight": 1957,
+          "containerHeight": 1448,
+          "containerScrollHeight": 1448,
+          "charts": [
+            {
+              "id": "chart-band-breakdown-mini",
+              "rendered": true,
+              "width": 305,
+              "height": 120
+            },
+            {
+              "id": "chart-distribution-mini",
+              "rendered": true,
+              "width": 305,
+              "height": 120
+            }
+          ]
+        },
+        {
+          "image": "queue-390x844.png",
+          "view": "queue",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 375,
+          "bodyHeight": 1846,
+          "containerHeight": 1151,
+          "containerScrollHeight": 1151,
+          "charts": []
+        },
+        {
+          "image": "analytics-390x844.png",
+          "view": "analytics",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 375,
+          "bodyHeight": 2519,
+          "containerHeight": 2010,
+          "containerScrollHeight": 2010,
+          "charts": [
+            {
+              "id": "chart-distribution",
+              "rendered": true,
+              "width": 305,
+              "height": 220
+            },
+            {
+              "id": "chart-band-breakdown",
+              "rendered": true,
+              "width": 305,
+              "height": 220
+            },
+            {
+              "id": "chart-by-product",
+              "rendered": true,
+              "width": 305,
+              "height": 220
+            },
+            {
+              "id": "chart-amount-vs-risk",
+              "rendered": true,
+              "width": 305,
+              "height": 220
+            },
+            {
+              "id": "chart-sequence",
+              "rendered": true,
+              "width": 305,
+              "height": 190
+            }
+          ]
+        },
+        {
+          "image": "workflow-390x844.png",
+          "view": "workflow",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 375,
+          "bodyHeight": 1627,
+          "containerHeight": 932,
+          "containerScrollHeight": 932,
+          "charts": []
+        },
+        {
+          "image": "insights-390x844.png",
+          "view": "insights",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 375,
+          "bodyHeight": 2094,
+          "containerHeight": 1585,
+          "containerScrollHeight": 1585,
+          "charts": []
+        },
+        {
+          "image": "benchmark-390x844.png",
+          "view": "benchmark",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 375,
+          "bodyHeight": 2004,
+          "containerHeight": 1590,
+          "containerScrollHeight": 1590,
+          "charts": [
+            {
+              "id": "benchmark-metric-chart",
+              "rendered": true,
+              "width": 315,
+              "height": 200
+            },
+            {
+              "id": "benchmark-capacity-chart",
+              "rendered": true,
+              "width": 315,
+              "height": 200
+            }
+          ]
+        },
+        {
+          "image": "explainability-390x844.png",
+          "view": "explainability",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 375,
+          "bodyHeight": 2296,
+          "containerHeight": 1883,
+          "containerScrollHeight": 1883,
+          "charts": [
+            {
+              "id": "explanation-global-chart",
+              "rendered": true,
+              "width": 321,
+              "height": 290
+            },
+            {
+              "id": "explanation-local-chart",
+              "rendered": true,
+              "width": 321,
+              "height": 290
+            }
+          ]
+        },
+        {
+          "image": "monitoring-390x844.png",
+          "view": "monitoring",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 375,
+          "bodyHeight": 1868,
+          "containerHeight": 1454,
+          "containerScrollHeight": 1454,
+          "charts": [
+            {
+              "id": "monitoring-main-chart",
+              "rendered": true,
+              "width": 320,
+              "height": 190
+            },
+            {
+              "id": "monitoring-detail-chart",
+              "rendered": true,
+              "width": 320,
+              "height": 190
+            }
+          ]
+        },
+        {
+          "image": "capacity-390x844.png",
+          "view": "capacity",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 375,
+          "bodyHeight": 1875,
+          "containerHeight": 1461,
+          "containerScrollHeight": 1461,
+          "charts": [
+            {
+              "id": "capacity-recall-chart",
+              "rendered": true,
+              "width": 309,
+              "height": 230
+            },
+            {
+              "id": "capacity-precision-chart",
+              "rendered": true,
+              "width": 309,
+              "height": 230
+            }
+          ]
+        },
+        {
+          "image": "responsible-ai-390x844.png",
+          "view": "responsible-ai",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 375,
+          "bodyHeight": 1677,
+          "containerHeight": 1168,
+          "containerScrollHeight": 1168,
+          "charts": []
+        }
+      ],
+      "case_checks": [
+        {
+          "width": 1440,
+          "height": 900,
+          "assignment_priority_status": true,
+          "literal_note_xss_safe": true,
+          "note_not_transmitted": true,
+          "no_case_write_requests": true,
+          "refresh_and_navigation_persistence": true,
+          "filter_clear_preserves_cases": true,
+          "single_scoring_and_back": true
+        },
+        {
+          "width": 1280,
+          "height": 800,
+          "assignment_priority_status": true,
+          "literal_note_xss_safe": true,
+          "note_not_transmitted": true,
+          "no_case_write_requests": true,
+          "refresh_and_navigation_persistence": true,
+          "filter_clear_preserves_cases": true,
+          "single_scoring_and_back": true
+        },
+        {
+          "width": 768,
+          "height": 1024,
+          "assignment_priority_status": true,
+          "literal_note_xss_safe": true,
+          "note_not_transmitted": true,
+          "no_case_write_requests": true,
+          "refresh_and_navigation_persistence": true,
+          "filter_clear_preserves_cases": true,
+          "single_scoring_and_back": true
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "assignment_priority_status": true,
+          "literal_note_xss_safe": true,
+          "note_not_transmitted": true,
+          "no_case_write_requests": true,
+          "refresh_and_navigation_persistence": true,
+          "filter_clear_preserves_cases": true,
+          "single_scoring_and_back": true
+        }
+      ],
+      "performance": {
+        "environment": "macOS, disposable minimal serving venv; not Render runtime or load benchmark",
+        "startup_health_ready_seconds": 1.262086,
+        "artifact_startup_event": {
+          "event": "startup",
+          "artifact_loaded": true,
+          "startup_seconds": 0.2666
+        },
+        "rss_sample_interval_seconds": 0.01,
+        "process_peak_rss_bytes": 222085120,
+        "public_queue_request_samples": [
+          {
+            "route": "/v1/dashboard/queue",
+            "seed": 101,
+            "seconds": 0.093654
+          },
+          {
+            "route": "/v1/dashboard/queue",
+            "seed": 202,
+            "seconds": 0.054072
+          },
+          {
+            "route": "/v1/dashboard/queue",
+            "seed": 303,
+            "seconds": 0.053866
+          },
+          {
+            "route": "/v1/dashboard/queue",
+            "seed": 404,
+            "seconds": 0.05317
+          },
+          {
+            "route": "/v1/dashboard/queue",
+            "seed": 505,
+            "seconds": 0.066236
+          }
+        ],
+        "includes_chrome_memory": false,
+        "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
+      },
+      "runtime_errors": 0
+    },
+    "security_and_numerical": {
+      "base": "3fd88535b89d554c8955c0dcf0a4333f06ca6e92",
+      "closed_final_test_partition_or_predictions_opened": false,
+      "documentation": {
+        "files": [
+          "README.md",
+          "docs/ARCHITECTURE.md",
+          "docs/PORTFOLIO_WALKTHROUGH.md",
+          "docs/PORTFOLIO_CASE_STUDY.md",
+          "docs/ML_WORKFLOW_STATE.md",
+          "docs/STAGE19_CAPACITY_SIMULATOR.md",
+          "docs/STAGE20_CHALLENGER_BENCHMARK.md",
+          "docs/STAGE21_CASE_MANAGEMENT.md",
+          "docs/STAGE21_QUEUE_FILTER_CORRECTIONS.md",
+          "docs/STAGE22_MODEL_MONITORING.md",
+          "docs/STAGE23_MODEL_EXPLAINABILITY.md",
+          "docs/STAGE24_PORTFOLIO_DOCUMENTATION.md",
+          "docs/STAGE25_FINAL_RELEASE_REPORT.md"
+        ],
+        "internal_targets": 252,
+        "inline_images": 2,
+        "all_mermaid_blocks_in_scope": 3,
+        "errors": [],
+        "changed_file_count": 75
+      },
+      "numerical": {
+        "stage10_published_metrics": {
+          "ap": 0.42784,
+          "roc_auc": 0.86637,
+          "precision_top1": 0.8583,
+          "recall_top1": 0.2461
+        },
+        "reused_validation_rows": 75560,
+        "capacity_checkpoints": 201,
+        "benchmark_checkpoints": 804,
+        "monitoring_window_counts": [
+          25186,
+          25187,
+          25187
+        ],
+        "global_label_free_sample": 512,
+        "local_synthetic_records": 240,
+        "historical_metrics_or_assets_recomputed": false
+      },
+      "preservation": {
+        "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+        "protected_sources_and_assets_unchanged": true,
+        "original_workflow_body_preserved": true,
+        "main": "52c01c919cb40cd2bedf1a41794a73e38c6cf737"
+      },
+      "access_control": {
+        "approved_ids": 120,
+        "denied_nonpublic_ids": 120,
+        "runtime_inference_or_transforms_for_explanations": 0,
+        "shap_imported": false,
+        "private_asset_paths_denied": 5,
+        "case_write_methods_denied": 8,
+        "unsupported_input_generic_403": true,
+        "audit_warnings": [
+          {
+            "category": "StarletteDeprecationWarning",
+            "message": "Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead."
+          }
+        ]
+      },
+      "deployment_checks": {
+        "shell_syntax": "passed",
+        "minimal_runtime": {
+          "pins": {
+            "fastapi": "0.162.0",
+            "uvicorn": "0.54.0",
+            "numpy": "2.5.4",
+            "pandas": "3.1.0",
+            "scikit-learn": "1.9.1",
+            "scipy": "1.18.1",
+            "joblib": "1.6.0"
+          },
+          "offline_modules_present": {
+            "shap": false,
+            "xgboost": false,
+            "lightgbm": false,
+            "catboost": false
+          }
+        },
+        "pip_check": "No broken requirements found.",
+        "private_artifact_fetch_executed": false,
+        "render_or_external_deployment_triggered": false
+      },
+      "public_urls": [
+        {
+          "url": "https://fraud-risk-intelligence.onrender.com/health",
+          "status": 200,
+          "attempts": [
+            {
+              "error": "ReadTimeout"
+            },
+            {
+              "status": 200
+            }
+          ]
+        },
+        {
+          "url": "https://www.kaggle.com/competitions/ieee-fraud-detection/data",
+          "status": 404,
+          "attempts": [
+            {
+              "status": 404
+            }
+          ]
+        }
+      ],
+      "audit_completed": true
+    },
+    "headers": {
+      "responses": [
+        {
+          "path": "/",
+          "status": 200,
+          "content_type": "text/html; charset=utf-8",
+          "cache_control": "no-store"
+        },
+        {
+          "path": "/dashboard.js",
+          "status": 200,
+          "content_type": "application/javascript",
+          "cache_control": "no-store"
+        },
+        {
+          "path": "/v1/dashboard/capacity",
+          "status": 200,
+          "content_type": "application/json",
+          "cache_control": "no-store"
+        },
+        {
+          "path": "/v1/dashboard/benchmark",
+          "status": 200,
+          "content_type": "application/json",
+          "cache_control": "no-store"
+        },
+        {
+          "path": "/v1/dashboard/monitoring",
+          "status": 200,
+          "content_type": "application/json",
+          "cache_control": "no-store"
+        },
+        {
+          "path": "/v1/dashboard/explainability",
+          "status": 200,
+          "content_type": "application/json",
+          "cache_control": "no-store"
+        }
+      ],
+      "unapproved_origin_has_no_acao": true,
+      "disallowed_preflight_status": 400,
+      "approved_local_origin_matches": true,
+      "cors_credentials_enabled": false,
+      "strict_csp_or_frame_policy_added": false,
+      "limitations": "Focused content-type/cache/CORS checks, not a claim of comprehensive security-header hardening. Public use is same-origin and synthetic-only."
+    },
+    "mermaid_and_document_rendering": {
+      "mermaid_version": "11.12.0",
+      "mermaid_bundle_sha256": "07e37dfa97b337ccc85365d57eddf99b9706f09db3b59b260d0333b23b343c4b",
+      "preview": [
+        {
+          "file": "README.md",
+          "done": true,
+          "error": null,
+          "svg": 1,
+          "broken": []
+        },
+        {
+          "file": "docs/ARCHITECTURE.md",
+          "done": true,
+          "error": null,
+          "svg": 2,
+          "broken": []
+        },
+        {
+          "file": "docs/PORTFOLIO_WALKTHROUGH.md",
+          "done": true,
+          "error": null,
+          "svg": 0,
+          "broken": []
+        },
+        {
+          "file": "docs/PORTFOLIO_CASE_STUDY.md",
+          "done": true,
+          "error": null,
+          "svg": 0,
+          "broken": []
+        }
+      ],
+      "serving": {
+        "/": 200,
+        "/index.html": 200,
+        "/health": 200,
+        "/v1/dashboard/capacity": 200,
+        "/v1/dashboard/benchmark": 200,
+        "/v1/dashboard/monitoring": 200,
+        "/v1/dashboard/explainability": 200,
+        "synthetic_queue_rows": 24,
+        "runtime": "Disposable Python 3.12.15 environment; existing requirements-render.txt only"
+      },
+      "rendering_limit": "Real Mermaid SVG in local GFM-style Chrome preview; GitHub Markdown API is checked separately. GitHub's final interactive Mermaid renderer is not checked through a published branch."
+    },
+    "independent_read_only_review": {
+      "blocking_findings": 0,
+      "scope": "all75 files and three corrections",
+      "no_model_or_closed_data_work_by_reviewer": true
+    },
+    "authorisation": "Feature push and PR only. No merge/deployment/Render changes/new stage."
+  }
+}

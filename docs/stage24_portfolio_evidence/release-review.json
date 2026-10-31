@@ -1,0 +1,190 @@
+{
+  "original_reviewed_commit": "276c23847f85037c000d5c5907c4aa656fe00605",
+  "screenshots": [
+    {
+      "path": "docs/stage24_portfolio_evidence/overview-1440x900.png",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "checksum_matches": true
+    },
+    {
+      "path": "docs/stage21_queue_filter_evidence/queue-case-matching-1440x900.png",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "checksum_matches": true
+    },
+    {
+      "path": "docs/stage20_challenger_evidence/screenshots/capacity-1440x900.png",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "checksum_matches": true
+    },
+    {
+      "path": "docs/stage20_challenger_evidence/screenshots/benchmark-1440x900.png",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "checksum_matches": true
+    },
+    {
+      "path": "docs/stage21_queue_filter_evidence/workflow-case-matching-1440x900.png",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "checksum_matches": true
+    },
+    {
+      "path": "docs/stage22_monitoring_evidence/monitoring-features-1440x900.png",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "checksum_matches": true
+    },
+    {
+      "path": "docs/stage23_explainability_evidence/explainability-shap-1440x900.png",
+      "dimensions": [
+        1440,
+        900
+      ],
+      "checksum_matches": true
+    }
+  ],
+  "github_gfm": {
+    "status": 200,
+    "tables": 5,
+    "images": 2,
+    "mermaid": true,
+    "readme_sha256": "03bf63a9a78336b7284fe763d585e6a8a5d51a91a92794e7794db0c7bd96fded"
+  },
+  "date": "2026-10-31",
+  "base": "942b6d53ae004b847a8c0eca9a9298f1fe0c3024",
+  "regression": {
+    "passed": 555,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "warnings": 5,
+    "seconds": 312.64,
+    "browser": 84,
+    "heavy_or_data_contract_full": 6,
+    "command": ".venv/bin/python -m pytest tests/ -q"
+  },
+  "chrome_documentation": {
+    "mermaid_version": "11.12.0",
+    "mermaid_bundle_sha256": "07e37dfa97b337ccc85365d57eddf99b9706f09db3b59b260d0333b23b343c4b",
+    "preview": [
+      {
+        "file": "README.md",
+        "done": true,
+        "error": null,
+        "svg": 1,
+        "broken": []
+      },
+      {
+        "file": "docs/ARCHITECTURE.md",
+        "done": true,
+        "error": null,
+        "svg": 2,
+        "broken": []
+      },
+      {
+        "file": "docs/PORTFOLIO_WALKTHROUGH.md",
+        "done": true,
+        "error": null,
+        "svg": 0,
+        "broken": []
+      },
+      {
+        "file": "docs/PORTFOLIO_CASE_STUDY.md",
+        "done": true,
+        "error": null,
+        "svg": 0,
+        "broken": []
+      }
+    ],
+    "serving": {
+      "/": 200,
+      "/index.html": 200,
+      "/health": 200,
+      "/v1/dashboard/capacity": 200,
+      "/v1/dashboard/benchmark": 200,
+      "/v1/dashboard/monitoring": 200,
+      "/v1/dashboard/explainability": 200,
+      "synthetic_queue_rows": 24,
+      "runtime": "Disposable Python 3.12.15 environment; existing requirements-render.txt only"
+    },
+    "rendering_limit": "Real Mermaid SVG in local GFM-style Chrome preview; GitHub Markdown API is checked separately. GitHub's final interactive Mermaid renderer is not checked through a published branch."
+  },
+  "kaggle": {
+    "url": "https://www.kaggle.com/competitions/ieee-fraud-detection/data",
+    "status": 404,
+    "official_dataset_identity_confirmed_from_primary_indexed_content": true,
+    "download_attempted": false
+  },
+  "installation": {
+    "fresh_environment": true,
+    "python": "3.12.15",
+    "requirements": "requirements-render.txt",
+    "pip_install_exit": 0,
+    "pip_check": "No broken requirements found.",
+    "project_environment_changed": false
+  },
+  "independent_review": {
+    "blocking_findings": 0,
+    "scope": "README, architecture, walkthrough, case study, source/security claims and verification helpers",
+    "corrections": [
+      "Name TransactionID and isFraud explicitly instead of generic identifiers/targets.",
+      "Record the new push-and-PR authorisation; retain original local implementation history."
+    ]
+  },
+  "readme_topics_verified": [
+    "overview",
+    "business problem",
+    "objectives",
+    "dataset attribution",
+    "preparation and leakage",
+    "original modelling",
+    "historical held-out results",
+    "reused validation benchmarking",
+    "capacity simulator",
+    "browser-local synthetic cases",
+    "historical monitoring",
+    "explainability",
+    "architecture",
+    "technology",
+    "live demo",
+    "local setup",
+    "testing and reproducibility",
+    "responsible AI and limitations",
+    "future work"
+  ],
+  "preservation": {
+    "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+    "runtime_and_security_sources_changed": false,
+    "scientific_records_or_aggregates_changed": false,
+    "case_store_changed": false,
+    "dependency_manifests_changed": false,
+    "closed_final_test_data_or_predictions_accessed": false,
+    "frozen_model_retrained_or_replaced": false,
+    "sensitive_added_line_scan": "clean",
+    "model_or_raw_data_in_inventory": false,
+    "main": "52c01c919cb40cd2bedf1a41794a73e38c6cf737",
+    "remote_integration": "942b6d53ae004b847a8c0eca9a9298f1fe0c3024"
+  },
+  "limitations": [
+    "Exact trusted artifact remains privately provisioned.",
+    "Kaggle direct HTTP client gets 404; official indexed content confirms attribution and dataset.",
+    "Fresh setup executed on macOS; Linux/Windows are not separately executed.",
+    "GitHub GFM API and real local Mermaid rendering pass; final GitHub interactive Mermaid renderer not independently checked.",
+    "Existing five regression warnings remain."
+  ]
+}

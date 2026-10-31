@@ -1,0 +1,56 @@
+{
+  "source": "local public Render entrypoint; actual capped synthetic batch",
+  "clean_rows": 24,
+  "initial_status_labels": [
+    "Not opened \u00b7 seeded New",
+    "Not opened \u00b7 seeded In Review",
+    "Not opened \u00b7 seeded Resolved"
+  ],
+  "case-status-filter": {
+    "New": {
+      "rows": 0,
+      "message": "No synthetic transactions match the current filters."
+    },
+    "In Review": {
+      "rows": 0,
+      "message": "No synthetic transactions match the current filters."
+    },
+    "Resolved": {
+      "rows": 0,
+      "message": "No synthetic transactions match the current filters."
+    },
+    "Not opened": {
+      "rows": 24,
+      "message": null
+    }
+  },
+  "case-analyst-filter": {
+    "Unassigned": {
+      "rows": 24,
+      "message": null
+    },
+    "Fictional Analyst A": {
+      "rows": 0,
+      "message": "No synthetic transactions match the current filters."
+    }
+  },
+  "case-priority-filter": {
+    "Normal": {
+      "rows": 0,
+      "message": "No synthetic transactions match the current filters."
+    },
+    "High": {
+      "rows": 0,
+      "message": "No synthetic transactions match the current filters."
+    },
+    "Urgent": {
+      "rows": 0,
+      "message": "No synthetic transactions match the current filters."
+    }
+  },
+  "duplicate_risk_selects": [
+    "case-risk-filter",
+    "filter-band"
+  ],
+  "clear_case_filters_also_clears_transaction_band": true
+}

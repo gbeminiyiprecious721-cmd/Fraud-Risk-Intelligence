@@ -1,0 +1,79 @@
+[
+  {
+    "workspace": "Overview",
+    "path": "docs/stage24_portfolio_evidence/overview-1440x900.png",
+    "source": "Stage 24 current public-adapter local capture",
+    "dimensions": [
+      1440,
+      900
+    ],
+    "sha256": "a55958dc901baa24a734520c4666f59c556b4484def275979e84f09e1bab97a2",
+    "visually_reviewed": true
+  },
+  {
+    "workspace": "Investigation Queue",
+    "path": "docs/stage21_queue_filter_evidence/queue-case-matching-1440x900.png",
+    "source": "Stage 21 queue corrections",
+    "dimensions": [
+      1440,
+      900
+    ],
+    "sha256": "8452d9d18bd768dbee9cc809a2146e6fd4a460441692fc5fdd068d6f54bf77c5",
+    "visually_reviewed": true
+  },
+  {
+    "workspace": "Capacity Simulator",
+    "path": "docs/stage20_challenger_evidence/screenshots/capacity-1440x900.png",
+    "source": "Stage 20 verified capacity workspace",
+    "dimensions": [
+      1440,
+      900
+    ],
+    "sha256": "be62083f70137f2f7cfb00aad25fc0dedb7c21ede8b83b5a62f0be41c8073978",
+    "visually_reviewed": true
+  },
+  {
+    "workspace": "Model Benchmarking",
+    "path": "docs/stage20_challenger_evidence/screenshots/benchmark-1440x900.png",
+    "source": "Stage 20 benchmark verification",
+    "dimensions": [
+      1440,
+      900
+    ],
+    "sha256": "6a79846d89da2c5767bc43311b2305289c3dca6a88e1f20b1e82cd3ee1920846",
+    "visually_reviewed": true
+  },
+  {
+    "workspace": "Case Management",
+    "path": "docs/stage21_queue_filter_evidence/workflow-case-matching-1440x900.png",
+    "source": "Stage 21 corrected workflow",
+    "dimensions": [
+      1440,
+      900
+    ],
+    "sha256": "522a4634627cc63a76ae36376b245f488540dd0dec202004129a6b48d8b62411",
+    "visually_reviewed": true
+  },
+  {
+    "workspace": "Model Monitoring",
+    "path": "docs/stage22_monitoring_evidence/monitoring-features-1440x900.png",
+    "source": "Stage 22 historical monitoring",
+    "dimensions": [
+      1440,
+      900
+    ],
+    "sha256": "6fa3091ffa4fc3823638afbfaf14d9e8f2aae5167ae4908ad9dd3910a613c0a5",
+    "visually_reviewed": true
+  },
+  {
+    "workspace": "Model Explainability",
+    "path": "docs/stage23_explainability_evidence/explainability-shap-1440x900.png",
+    "source": "Stage 23 frozen-artifact explanation",
+    "dimensions": [
+      1440,
+      900
+    ],
+    "sha256": "d09831a272f0e912125d2c6efc3c3bdd486262816848b9d105de35ce047e9811",
+    "visually_reviewed": true
+  }
+]

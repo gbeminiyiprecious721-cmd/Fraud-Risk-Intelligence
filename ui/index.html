@@ -24,6 +24,35 @@
     margin: 0;
     line-height: 1.5;
   }
+  .page-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.7rem 2rem;
+    background: #1a1d24;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-nav .mark {
+    width: 1.3rem;
+    height: 1.3rem;
+    border-radius: 0.35rem;
+    background: linear-gradient(135deg, var(--accent), #b183f7);
+    flex: 0 0 auto;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 0.4rem;
+    border: 1px solid var(--border);
+  }
+  .back-link:hover, .back-link:focus-visible { border-color: var(--accent); color: var(--accent); }
+  .back-link:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
   header {
     padding: 1.5rem 2rem;
     border-bottom: 1px solid var(--border);
@@ -85,6 +114,11 @@
 </style>
 </head>
 <body>
+
+<div class="page-nav">
+  <span class="mark" aria-hidden="true"></span>
+  <a class="back-link" href="dashboard.html#/overview">&larr; Back to Dashboard</a>
+</div>
 
 <header>
   <h1>Fraud Risk Scoring API — Portfolio Demonstration</h1>
@@ -162,7 +196,7 @@ python3 -m http.server 8080 --directory ui</pre>
 
 </main>
 
-<footer>Fraud-Risk-Intelligence — Stage 15 portfolio demonstration. No real transaction data is used anywhere on this page.</footer>
+<footer>Fraud-Risk-Intelligence — Stage 15 portfolio demonstration. No real transaction data is used anywhere on this page. <a href="dashboard.html">Investigation dashboard →</a></footer>
 
 <script>
   const API_BASE = "http://127.0.0.1:8000";

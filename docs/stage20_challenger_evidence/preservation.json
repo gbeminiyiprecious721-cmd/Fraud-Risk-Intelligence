@@ -1,0 +1,19 @@
+{
+  "base_commit": "5b6e90d8bf5665d4a316c063e0a6a1b0737feab7",
+  "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "original_scientific_records_sha256": "49ba8cb4085bb371ef5b55086b2351c75b69b90f6c417e96ad9706e3cdaa75e1",
+  "original_scientific_records_unchanged": true,
+  "protected_paths_unchanged": [
+    "src/production_pipeline.py",
+    "src/preprocessing.py",
+    "requirements-render.txt",
+    "artifacts/frozen_rf_fraud_risk_v1.joblib.manifest.json"
+  ],
+  "main": "52c01c919cb40cd2bedf1a41794a73e38c6cf737",
+  "integration": "d413486e962368a5ad81a445f15549da3d8075fc",
+  "private_artifacts_ignored": "artifacts/stage20/xgboost.json",
+  "closed_evaluation_used_for_benchmark": false,
+  "push_merge_deploy_attempted": false,
+  "security_handlers_unchanged": true,
+  "shared_server_diff_limited_to_router_and_static_asset": true
+}

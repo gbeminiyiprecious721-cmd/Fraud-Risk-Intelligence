@@ -1,0 +1,39 @@
+{
+  "scope": [
+    "README.md",
+    "docs/ARCHITECTURE.md",
+    "docs/PORTFOLIO_WALKTHROUGH.md",
+    "docs/PORTFOLIO_CASE_STUDY.md",
+    "docs/STAGE24_PORTFOLIO_DOCUMENTATION.md",
+    "docs/ML_WORKFLOW_STATE.md"
+  ],
+  "internal_links_checked": 147,
+  "inline_images_checked": 2,
+  "errors": [],
+  "mermaid_diagrams": [
+    {
+      "file": "README.md",
+      "sha256": "ff005e42609c5a4d6a7ded6406ac19b8d1ca6709a2f1c2342fb891705f038de3"
+    },
+    {
+      "file": "docs/ARCHITECTURE.md",
+      "sha256": "d0042442d61ef1486941578b2faa79975dff481feda07a11b52d787e7de00e09"
+    },
+    {
+      "file": "docs/ARCHITECTURE.md",
+      "sha256": "63a695fc75126b51769d497f24a1ababa0b592d1b7be0c7b003c984a21c6f4fb"
+    }
+  ],
+  "numerical_sources": [
+    "docs/experiment_registry.jsonl",
+    "artifacts/frozen_rf_fraud_risk_v1.joblib.manifest.json",
+    "ui/benchmark-v1.json",
+    "ui/capacity-v1.json",
+    "ui/monitoring-v1.json",
+    "explainability_assets/global-v1.json",
+    "explainability_assets/local-v1.json"
+  ],
+  "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "closed_data_access": false,
+  "note": "Published summaries and versioned assets only. Mermaid rendering is checked separately in Chrome."
+}

@@ -1,0 +1,9 @@
+{
+  "endpoint": "https://api.github.com/markdown",
+  "publishes_repository_content": false,
+  "status": 200,
+  "tables": 5,
+  "images": 2,
+  "mermaid_block": true,
+  "readme_sha256": "ca25bf436cfad9a140ddc1a86dd782f99a68615fdb0e65088d3dc697d79c1250"
+}

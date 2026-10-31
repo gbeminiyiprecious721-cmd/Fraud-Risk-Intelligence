@@ -1,0 +1,110 @@
+FF.                                                                      [100%]
+=================================== FAILURES ===================================
+_______ test_oversized_stream_stops_reading_at_cap_crossing_chunk[None] ________
+
+declared_length = None
+
+    @pytest.mark.parametrize("declared_length", [None, b"1"])
+    def test_oversized_stream_stops_reading_at_cap_crossing_chunk(declared_length):
+        """A missing/false length must not make the app buffer the whole body.
+
+        Drive the actual ASGI app with small deterministic chunks, not httpx's
+        transport (which coalesces streamed content). No artifact or inference is
+        needed: this request must be rejected before the prediction route runs.
+        """
+        import asyncio
+
+        chunks = [b"x" * (render_demo.MAX_PREDICT_BODY_BYTES // 2)] * 4
+        received = []
+        sent = []
+        headers = [(b"content-type", b"application/json")]
+        if declared_length is not None:
+            headers.append((b"content-length", declared_length))
+        scope = {
+            "type": "http", "asgi": {"version": "3.0", "spec_version": "2.4"},
+            "http_version": "1.1", "method": "POST", "scheme": "http",
+            "path": "/v1/predict", "raw_path": b"/v1/predict", "query_string": b"",
+            "root_path": "", "headers": headers,
+            "client": ("127.0.0.1", 12345), "server": ("testserver", 80),
+        }
+
+        async def receive():
+            index = len(received)
+            if index >= len(chunks):
+                return {"type": "http.disconnect"}
+            received.append(index)
+            return {"type": "http.request", "body": chunks[index],
+                    "more_body": index < len(chunks) - 1}
+
+        async def send(message):
+            sent.append(message)
+
+        asyncio.run(render_demo.app(scope, receive, send))
+        assert next(m["status"] for m in sent if m["type"] == "http.response.start") == 413
+>       assert received == [0, 1, 2], "Must reject without consuming the fourth chunk"
+E       AssertionError: Must reject without consuming the fourth chunk
+E       assert [0, 1, 2, 3] == [0, 1, 2]
+E
+E         Left contains one more item: 3
+E         Use -v to get more diff
+
+tests/test_render_demo.py:262: AssertionError
+_________ test_oversized_stream_stops_reading_at_cap_crossing_chunk[1] _________
+
+declared_length = b'1'
+
+    @pytest.mark.parametrize("declared_length", [None, b"1"])
+    def test_oversized_stream_stops_reading_at_cap_crossing_chunk(declared_length):
+        """A missing/false length must not make the app buffer the whole body.
+
+        Drive the actual ASGI app with small deterministic chunks, not httpx's
+        transport (which coalesces streamed content). No artifact or inference is
+        needed: this request must be rejected before the prediction route runs.
+        """
+        import asyncio
+
+        chunks = [b"x" * (render_demo.MAX_PREDICT_BODY_BYTES // 2)] * 4
+        received = []
+        sent = []
+        headers = [(b"content-type", b"application/json")]
+        if declared_length is not None:
+            headers.append((b"content-length", declared_length))
+        scope = {
+            "type": "http", "asgi": {"version": "3.0", "spec_version": "2.4"},
+            "http_version": "1.1", "method": "POST", "scheme": "http",
+            "path": "/v1/predict", "raw_path": b"/v1/predict", "query_string": b"",
+            "root_path": "", "headers": headers,
+            "client": ("127.0.0.1", 12345), "server": ("testserver", 80),
+        }
+
+        async def receive():
+            index = len(received)
+            if index >= len(chunks):
+                return {"type": "http.disconnect"}
+            received.append(index)
+            return {"type": "http.request", "body": chunks[index],
+                    "more_body": index < len(chunks) - 1}
+
+        async def send(message):
+            sent.append(message)
+
+        asyncio.run(render_demo.app(scope, receive, send))
+        assert next(m["status"] for m in sent if m["type"] == "http.response.start") == 413
+>       assert received == [0, 1, 2], "Must reject without consuming the fourth chunk"
+E       AssertionError: Must reject without consuming the fourth chunk
+E       assert [0, 1, 2, 3] == [0, 1, 2]
+E
+E         Left contains one more item: 3
+E         Use -v to get more diff
+
+tests/test_render_demo.py:262: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  <repository>/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_render_demo.py::test_oversized_stream_stops_reading_at_cap_crossing_chunk[None]
+FAILED tests/test_render_demo.py::test_oversized_stream_stops_reading_at_cap_crossing_chunk[1]
+2 failed, 1 passed, 20 deselected, 1 warning in 1.66s

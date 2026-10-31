@@ -1,0 +1,22 @@
+{
+  "scope": "Stage 21 changes against 7ffe91f995bd4bea7296e04ef408d9c3600869a7",
+  "reviewer": "Independent read-only agent",
+  "findings": [
+    {
+      "severity": "P2",
+      "issue": "Multi-field Apply could partially persist at the activity limit",
+      "resolution": "Fixed with cloned replay validation and one atomic store save",
+      "regression": "test_stage21_rejected_multifield_edit_is_atomic_at_activity_limit",
+      "red_result": "Stored revision and assignment changed after rejected edit",
+      "green_result": "All 32 final Stage 21 focused browser checks pass; rejected edit leaves case/history/storage/board unchanged"
+    }
+  ],
+  "additional_security_or_data_boundary_findings": [],
+  "additional_manual_verification_finding": {
+    "issue": "Native case creation lost focus when Open button became hidden",
+    "resolution": "Focus analyst selector after creation; recover escaped Tab focus",
+    "regression": "test_stage21_native_keyboard_creation_keeps_focus_in_case_controls",
+    "red_result": "Case opened but activeElement ID was empty",
+    "green_result": "Native-input focused regression passes; analyst selector receives focus and subsequent Tab stays in drawer"
+  }
+}

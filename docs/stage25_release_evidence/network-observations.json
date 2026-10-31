@@ -1,0 +1,12 @@
+{
+  "date": "2026-10-31",
+  "scope": "Read-only public metadata/page probes; no inference, attack traffic or deployment",
+  "observations": [
+    {"path": "/health", "phase": "initial baseline", "status": 200, "artifact_loaded": true},
+    {"path": "/version", "phase": "initial baseline", "status": 200, "frozen_sha256_matches": true},
+    {"path": "/health", "phase": "later audit attempt", "error": "ReadTimeout", "configured_read_timeout_seconds": 45},
+    {"path": "/health", "phase": "subsequent completed audit", "status": 200, "artifact_loaded": true},
+    {"url": "https://www.kaggle.com/competitions/ieee-fraud-detection/data", "status": 404, "dataset_files_downloaded": false}
+  ],
+  "interpretation": "A transient live request timeout recovered. It is consistent with the known Free-instance cold-start/availability limitation; its exact cause was not independently diagnosed. No uninterrupted-availability claim is made. The official Kaggle identity/attribution is confirmed from primary indexed content, but direct automated HTTP access remains unsuccessful."
+}

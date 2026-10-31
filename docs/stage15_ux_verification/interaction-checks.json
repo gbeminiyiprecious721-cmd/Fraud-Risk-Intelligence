@@ -1,0 +1,66 @@
+[
+  {
+    "check": "filter-product applies",
+    "passed": true
+  },
+  {
+    "check": "filter-product resets",
+    "passed": true
+  },
+  {
+    "check": "filter-card-network applies",
+    "passed": true
+  },
+  {
+    "check": "filter-card-network resets",
+    "passed": true
+  },
+  {
+    "check": "filter-band applies",
+    "passed": true
+  },
+  {
+    "check": "filter-band resets",
+    "passed": true
+  },
+  {
+    "check": "amount filter applies",
+    "passed": true
+  },
+  {
+    "check": "table sort updates aria-sort",
+    "passed": true
+  },
+  {
+    "check": "product chart pointer click filters queue",
+    "passed": true
+  },
+  {
+    "check": "batch 202 loads",
+    "passed": true
+  },
+  {
+    "check": "batch 303 loads",
+    "passed": true
+  },
+  {
+    "check": "batch 404 loads",
+    "passed": true
+  },
+  {
+    "check": "batch 505 loads",
+    "passed": true
+  },
+  {
+    "check": "batch 101 loads",
+    "passed": true
+  },
+  {
+    "check": "reload preserves 48 scored rows",
+    "passed": true
+  },
+  {
+    "check": "no browser JS exceptions",
+    "passed": true
+  }
+]

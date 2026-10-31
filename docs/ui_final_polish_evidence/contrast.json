@@ -1,0 +1,10 @@
+{
+  "method": "WCAG sRGB relative luminance; authored solid colours, not an exhaustive state audit",
+  "contrast_ratios": {
+    "metric text": 13.76,
+    "helper labels": 7.51,
+    "badge text": 8.44,
+    "tooltip text": 12.68,
+    "focus ring": 15.54
+  }
+}

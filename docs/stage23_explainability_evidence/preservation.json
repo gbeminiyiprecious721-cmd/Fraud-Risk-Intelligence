@@ -1,0 +1,44 @@
+{
+  "base": "756013d724364d3d16ba1dfcfc39f85fc1679884",
+  "protected_paths_unchanged": [
+    "src/production_pipeline.py",
+    "src/preprocessing.py",
+    "src/explainability.py",
+    "src/monitoring.py",
+    "src/drift_intelligence.py",
+    "ui/case-store.js",
+    "ui/case-ui.js",
+    "ui/capacity-v1.json",
+    "ui/benchmark-v1.json",
+    "ui/monitoring-v1.json",
+    "requirements.txt",
+    "requirements-render.txt",
+    "monitoring",
+    "artifacts/frozen_rf_fraud_risk_v1.joblib.manifest.json"
+  ],
+  "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "prior_scientific_workflow_verbatim": true,
+  "historical_stage10_panel_unchanged": true,
+  "api_ast_unchanged_except_read_only_router": true,
+  "protected_refs": {
+    "main": "52c01c919cb40cd2bedf1a41794a73e38c6cf737",
+    "render-dashboard-integration": "d413486e962368a5ad81a445f15549da3d8075fc",
+    "origin/render-dashboard-integration": "756013d724364d3d16ba1dfcfc39f85fc1679884"
+  },
+  "closed_final_test_accessed": false,
+  "monitoring_explanation_outcomes_read": false,
+  "inherited_heavy_tests_use_disposable_train_only_reference_fits": true,
+  "new_dependencies": [],
+  "push_merge_deploy_attempted": false,
+  "final_regression": {
+    "passed": 555,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 5,
+    "seconds": 318.99,
+    "real_chrome_cases": 84,
+    "heavy_data_contract_tests": 6
+  },
+  "final_frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "render_adapter_ast_unchanged_except_static_asset_and_explanation_scope": true
+}

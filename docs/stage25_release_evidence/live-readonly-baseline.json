@@ -1,0 +1,21 @@
+[
+  {
+    "path": "/health",
+    "status": 200,
+    "body": {
+      "status": "ok",
+      "artifact_loaded": true
+    }
+  },
+  {
+    "path": "/version",
+    "status": 200,
+    "body": {
+      "api_contract_version": "v1",
+      "artifact_id": "frozen-rf-fraud-risk",
+      "artifact_version": "1.0.0",
+      "manifest_schema_version": "1.1.0",
+      "artifact_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
+    }
+  }
+]

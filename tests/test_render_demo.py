@@ -67,15 +67,18 @@ def test_non_predict_routes_are_unaffected_by_the_restriction_middleware(client)
     assert "artifact_sha256" in version.json()
 
 
-def test_homepage_rewrites_api_base_to_the_deployed_origin(client):
-    resp = client.get("/")
+def test_single_transaction_page_rewrites_api_base_to_the_deployed_origin(client):
+    """As of Stage 5, the dashboard is the homepage (/) and this page
+    lives at its own /index.html route -- see test_render_dashboard_
+    integration.py for the homepage-routing tests themselves."""
+    resp = client.get("/index.html")
     assert resp.status_code == 200
     assert 'const API_BASE = "http://127.0.0.1:8000";' not in resp.text
     assert "const API_BASE = window.location.origin;" in resp.text
 
 
-def test_homepage_rewrites_local_demo_language_to_hosted_demo_language(client):
-    resp = client.get("/")
+def test_single_transaction_page_rewrites_local_demo_language_to_hosted_demo_language(client):
+    resp = client.get("/index.html")
     text = resp.text
     assert "Local demonstration only" not in text
     assert "Public portfolio demonstration" in text
@@ -85,8 +88,8 @@ def test_homepage_rewrites_local_demo_language_to_hosted_demo_language(client):
     assert "a hosted portfolio demonstration, not a commercial production system" in text
 
 
-def test_homepage_still_embeds_the_same_fixed_synthetic_fixture(client):
-    resp = client.get("/")
+def test_single_transaction_page_still_embeds_the_same_fixed_synthetic_fixture(client):
+    resp = client.get("/index.html")
     match = render_demo._MARKER.search(resp.text)
     assert match is not None
     assert json.loads(match.group(1)) == render_demo.DEMO_TRANSACTION
@@ -208,3 +211,75 @@ def test_demo_fixture_loading_raises_clearly_if_marker_is_ever_removed(tmp_path,
     monkeypatch.setattr(render_demo, "_UI", broken_ui)
     with pytest.raises(RuntimeError, match="Public demo fixture missing"):
         render_demo._demo_payload()
+
+
+def test_stage21_static_case_modules_and_no_server_case_write_endpoints(client):
+    for asset in ['/case-store.js','/case-ui.js']:
+        response=client.get(asset)
+        assert response.status_code==200
+        assert response.headers['cache-control']=='no-store'
+    for path in ['/v1/cases','/v1/dashboard/cases']:
+        assert client.post(path,json={'note':'Synthetic demo only'}).status_code==404
+
+
+@pytest.mark.parametrize("declared_length", [None, b"1"])
+def test_oversized_stream_stops_reading_at_cap_crossing_chunk(declared_length):
+    """A missing/false length must not make the app buffer the whole body.
+
+    Drive the actual ASGI app with small deterministic chunks, not httpx's
+    transport (which coalesces streamed content). No artifact or inference is
+    needed: this request must be rejected before the prediction route runs.
+    """
+    import asyncio
+
+    chunks = [b"x" * (render_demo.MAX_PREDICT_BODY_BYTES // 2)] * 4
+    received = []
+    sent = []
+    headers = [(b"content-type", b"application/json")]
+    if declared_length is not None:
+        headers.append((b"content-length", declared_length))
+    scope = {
+        "type": "http", "asgi": {"version": "3.0", "spec_version": "2.4"},
+        "http_version": "1.1", "method": "POST", "scheme": "http",
+        "path": "/v1/predict", "raw_path": b"/v1/predict", "query_string": b"",
+        "root_path": "", "headers": headers,
+        "client": ("127.0.0.1", 12345), "server": ("testserver", 80),
+    }
+
+    async def receive():
+        index = len(received)
+        if index >= len(chunks):
+            return {"type": "http.disconnect"}
+        received.append(index)
+        return {"type": "http.request", "body": chunks[index],
+                "more_body": index < len(chunks) - 1}
+
+    async def send(message):
+        sent.append(message)
+
+    asyncio.run(render_demo.app(scope, receive, send))
+    assert next(m["status"] for m in sent if m["type"] == "http.response.start") == 413
+    assert received == [0, 1, 2], "Must reject without consuming the fourth chunk"
+
+
+def test_chunked_approved_fixture_reaches_prediction_handler_intact(client):
+    raw = json.dumps(render_demo.DEMO_TRANSACTION).encode()
+    response = client.post(
+        "/v1/predict", content=iter([raw[:100], raw[100:]]),
+        headers={"Content-Type": "application/json"},
+    )
+    reference = client.post("/v1/predict", json=render_demo.DEMO_TRANSACTION)
+    assert response.status_code == reference.status_code == 200
+    assert response.json()["fraud_probability"] == pytest.approx(
+        reference.json()["fraud_probability"], abs=1e-12
+    )
+
+
+def test_approved_fixture_at_exact_byte_limit_is_still_accepted(client):
+    raw = json.dumps(render_demo.DEMO_TRANSACTION).encode()
+    padded = raw + b" " * (render_demo.MAX_PREDICT_BODY_BYTES - len(raw))
+    response = client.post(
+        "/v1/predict", content=iter([padded[:100], padded[100:]]),
+        headers={"Content-Type": "application/json"},
+    )
+    assert response.status_code == 200

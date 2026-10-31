@@ -1,0 +1,14 @@
+{
+  "fresh_artifact_synthetic_scores_checked": 240,
+  "max_score_difference": 4.959366251000574e-13,
+  "max_serialised_additivity_error": 2.0000667788622195e-12,
+  "other_subtotals_reconcile": true,
+  "independent_root_baseline": 0.0351096604850214,
+  "baseline_matches_leaf_and_shap": true,
+  "mdi_groups_checked": 392,
+  "mdi_total": 1.0,
+  "published_mdi_top20_match": true,
+  "schema_and_complete_cohort_valid": true,
+  "historical_data_or_outcomes_read": false,
+  "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
+}

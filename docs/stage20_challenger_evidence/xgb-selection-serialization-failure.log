@@ -1,0 +1,29 @@
+Traceback (most recent call last):
+  File "/Users/MicrosoftSurface2/Projects/data-science-lab/Fraud-Risk-Intelligence/scripts/run_stage20_benchmark.py", line 275, in <module>
+    monitored('selection',key);monitored('final',key)
+                ^^^^^^
+  File "/Users/MicrosoftSurface2/Projects/data-science-lab/Fraud-Risk-Intelligence/scripts/run_stage20_benchmark.py", line 270, in main
+    parser=argparse.ArgumentParser();parser.add_argument('phase',choices=['all','prepare','selection','final','score','aggregate']);parser.add_argument('--model',choices=[*NAMES,'none'],default='none');args=parser.parse_args()
+                                 ^^^^^^^^^^^^^^^^^^^^
+  File "/Users/MicrosoftSurface2/Projects/data-science-lab/Fraud-Risk-Intelligence/scripts/run_stage20_benchmark.py", line 171, in fit
+    options['callbacks']=[early_stopping(30,verbose=False)]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/MicrosoftSurface2/Projects/data-science-lab/Fraud-Risk-Intelligence/scripts/run_stage20_benchmark.py", line 27, in write
+    path.parent.mkdir(parents=True, exist_ok=True)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/MicrosoftSurface2/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/json/__init__.py", line 238, in dumps
+    **kw).encode(obj)
+          ^^^^^^^^^^^
+  File "/Users/MicrosoftSurface2/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/json/encoder.py", line 202, in encode
+    chunks = list(chunks)
+             ^^^^^^^^^^^^
+  File "/Users/MicrosoftSurface2/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/json/encoder.py", line 432, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "/Users/MicrosoftSurface2/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/json/encoder.py", line 406, in _iterencode_dict
+    yield from chunks
+  File "/Users/MicrosoftSurface2/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/json/encoder.py", line 398, in _iterencode_dict
+    yield _floatstr(value)
+          ^^^^^^^^^^^^^^^^
+  File "/Users/MicrosoftSurface2/.local/share/uv/python/cpython-3.12.15-macos-aarch64-none/lib/python3.12/json/encoder.py", line 240, in floatstr
+    raise ValueError(
+ValueError: Out of range float values are not JSON compliant: nan

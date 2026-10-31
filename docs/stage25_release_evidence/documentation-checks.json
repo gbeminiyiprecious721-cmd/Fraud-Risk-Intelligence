@@ -1,0 +1,22 @@
+{
+  "files": [
+    "README.md",
+    "docs/ARCHITECTURE.md",
+    "docs/PORTFOLIO_WALKTHROUGH.md",
+    "docs/PORTFOLIO_CASE_STUDY.md",
+    "docs/ML_WORKFLOW_STATE.md",
+    "docs/STAGE19_CAPACITY_SIMULATOR.md",
+    "docs/STAGE20_CHALLENGER_BENCHMARK.md",
+    "docs/STAGE21_CASE_MANAGEMENT.md",
+    "docs/STAGE21_QUEUE_FILTER_CORRECTIONS.md",
+    "docs/STAGE22_MODEL_MONITORING.md",
+    "docs/STAGE23_MODEL_EXPLAINABILITY.md",
+    "docs/STAGE24_PORTFOLIO_DOCUMENTATION.md",
+    "docs/STAGE25_FINAL_RELEASE_REPORT.md"
+  ],
+  "internal_targets": 252,
+  "inline_images": 2,
+  "all_mermaid_blocks_in_scope": 3,
+  "errors": [],
+  "changed_file_count": 75
+}
