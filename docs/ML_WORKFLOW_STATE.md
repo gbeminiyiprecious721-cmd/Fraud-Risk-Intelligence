@@ -1,5 +1,39 @@
 # ML Workflow State — Fraud-Risk-Intelligence
 
+## Portfolio Stage 24 — Professional portfolio documentation (2026-10-31)
+
+The owner explicitly authorised Stage 24 and supplied the complete Phase A–I
+brief. This supersedes historical notes below prohibiting Stage 24. Work is
+limited to `stage24-portfolio-documentation`, based on approved integration
+`942b6d53ae004b847a8c0eca9a9298f1fe0c3024`. No Stage 25 approval is inferred.
+
+The README now separates original Stage 10 held-out summaries, later reused
+validation research and synthetic application behaviour. Source-backed evidence
+inventory, three Mermaid diagrams, a 5–7 minute walkthrough and a written case
+study document the implemented Stages 19–23 without changing their conclusions.
+The trusted artifact prerequisite replaces default rebuilding in normal setup.
+Six existing feature screenshots are reused; one current Overview capture fixes
+outdated screenshot context. No runtime source, dependency or UI change is made.
+
+Fresh complete regression: 555 passed, zero failures/skips, five inherited
+warnings, 314.22 seconds, including 84 real-Chrome tests and all six heavy/data-
+contract tests. Clean minimal-runtime installation and single-origin startup
+are verified in a disposable Python 3.12.15 environment. All three Mermaid
+sources render in Chrome; GitHub's non-publishing Markdown API validates GFM.
+The live dashboard returns HTTP 200. Kaggle's canonical dataset page is verified
+via its official indexed content, but the direct client receives HTTP 404;
+this access limitation is disclosed rather than called a successful HTTP check.
+
+Frozen artifact SHA256 remains
+`2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+Original scientific records, approved aggregates, browser-local storage code and
+production scoring/security are preserved. Historical workflow text below this
+addition is retained verbatim. No closed final-test data/predictions are opened
+for Stage 24. Heavy tests use existing train-only regression fixtures, not a
+replacement serving artifact. No push, merge, deployment or Render change.
+
+Report: [Stage 24 portfolio documentation](STAGE24_PORTFOLIO_DOCUMENTATION.md).
+
 ## Portfolio Stage 23 — Frozen-artifact model explainability (2026-10-31)
 
 Release-review update: owner authorises pushing the feature branch and opening
