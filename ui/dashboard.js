@@ -1019,7 +1019,37 @@
     window.addEventListener("hashchange", renderActiveView);
   }
 
+  // Presentation only: no changes to chart data, scales or selection semantics.
+  function configureChartPresentation() {
+    if (typeof Chart === "undefined") return;
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const originalAnimation = new WeakMap();
+    const applyMotion = () => {
+      Chart.defaults.animation = motion.matches ? false : { duration: 180 };
+      for (const chart of Object.values(Chart.instances)) {
+        if (motion.matches) {
+          if (!originalAnimation.has(chart)) originalAnimation.set(chart, chart.config.options.animation);
+          chart.options.animation = false;
+        } else if (originalAnimation.has(chart)) {
+          chart.options.animation = originalAnimation.get(chart);
+          originalAnimation.delete(chart);
+        }
+        chart.update("none");
+      }
+    };
+    const tooltip = Chart.defaults.plugins.tooltip;
+    tooltip.backgroundColor = "#20242d";
+    tooltip.titleColor = "#e8e8e8";
+    tooltip.bodyColor = "#e8e8e8";
+    tooltip.borderColor = "#74869f";
+    tooltip.borderWidth = 1;
+    tooltip.padding = 10;
+    applyMotion();
+    motion.addEventListener("change", applyMotion);
+  }
+
   async function init() {
+    configureChartPresentation();
     wireControls();
     renderActiveView(); // show the correct view immediately, even before data loads
     await checkHealth();

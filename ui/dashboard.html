@@ -350,14 +350,14 @@
         <div class="historical-panel" aria-label="Historical model performance">
           <h3>Model performance &mdash; historical, Stage 10 offline evaluation</h3>
           <p class="panel-note">Scored exactly once on the held-out <code>final_test</code> split, before any UI existed. These numbers are <strong>fixed and historical</strong> &mdash; distinct from, and not comparable to, the live scores on the current demo batch. Source: <code>README.md</code> / <code>docs/STAGE10_EVALUATION_PROTOCOL.md</code>.</p>
-          <div class="historical-grid">
-            <div class="historical-stat"><div class="k">Average Precision</div><div class="v">0.4278</div></div>
-            <div class="historical-stat"><div class="k">ROC-AUC</div><div class="v">0.8664</div></div>
-            <div class="historical-stat"><div class="k">95% CI on AP</div><div class="v">[0.408, 0.445]</div></div>
-            <div class="historical-stat"><div class="k">Precision @ 1%</div><div class="v">0.858</div></div>
-            <div class="historical-stat"><div class="k">Recall @ 1%</div><div class="v">0.246</div></div>
-            <div class="historical-stat"><div class="k">No-skill baseline</div><div class="v">0.035</div></div>
-          </div>
+          <dl class="historical-grid historical-kpis">
+            <div class="kpi-card" style="--kpi-accent: var(--accent)"><dt class="kpi-label">Average Precision</dt><dd class="kpi-value">0.4278</dd><dd class="kpi-sub">Ranking performance</dd></div>
+            <div class="kpi-card" style="--kpi-accent: #60c8bd"><dt class="kpi-label">ROC-AUC</dt><dd class="kpi-value">0.8664</dd><dd class="kpi-sub">Ranking performance</dd></div>
+            <div class="kpi-card" style="--kpi-accent: var(--accent-2)"><dt class="kpi-label">95% AP confidence interval</dt><dd class="kpi-value">[0.408, 0.445]</dd><dd class="kpi-sub">Bootstrap interval · historical</dd></div>
+            <div class="kpi-card" style="--kpi-accent: var(--warn)"><dt class="kpi-label">Precision @ 1%</dt><dd class="kpi-value">85.83%</dd><dd class="kpi-sub">Highest-ranked 1% reviewed</dd></div>
+            <div class="kpi-card" style="--kpi-accent: #ef8888"><dt class="kpi-label">Recall @ 1%</dt><dd class="kpi-value">24.61%</dd><dd class="kpi-sub">Historical fraud captured</dd></div>
+            <div class="kpi-card" style="--kpi-accent: #60c8bd"><dt class="kpi-label">No-skill baseline</dt><dd class="kpi-value">≈ 3.5%</dd><dd class="kpi-sub">Historical positive prevalence</dd></div>
+          </dl>
         </div>
         <div class="view-fill">
           <div class="insights-grid">

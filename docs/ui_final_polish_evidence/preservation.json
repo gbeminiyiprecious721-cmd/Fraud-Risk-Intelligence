@@ -1,0 +1,36 @@
+{
+  "baseline": "dc0e63d8b67330d49bad5d52ed0989bdebcf116f",
+  "protected_paths_unchanged": [
+    "src",
+    "artifacts",
+    "explainability_assets",
+    "ui/case-store.js",
+    "ui/case-ui.js",
+    "ui/capacity-v1.json",
+    "ui/benchmark-v1.json",
+    "ui/monitoring-v1.json",
+    "requirements-render.txt",
+    "requirements.txt",
+    "requirements-benchmark.txt",
+    "deploy",
+    "docs/ML_WORKFLOW_STATE.md",
+    "docs/experiment_registry.jsonl"
+  ],
+  "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "closed_final_test_access": false,
+  "new_document_targets_checked": 18,
+  "documentation_errors": 0,
+  "dependencies_changed": false,
+  "backend_changed": false,
+  "scientific_records_changed": false,
+  "regression": {
+    "passed": 565,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "warnings": 5,
+    "seconds": 301.09,
+    "chrome": 90,
+    "heavy_data_contract": 6
+  }
+}

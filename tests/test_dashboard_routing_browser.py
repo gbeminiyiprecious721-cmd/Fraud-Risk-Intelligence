@@ -1095,3 +1095,31 @@ def test_explainability_mdi_only_fallback_never_claims_completed_shap(browser_en
         assert p.evaluate("document.getElementById('explanation-local-table').children.length")==0
         assert not [m for m in p.console_messages if m[0] in ['error','exception']]
     finally:p.close()
+
+
+@pytest.mark.parametrize('width,height,columns', [(1440,900,3),(1280,800,3),(768,1024,2),(390,844,1)])
+def test_final_polish_historical_cards_and_reduced_motion(page, width, height, columns):
+    """Fixed historical metrics remain labelled, readable and static at each size."""
+    page.send('Emulation.setDeviceMetricsOverride', {'width':width,'height':height,'deviceScaleFactor':1,'mobile':False})
+    page.click('.sidenav-list a[data-view="insights"]')
+    time.sleep(.25)
+    values=page.evaluate_json("JSON.stringify(Array.from(document.querySelectorAll('.historical-kpis .kpi-value')).map(e=>e.textContent))")
+    assert values==['0.4278','0.8664','[0.408, 0.445]','85.83%','24.61%','≈ 3.5%']
+    assert page.evaluate("getComputedStyle(document.querySelector('.historical-kpis')).gridTemplateColumns.split(' ').length")==columns
+    assert page.evaluate("Array.from(document.querySelectorAll('.historical-kpis .kpi-card')).every(e=>e.scrollWidth<=e.clientWidth+1)")
+    assert page.evaluate("document.querySelector('.historical-kpis').tagName")=='DL'
+    assert 'fixed and historical' in page.evaluate("document.querySelector('.historical-panel').textContent")
+    assert page.evaluate('document.body.scrollWidth')<=width
+    if width>900:
+        assert page.evaluate("document.querySelector('.view-container').scrollHeight<=document.querySelector('.view-container').clientHeight+1")
+    page.send('Input.dispatchKeyEvent', {'type':'keyDown','key':'Tab','code':'Tab','windowsVirtualKeyCode':9})
+    page.send('Input.dispatchKeyEvent', {'type':'keyUp','key':'Tab','code':'Tab','windowsVirtualKeyCode':9})
+    assert page.evaluate("document.activeElement.matches(':focus-visible') && getComputedStyle(document.activeElement).outlineStyle!=='none'")
+    try:
+        page.send('Emulation.setEmulatedMedia', {'features':[{'name':'prefers-reduced-motion','value':'reduce'}]})
+        time.sleep(.15)
+        assert page.evaluate("getComputedStyle(document.querySelector('.kpi-card')).transitionDuration")=='0s'
+        assert page.evaluate('Chart.defaults.animation===false')
+        assert page.evaluate('Object.values(Chart.instances).every(c=>c.options.animation===false)')
+    finally:
+        page.send('Emulation.setEmulatedMedia', {'features':[]})
