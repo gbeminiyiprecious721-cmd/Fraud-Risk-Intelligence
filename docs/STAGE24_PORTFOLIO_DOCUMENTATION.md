@@ -1,9 +1,10 @@
 # Stage 24 — Portfolio documentation evidence audit
 
-Status: documentation and verification complete; local-only delivery for owner review.
-The owner supplied both
-continuations; the complete Phase A–I brief is available. Local commit only;
-no push, merge, deployment, Render changes or Stage 25 work is authorised.
+Status: Stage 24 release review verified (2026-10-31); ready for PR creation. The owner now
+authorises pushing this branch and opening a PR against
+`render-dashboard-integration`. This supersedes the original local-only delivery
+restriction recorded below. Merge, deployment, Render changes and Stage 25
+remain unauthorised. The complete Phase A–I implementation brief is retained.
 Audit date: 2026-10-31. Branch: `stage24-portfolio-documentation`.
 Approved integration baseline: `942b6d53ae004b847a8c0eca9a9298f1fe0c3024`.
 
@@ -158,7 +159,7 @@ measured-savings or production-superiority claim is introduced.
 
 ## Markdown, links, diagrams and public URLs
 
-The verifier checks **145 internal Markdown targets and two inline images**, covering every internal Markdown link/anchor and relative image in
+The original implementation verifier checked **145 internal Markdown targets and two inline images**, covering every internal Markdown link/anchor and relative image in
 the changed Markdown files, including the workflow-state addition and its retained
 history. Final counts are in the versioned JSON; there are **zero broken targets**.
 Code fences are balanced and `git diff --check` passes. External evidence links
@@ -289,3 +290,53 @@ No unrelated files are reverted or discarded.
 No blocking product defect was found by the full regression or clean-runtime
 smoke test. Delivery is limited to a verified local documentation commit for
 owner review; Stage 25 requires separate explicit approval.
+
+
+## Final release review — 2026-10-31
+
+The owner now authorises feature-branch push and PR creation, superseding the
+original local-only delivery notes above. Merge, deployment, Render changes,
+model promotion/replacement and Stage 25 remain prohibited.
+
+All original 21 files and all 19 README topics were reviewed against source and
+approved summaries. An independent read-only reviewer found no blocking issue.
+One wording correction specifies that the availability register excludes
+`TransactionID` and `isFraud`; the broader previous phrase could imply other
+included card attributes were excluded. The three diagrams match offline ML,
+public FastAPI serving and browser-local synthetic human review. Walkthrough
+and case-study claims remain measured and population-specific. All seven
+screenshot hashes and dimensions match the reviewed assets; no new screenshot
+replaces the original evidence.
+
+The original 145 internal targets and two images passed before release edits.
+The two evidence links below bring the final scope to 147 internal targets,
+with zero broken targets and both images valid. All three Mermaid sources render
+as SVG again in real Chrome; all four narrative pages render without missing
+images. GitHub's non-publishing GFM check returns 200 with five tables, two
+images and the Mermaid block. The exact final README SHA256 is recorded.
+
+Fresh minimal serving requirements install successfully in a new disposable
+Python 3.12.15 environment; `pip check` reports no broken requirements. The
+single-origin startup serves the dashboard/health/approved evidence endpoints,
+with 24 synthetic queue rows in real Chrome. No research dependencies are needed
+for this serving path. The Kaggle direct page check still returns 404; official
+primary indexed descriptions confirm the canonical dataset/attribution. No data
+files are downloaded, and the HTTP access limitation is retained.
+
+Fresh full applicable regression: **555 passed, zero failures/errors/skips,
+five inherited warnings, 312.64 seconds**; includes all **84 real-Chrome tests**
+and **six heavy/data-contract tests**. The original implementation's 314.22-second
+run remains preserved separately. Only documentation/evidence changes follow
+this fresh run; production source is unchanged.
+
+[Release review evidence](stage24_portfolio_evidence/release-review.json) and
+[fresh regression output](stage24_portfolio_evidence/release-regression.log).
+
+Final inventory: **23 files** — the reviewed original 21 plus these two fresh
+release-evidence files. The inventory and final documentation checks are updated
+in place. Frozen SHA256, original scientific records, approved aggregates,
+case-store code, production scoring/security and dependencies remain unchanged.
+No closed final-test data/predictions are accessed. Added lines are scanned for
+credentials/private development paths; no private artifact or raw dataset is
+included. Existing platform, artifact-access and statistical limitations remain;
+no blocking documentation or product defect was found.

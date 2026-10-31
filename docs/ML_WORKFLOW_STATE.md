@@ -2,6 +2,17 @@
 
 ## Portfolio Stage 24 — Professional portfolio documentation (2026-10-31)
 
+Release-review authorisation update: the owner explicitly permits pushing
+`stage24-portfolio-documentation` and opening a PR against
+`render-dashboard-integration`. This supersedes the original local-only note
+below. Merge, deployment, Render changes and Stage 25 remain prohibited.
+Scientific history and the original implementation evidence remain preserved.
+Fresh release regression: 555 passed, zero failures/skips, five inherited
+warnings, 312.64s, including 84 Chrome and all six heavy/data-contract cases.
+All original 145 internal targets pass; two added evidence links expand final
+scope to 147. Fresh minimal serving setup and three Mermaid renderings pass.
+Release inventory is 23 files (original 21 plus two fresh evidence records).
+
 The owner explicitly authorised Stage 24 and supplied the complete Phase A–I
 brief. This supersedes historical notes below prohibiting Stage 24. Work is
 limited to `stage24-portfolio-documentation`, based on approved integration

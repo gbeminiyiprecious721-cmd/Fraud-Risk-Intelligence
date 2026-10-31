@@ -37,7 +37,7 @@ The repository does not redistribute the restricted raw data. The labelled popul
 
 Validation was reused during development; later validation results are not pristine out-of-sample model-selection evidence. The competition's separate unlabelled test files are not the project's closed labelled final-evaluation partition.
 
-Checks cover schema differences, unique join keys, join coverage, missingness, duplicate IDs and chronological boundaries. The availability register excludes identifiers/targets and records unresolved point-in-time caveats. Imputation values and encoder categories are fitted on training data only. See [data validation](docs/DATA_VALIDATION_REPORT.md), [EDA](docs/EDA_REPORT.md), [leakage boundaries](docs/LEAKAGE_BOUNDARIES_REPORT.md) and [preprocessing](docs/PREPROCESSING_REPORT.md).
+Checks cover schema differences, unique join keys, join coverage, missingness, duplicate IDs and chronological boundaries. The availability register excludes `TransactionID` and the target `isFraud`, and records unresolved point-in-time caveats for included inputs. Imputation values and encoder categories are fitted on training data only. See [data validation](docs/DATA_VALIDATION_REPORT.md), [EDA](docs/EDA_REPORT.md), [leakage boundaries](docs/LEAKAGE_BOUNDARIES_REPORT.md) and [preprocessing](docs/PREPROCESSING_REPORT.md).
 
 ## Original modelling and frozen artifact
 

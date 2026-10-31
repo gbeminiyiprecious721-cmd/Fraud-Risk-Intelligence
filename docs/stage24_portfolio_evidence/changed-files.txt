@@ -14,6 +14,8 @@ docs/stage24_portfolio_evidence/overview-1440x900.png
 docs/stage24_portfolio_evidence/preservation-checks.json
 docs/stage24_portfolio_evidence/public-link-checks.json
 docs/stage24_portfolio_evidence/readme-preview.png
+docs/stage24_portfolio_evidence/release-regression.log
+docs/stage24_portfolio_evidence/release-review.json
 docs/stage24_portfolio_evidence/screenshot-inventory.json
 docs/stage24_portfolio_evidence/serving-install.log
 docs/stage24_portfolio_evidence/test-inventory.json
