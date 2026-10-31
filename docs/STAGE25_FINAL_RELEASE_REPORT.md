@@ -6,11 +6,13 @@ Branch: `stage25-final-integration-release`.
 Approved integration and live baseline:
 `3fd88535b89d554c8955c0dcf0a4333f06ca6e92`.
 
-This report and its evidence belong to the verified local candidate commit;
-its complete SHA is supplied in the final handoff and Git history. Nothing is
-pushed, opened as a PR, merged or deployed. No Render settings or protected
-branch are changed. Independent release review remains the next authorised
-handoff, not an additional development stage or an automatic deployment.
+The original implementation was delivered as a verified local commit,
+`45edc309f7b175b5961b6a7467d7758798704e83`. The owner now authorises feature-branch
+push and PR creation following independent review, superseding the original
+local-only restriction. The final PR head is recorded in the handoff and GitHub.
+Merge, deployment, Render changes, model promotion and any additional development
+stage remain prohibited. Release-preparation edits change documentation/evidence
+only; the reviewed runtime implementation remains unchanged.
 
 ## 1. Baseline and inventory
 
@@ -60,7 +62,8 @@ control gates are deliberately held; they are not failed implementation checks.
 | Full applicable regression | PASS — 561 passed, zero failures/errors/skips, five inherited warnings |
 | Documentation, numerical claims, Mermaid and images | PASS — final documentation JSON, GFM and actual Chrome SVG rendering; external-access limitations below |
 | Minimal runtime, health, readiness script and resources | PASS — pinned environment, pip check, healthy startup, local deployment-script check and measured samples |
-| Push / PR / merge / deployment / Render changes | HELD — explicitly not authorised in this delivery |
+| Feature push / PR | AUTHORISED after independent verification; does not constitute release |
+| Merge / deployment / Render changes | HELD — not authorised in PR preparation |
 
 [Full regression](stage25_release_evidence/full-regression.log),
 [test marker inventory](stage25_release_evidence/test-inventory.json),
@@ -329,6 +332,54 @@ Future deployment verification plan, **only after separate owner authorisation**
    release decision. No automatic deployment/rollback or new development stage
    is triggered by this report.
 
-All current delivery work remains on the Stage 25 feature branch. Final handoff
-is a clean local commit for independent release review; no push, PR, merge,
-deployment, Render change, challenger promotion or additional stage occurs.
+All delivery work remains on the Stage 25 feature branch. Original local-only
+implementation evidence is preserved. Current authorisation permits a feature
+push and PR after independent verification; it does not permit merge, deployment,
+Render changes, challenger promotion or an additional development stage.
+
+
+## Independent final review and PR preparation — 2026-10-31
+
+The complete 75-file committed diff, inventory and report were independently
+reviewed from approved base 3fd88535 to implementation 45edc309. No blocking
+correctness/security finding or unnecessary file was found. The three correction
+regressions re-execute in the fresh complete suite: streamed bodies stop at the
+cap-crossing chunk; approved exact-cap and chunked bodies still score; actual
+opened-case status overrides seeded labels through resolution/reopening; empty
+cohorts display undefined score statistics rather than zero.
+
+Fresh full regression: **561 passed, zero failures/errors/skips, five inherited
+warnings, 299.44 seconds**. It includes **86 real-Chrome tests and all six heavy/
+data-contract tests**. The original 299.81-second implementation run remains
+preserved; a clearly separated independent-review run is appended to the same
+full-regression log. No warning is silenced and no runtime source is changed.
+
+Public same-origin QA independently repeats **40 viewport checks and four case/
+scoring workflows** at all four required sizes, with no runtime errors or
+unnecessary desktop outer overflow. Fresh measured native startup is 1.262086s
+and sampled server peak RSS is 222085120 bytes (about 211.8 MiB), excluding Chrome.
+These support minimal-runtime compatibility, not a Render load/startup guarantee.
+The original screenshots and measurements are retained rather than overwritten.
+
+Exhaustive fresh local access checks allow 120 approved synthetic IDs and deny 120
+non-public IDs; inference/transform hooks record zero calls and SHAP is not
+imported. Five private asset paths and eight backend case-write method probes
+remain denied. Literal-note/XSS and browser persistence checks pass again.
+Content types, no-store cache headers and CORS are independently checked: an
+unapproved origin receives no allow-origin header, its preflight is rejected,
+and the approved local origin matches without credentials. This is focused
+header evidence, not a claim of comprehensive CSP/frame-policy hardening.
+
+All 252 documentation targets and two inline images pass again; the three
+Mermaid sources are rerendered in real Chrome. The existing seven minimal runtime
+pins pass pip check with SHAP/challengers absent. Frozen checksum, scientific
+records, historical aggregates, case storage, scoring contracts and protected
+branches remain unchanged. No closed final partition/predictions are accessed.
+
+Fresh review, browser, security and header results are appended as
+`independent_pr_review` in the existing release-checks JSON. This preserves the
+exact 75-file inventory. Existing limitations and rollback reference 3fd88535
+remain valid. Readiness remains **READY WITH DOCUMENTED LIMITATIONS** for an
+explicitly authorised controlled merge after PR review; the project is not
+claimed fully released. Merge, Render deployment and live post-deployment checks
+require separate authorisation and verification.

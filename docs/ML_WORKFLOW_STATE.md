@@ -2,6 +2,19 @@
 
 ## Portfolio Stage 25 — Final integration, security, QA and release (2026-10-31)
 
+Independent PR-review authorisation update (2026-10-31): the owner now permits
+pushing this feature branch and opening a PR against
+`render-dashboard-integration`, superseding the original local-only delivery
+restriction below. Merge, deployment, Render changes, model promotion and any
+additional development stage remain prohibited. The reviewed implementation is
+`45edc309f7b175b5961b6a7467d7758798704e83`; fresh evidence is appended to existing
+records, preserving the 75-file scope and original scientific history.
+Fresh complete regression: 561 passed, zero failures/errors/skips, five inherited
+warnings, 299.44s; 86 real-Chrome and six heavy/data-contract tests. Independent
+public QA again passes 40 viewports/four workflows; 120 approved explanation IDs
+allowed / 120 nonpublic denied with zero inference/transforms or SHAP import.
+252 documentation targets/two images pass. No runtime correction is required.
+
 Stage 25, the final development stage, is locally complete with verdict
 READY WITH DOCUMENTED LIMITATIONS. The owner explicitly authorises a verified
 local commit only on `stage25-final-integration-release`, from approved/live
