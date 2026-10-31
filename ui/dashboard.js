@@ -729,6 +729,8 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        // Doughnut type defaults override global animation:false on cold load.
+        animation: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? false : { duration: 180 },
         plugins: { legend: legendConfig },
         onClick: interactive
           ? (evt, elements) => {

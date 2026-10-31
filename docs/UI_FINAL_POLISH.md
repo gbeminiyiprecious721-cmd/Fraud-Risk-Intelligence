@@ -4,9 +4,12 @@
 
 Owner-authorised presentation-only refinement on `ui-final-polish`, based on
 approved integration commit `dc0e63d8b67330d49bad5d52ed0989bdebcf116f`.
-This is not an additional ML development stage. No push, merge, deployment or
-Render configuration change is authorised. Original scientific records remain
-unchanged.
+This is not an additional ML development stage. The original implementation was
+local-only at `fb56510cf15f8f71e08e4d5bef16483187a7bca4`. The owner now authorises
+independent review, feature-branch push and a PR against
+`render-dashboard-integration`, superseding that local-only restriction.
+Merge, deployment and Render configuration changes remain prohibited. Original
+scientific records remain unchanged.
 
 ## Frontend audit and decisions
 
@@ -117,7 +120,7 @@ are unchanged against the approved baseline. Frozen artifact SHA256 remains
 `2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
 No retraining, challenger promotion, historical recomputation or closed final-test
 access. No paid service or dependency was added. Protected branches and Render
-remain untouched. Local changes only.
+remain untouched. PR preparation changes documentation/evidence only.
 
 Screenshots and automated geometry checks are Chrome evidence, not a claim of
 exhaustive cross-browser or screen-reader certification. Native dropdowns and
@@ -154,4 +157,94 @@ three frontend files, one existing Chrome test module, this report and directly
 related screenshots/verification evidence. No original scientific documentation
 or Stage 25 evidence is overwritten. No unresolved release-blocking defect was
 found within this focused polish pass. Cross-browser/screen-reader certification
-and any deployment remain outside this local-only delivery.
+and any deployment remain outside this PR-preparation delivery.
+
+
+## Independent PR review
+
+The complete 39-file implementation at
+`fb56510cf15f8f71e08e4d5bef16483187a7bca4` received a fresh read-only review without
+the implementation conversation. No scope or security blocker was found in the read-only review. A supplementary
+cold-load browser probe then identified the reduced-motion defect documented
+below. Existing 24 screenshot
+checksums match. Before/after Model Insights images at all four sizes and Overview
+comparisons were visually inspected again. All six metrics match the original
+Stage 10 summary and retain evaluation provenance; no evaluation data was read.
+
+Fresh public-app QA independently repeats all **40 viewport cases and four case/
+scoring workflows**, with zero runtime errors. Its measured results are appended
+under `independent_pr_review` in the existing after-QA JSON, preserving the 39-file
+inventory and original screenshots. All view widths and desktop outer-height
+checks pass. Overview desktop canvas dimensions are exactly unchanged; at 768px
+and 390px the thin scrollbar frees respectively 2px and 4px of canvas width,
+with chart heights and donut layout unchanged. This is a native scrollbar-space
+effect, not a new layout or data presentation.
+
+Frozen checksum and protected scientific/backend/scoring/case-store/aggregate/
+dependency paths are independently reconfirmed unchanged. A focused credential
+and private local-path scan found no hits in the changed text files; all images
+are synthetic portfolio content. No new infrastructure or service is introduced.
+Read-only Render inspection confirms Free, Auto-Deploy Off and previews Off.
+Only feature-branch push and PR creation are authorised; merge and deployment
+remain separate owner decisions.
+
+
+### Verified reduced-motion correction
+
+A supplementary cold-load check exposed a real accessibility defect missed by the
+original four tests: setting `Chart.defaults.animation = false` does not override
+Chart.js's doughnut-specific animation defaults. Both risk-band donuts therefore
+reported `_animationsDisabled: false` after initial loading with reduced motion,
+while other charts were disabled correctly. Preference-change tests alone passed
+because they explicitly update already-created charts.
+
+The correction sets the doughnut's own `animation` option to false when reduction
+is requested, or 180ms otherwise. It changes no data, scale, legend action, chart
+geometry or calculation. A new permanent Chrome test covers cold-load actual
+animation-disabled state and repeated preference changes, including preservation
+of the benchmark charts' explicit `animation: false` settings. Before correction:
+**1 failed, 90 deselected**, 4.76s. After correction: all **five** focused polish
+tests pass, **86 deselected**, 7.99s. The original reviewed suite also passed
+565 tests in 300.00s before this supplementary defect was found; that success is
+not substituted for the required post-correction run.
+
+Initial scratch motion-probe attempts skipped because the complete suite was
+using its fixed local API port. They were rerun after the browser fixture released
+the port. The cold-load failure was then reproduced, diagnosed and permanently
+covered; it was not dismissed as an infrastructure issue. The ephemeral failed
+probe is diagnostic evidence; the committed regression is the reproducible check.
+
+Original implementation logs remain preserved. The existing focused log retains
+the failing and corrected runs, and the full log includes clearly separated review
+runs. Final counts and final public-app QA are recorded after execution, without
+adding files outside the approved 39-file scope.
+
+
+The separate post-correction public-API audit exhaustively allows **120 approved
+synthetic explanation IDs** and denies **120 nonpublic IDs**, with zero inference/
+transform calls and no SHAP import. Eight case-write method probes and four private
+asset paths are denied. This audit emits one inherited TestClient deprecation
+warning separately from pytest's full-suite warning count. Backend routes and
+public safeguards remain unchanged; all requests in this audit target the local
+application, not Render.
+
+
+### Final verified PR candidate
+
+Post-correction complete regression: **566 passed, zero failures/errors/skips,
+five inherited warnings, 297.07 seconds**. Includes **91 Chrome tests and all six
+heavy/data-contract tests**. No tests are excluded. Post-correction public-app QA
+again passes all **40 viewport cases and four workflows**, with no runtime errors,
+horizontal overflow or unnecessary desktop outer-page scrolling. The final
+cold-load test also confirms actual animation-disabled state, not merely a global
+configuration value. This result supersedes earlier candidate counts for release
+review; original logs and the intentional failing regression remain retained.
+
+The frozen-model checksum, protected code/records/assets/storage and original
+scientific results remain unchanged. All 18 report targets are valid. The final
+scope remains exactly **39 files**. Readiness is **READY WITH DOCUMENTED
+LIMITATIONS** for PR review. No unresolved release-blocking defect was found.
+Feature push/PR do not constitute a release; merge, deployment and live checks
+remain separately controlled. Cross-browser and screen-reader certification
+remain unverified, and mobile natural scrolling/native scrollbar differences
+remain documented above.

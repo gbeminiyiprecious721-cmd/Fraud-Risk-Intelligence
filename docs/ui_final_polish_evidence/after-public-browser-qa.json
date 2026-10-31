@@ -954,5 +954,1921 @@
     "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
   },
   "runtime_errors": 0,
-  "note": "All 40 views were captured and measured; 12 representative screenshots retained per phase. Unretained image fields are null."
+  "note": "All 40 views were captured and measured; 12 representative screenshots retained per phase. Unretained image fields are null.",
+  "independent_pr_review": {
+    "entrypoint": "src.render_demo:app",
+    "historical_data_access": false,
+    "viewports": [
+      {
+        "image": null,
+        "view": "overview",
+        "width": 1440,
+        "height": 900,
+        "bodyWidth": 1440,
+        "bodyHeight": 900,
+        "containerHeight": 721,
+        "containerScrollHeight": 721,
+        "charts": [
+          {
+            "id": "chart-band-breakdown-mini",
+            "rendered": true,
+            "width": 539,
+            "height": 110
+          },
+          {
+            "id": "chart-distribution-mini",
+            "rendered": true,
+            "width": 539,
+            "height": 110
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "queue",
+        "width": 1440,
+        "height": 900,
+        "bodyWidth": 1440,
+        "bodyHeight": 900,
+        "containerHeight": 644,
+        "containerScrollHeight": 644,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "analytics",
+        "width": 1440,
+        "height": 900,
+        "bodyWidth": 1440,
+        "bodyHeight": 900,
+        "containerHeight": 721,
+        "containerScrollHeight": 721,
+        "charts": [
+          {
+            "id": "chart-distribution",
+            "rendered": true,
+            "width": 528,
+            "height": 173
+          },
+          {
+            "id": "chart-band-breakdown",
+            "rendered": true,
+            "width": 528,
+            "height": 192
+          },
+          {
+            "id": "chart-by-product",
+            "rendered": true,
+            "width": 528,
+            "height": 192
+          },
+          {
+            "id": "chart-amount-vs-risk",
+            "rendered": true,
+            "width": 528,
+            "height": 173
+          },
+          {
+            "id": "chart-sequence",
+            "rendered": true,
+            "width": 1111,
+            "height": 190
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "workflow",
+        "width": 1440,
+        "height": 900,
+        "bodyWidth": 1440,
+        "bodyHeight": 900,
+        "containerHeight": 644,
+        "containerScrollHeight": 644,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "insights",
+        "width": 1440,
+        "height": 900,
+        "bodyWidth": 1440,
+        "bodyHeight": 900,
+        "containerHeight": 721,
+        "containerScrollHeight": 721,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "benchmark",
+        "width": 1440,
+        "height": 900,
+        "bodyWidth": 1440,
+        "bodyHeight": 900,
+        "containerHeight": 776,
+        "containerScrollHeight": 776,
+        "charts": [
+          {
+            "id": "benchmark-metric-chart",
+            "rendered": true,
+            "width": 546,
+            "height": 216
+          },
+          {
+            "id": "benchmark-capacity-chart",
+            "rendered": true,
+            "width": 546,
+            "height": 216
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "explainability",
+        "width": 1440,
+        "height": 900,
+        "bodyWidth": 1440,
+        "bodyHeight": 900,
+        "containerHeight": 721,
+        "containerScrollHeight": 721,
+        "charts": [
+          {
+            "id": "explanation-global-chart",
+            "rendered": true,
+            "width": 553,
+            "height": 268
+          },
+          {
+            "id": "explanation-local-chart",
+            "rendered": true,
+            "width": 553,
+            "height": 214
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "monitoring",
+        "width": 1440,
+        "height": 900,
+        "bodyWidth": 1440,
+        "bodyHeight": 900,
+        "containerHeight": 721,
+        "containerScrollHeight": 721,
+        "charts": [
+          {
+            "id": "monitoring-main-chart",
+            "rendered": true,
+            "width": 552,
+            "height": 196
+          },
+          {
+            "id": "monitoring-detail-chart",
+            "rendered": true,
+            "width": 552,
+            "height": 216
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "capacity",
+        "width": 1440,
+        "height": 900,
+        "bodyWidth": 1440,
+        "bodyHeight": 900,
+        "containerHeight": 721,
+        "containerScrollHeight": 721,
+        "charts": [
+          {
+            "id": "capacity-recall-chart",
+            "rendered": true,
+            "width": 539,
+            "height": 280
+          },
+          {
+            "id": "capacity-precision-chart",
+            "rendered": true,
+            "width": 539,
+            "height": 280
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "responsible-ai",
+        "width": 1440,
+        "height": 900,
+        "bodyWidth": 1440,
+        "bodyHeight": 900,
+        "containerHeight": 721,
+        "containerScrollHeight": 721,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "overview",
+        "width": 1280,
+        "height": 800,
+        "bodyWidth": 1280,
+        "bodyHeight": 800,
+        "containerHeight": 621,
+        "containerScrollHeight": 621,
+        "charts": [
+          {
+            "id": "chart-band-breakdown-mini",
+            "rendered": true,
+            "width": 459,
+            "height": 110
+          },
+          {
+            "id": "chart-distribution-mini",
+            "rendered": true,
+            "width": 459,
+            "height": 110
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "queue",
+        "width": 1280,
+        "height": 800,
+        "bodyWidth": 1280,
+        "bodyHeight": 800,
+        "containerHeight": 544,
+        "containerScrollHeight": 544,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "analytics",
+        "width": 1280,
+        "height": 800,
+        "bodyWidth": 1280,
+        "bodyHeight": 800,
+        "containerHeight": 621,
+        "containerScrollHeight": 621,
+        "charts": [
+          {
+            "id": "chart-distribution",
+            "rendered": true,
+            "width": 448,
+            "height": 123
+          },
+          {
+            "id": "chart-band-breakdown",
+            "rendered": true,
+            "width": 448,
+            "height": 142
+          },
+          {
+            "id": "chart-by-product",
+            "rendered": true,
+            "width": 448,
+            "height": 142
+          },
+          {
+            "id": "chart-amount-vs-risk",
+            "rendered": true,
+            "width": 448,
+            "height": 123
+          },
+          {
+            "id": "chart-sequence",
+            "rendered": true,
+            "width": 951,
+            "height": 190
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "workflow",
+        "width": 1280,
+        "height": 800,
+        "bodyWidth": 1280,
+        "bodyHeight": 800,
+        "containerHeight": 544,
+        "containerScrollHeight": 544,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "insights",
+        "width": 1280,
+        "height": 800,
+        "bodyWidth": 1280,
+        "bodyHeight": 800,
+        "containerHeight": 621,
+        "containerScrollHeight": 621,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "benchmark",
+        "width": 1280,
+        "height": 800,
+        "bodyWidth": 1280,
+        "bodyHeight": 800,
+        "containerHeight": 676,
+        "containerScrollHeight": 676,
+        "charts": [
+          {
+            "id": "benchmark-metric-chart",
+            "rendered": true,
+            "width": 466,
+            "height": 116
+          },
+          {
+            "id": "benchmark-capacity-chart",
+            "rendered": true,
+            "width": 466,
+            "height": 116
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "explainability",
+        "width": 1280,
+        "height": 800,
+        "bodyWidth": 1280,
+        "bodyHeight": 800,
+        "containerHeight": 621,
+        "containerScrollHeight": 621,
+        "charts": [
+          {
+            "id": "explanation-global-chart",
+            "rendered": true,
+            "width": 473,
+            "height": 205
+          },
+          {
+            "id": "explanation-local-chart",
+            "rendered": true,
+            "width": 473,
+            "height": 152
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "monitoring",
+        "width": 1280,
+        "height": 800,
+        "bodyWidth": 1280,
+        "bodyHeight": 800,
+        "containerHeight": 621,
+        "containerScrollHeight": 621,
+        "charts": [
+          {
+            "id": "monitoring-main-chart",
+            "rendered": true,
+            "width": 472,
+            "height": 100
+          },
+          {
+            "id": "monitoring-detail-chart",
+            "rendered": true,
+            "width": 472,
+            "height": 121
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "capacity",
+        "width": 1280,
+        "height": 800,
+        "bodyWidth": 1280,
+        "bodyHeight": 800,
+        "containerHeight": 621,
+        "containerScrollHeight": 621,
+        "charts": [
+          {
+            "id": "capacity-recall-chart",
+            "rendered": true,
+            "width": 459,
+            "height": 177
+          },
+          {
+            "id": "capacity-precision-chart",
+            "rendered": true,
+            "width": 459,
+            "height": 177
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "responsible-ai",
+        "width": 1280,
+        "height": 800,
+        "bodyWidth": 1280,
+        "bodyHeight": 800,
+        "containerHeight": 621,
+        "containerScrollHeight": 621,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "overview",
+        "width": 768,
+        "height": 1024,
+        "bodyWidth": 757,
+        "bodyHeight": 1283,
+        "containerHeight": 965,
+        "containerScrollHeight": 965,
+        "charts": [
+          {
+            "id": "chart-band-breakdown-mini",
+            "rendered": true,
+            "width": 310,
+            "height": 120
+          },
+          {
+            "id": "chart-distribution-mini",
+            "rendered": true,
+            "width": 310,
+            "height": 120
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "queue",
+        "width": 768,
+        "height": 1024,
+        "bodyWidth": 757,
+        "bodyHeight": 1379,
+        "containerHeight": 978,
+        "containerScrollHeight": 978,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "analytics",
+        "width": 768,
+        "height": 1024,
+        "bodyWidth": 757,
+        "bodyHeight": 2224,
+        "containerHeight": 1906,
+        "containerScrollHeight": 1906,
+        "charts": [
+          {
+            "id": "chart-distribution",
+            "rendered": true,
+            "width": 671,
+            "height": 220
+          },
+          {
+            "id": "chart-band-breakdown",
+            "rendered": true,
+            "width": 671,
+            "height": 220
+          },
+          {
+            "id": "chart-by-product",
+            "rendered": true,
+            "width": 671,
+            "height": 220
+          },
+          {
+            "id": "chart-amount-vs-risk",
+            "rendered": true,
+            "width": 671,
+            "height": 220
+          },
+          {
+            "id": "chart-sequence",
+            "rendered": true,
+            "width": 671,
+            "height": 190
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "workflow",
+        "width": 768,
+        "height": 1024,
+        "bodyWidth": 757,
+        "bodyHeight": 1345,
+        "containerHeight": 944,
+        "containerScrollHeight": 944,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "insights",
+        "width": 768,
+        "height": 1024,
+        "bodyWidth": 757,
+        "bodyHeight": 1792,
+        "containerHeight": 1474,
+        "containerScrollHeight": 1474,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "benchmark",
+        "width": 768,
+        "height": 1024,
+        "bodyWidth": 757,
+        "bodyHeight": 1520,
+        "containerHeight": 1246,
+        "containerScrollHeight": 1246,
+        "charts": [
+          {
+            "id": "benchmark-metric-chart",
+            "rendered": true,
+            "width": 681,
+            "height": 200
+          },
+          {
+            "id": "benchmark-capacity-chart",
+            "rendered": true,
+            "width": 681,
+            "height": 200
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "explainability",
+        "width": 768,
+        "height": 1024,
+        "bodyWidth": 757,
+        "bodyHeight": 1955,
+        "containerHeight": 1681,
+        "containerScrollHeight": 1681,
+        "charts": [
+          {
+            "id": "explanation-global-chart",
+            "rendered": true,
+            "width": 687,
+            "height": 290
+          },
+          {
+            "id": "explanation-local-chart",
+            "rendered": true,
+            "width": 687,
+            "height": 290
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "monitoring",
+        "width": 768,
+        "height": 1024,
+        "bodyWidth": 757,
+        "bodyHeight": 1507,
+        "containerHeight": 1232,
+        "containerScrollHeight": 1232,
+        "charts": [
+          {
+            "id": "monitoring-main-chart",
+            "rendered": true,
+            "width": 686,
+            "height": 190
+          },
+          {
+            "id": "monitoring-detail-chart",
+            "rendered": true,
+            "width": 686,
+            "height": 190
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "capacity",
+        "width": 768,
+        "height": 1024,
+        "bodyWidth": 757,
+        "bodyHeight": 1462,
+        "containerHeight": 1188,
+        "containerScrollHeight": 1188,
+        "charts": [
+          {
+            "id": "capacity-recall-chart",
+            "rendered": true,
+            "width": 675,
+            "height": 230
+          },
+          {
+            "id": "capacity-precision-chart",
+            "rendered": true,
+            "width": 675,
+            "height": 230
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "responsible-ai",
+        "width": 768,
+        "height": 1024,
+        "bodyWidth": 757,
+        "bodyHeight": 1081,
+        "containerHeight": 764,
+        "containerScrollHeight": 764,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "overview",
+        "width": 390,
+        "height": 844,
+        "bodyWidth": 379,
+        "bodyHeight": 1959,
+        "containerHeight": 1448,
+        "containerScrollHeight": 1448,
+        "charts": [
+          {
+            "id": "chart-band-breakdown-mini",
+            "rendered": true,
+            "width": 309,
+            "height": 120
+          },
+          {
+            "id": "chart-distribution-mini",
+            "rendered": true,
+            "width": 309,
+            "height": 120
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "queue",
+        "width": 390,
+        "height": 844,
+        "bodyWidth": 379,
+        "bodyHeight": 1781,
+        "containerHeight": 1083,
+        "containerScrollHeight": 1083,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "analytics",
+        "width": 390,
+        "height": 844,
+        "bodyWidth": 379,
+        "bodyHeight": 2502,
+        "containerHeight": 1992,
+        "containerScrollHeight": 1992,
+        "charts": [
+          {
+            "id": "chart-distribution",
+            "rendered": true,
+            "width": 309,
+            "height": 220
+          },
+          {
+            "id": "chart-band-breakdown",
+            "rendered": true,
+            "width": 309,
+            "height": 220
+          },
+          {
+            "id": "chart-by-product",
+            "rendered": true,
+            "width": 309,
+            "height": 220
+          },
+          {
+            "id": "chart-amount-vs-risk",
+            "rendered": true,
+            "width": 309,
+            "height": 220
+          },
+          {
+            "id": "chart-sequence",
+            "rendered": true,
+            "width": 309,
+            "height": 190
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "workflow",
+        "width": 390,
+        "height": 844,
+        "bodyWidth": 379,
+        "bodyHeight": 1625,
+        "containerHeight": 928,
+        "containerScrollHeight": 928,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "insights",
+        "width": 390,
+        "height": 844,
+        "bodyWidth": 379,
+        "bodyHeight": 2492,
+        "containerHeight": 1981,
+        "containerScrollHeight": 1981,
+        "charts": [],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "benchmark",
+        "width": 390,
+        "height": 844,
+        "bodyWidth": 379,
+        "bodyHeight": 2002,
+        "containerHeight": 1586,
+        "containerScrollHeight": 1586,
+        "charts": [
+          {
+            "id": "benchmark-metric-chart",
+            "rendered": true,
+            "width": 319,
+            "height": 200
+          },
+          {
+            "id": "benchmark-capacity-chart",
+            "rendered": true,
+            "width": 319,
+            "height": 200
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "explainability",
+        "width": 390,
+        "height": 844,
+        "bodyWidth": 379,
+        "bodyHeight": 2298,
+        "containerHeight": 1883,
+        "containerScrollHeight": 1883,
+        "charts": [
+          {
+            "id": "explanation-global-chart",
+            "rendered": true,
+            "width": 325,
+            "height": 290
+          },
+          {
+            "id": "explanation-local-chart",
+            "rendered": true,
+            "width": 325,
+            "height": 290
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "monitoring",
+        "width": 390,
+        "height": 844,
+        "bodyWidth": 379,
+        "bodyHeight": 1870,
+        "containerHeight": 1454,
+        "containerScrollHeight": 1454,
+        "charts": [
+          {
+            "id": "monitoring-main-chart",
+            "rendered": true,
+            "width": 324,
+            "height": 190
+          },
+          {
+            "id": "monitoring-detail-chart",
+            "rendered": true,
+            "width": 324,
+            "height": 190
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "capacity",
+        "width": 390,
+        "height": 844,
+        "bodyWidth": 379,
+        "bodyHeight": 1858,
+        "containerHeight": 1442,
+        "containerScrollHeight": 1442,
+        "charts": [
+          {
+            "id": "capacity-recall-chart",
+            "rendered": true,
+            "width": 313,
+            "height": 230
+          },
+          {
+            "id": "capacity-precision-chart",
+            "rendered": true,
+            "width": 313,
+            "height": 230
+          }
+        ],
+        "screenshot_retained": false
+      },
+      {
+        "image": null,
+        "view": "responsible-ai",
+        "width": 390,
+        "height": 844,
+        "bodyWidth": 379,
+        "bodyHeight": 1680,
+        "containerHeight": 1170,
+        "containerScrollHeight": 1170,
+        "charts": [],
+        "screenshot_retained": false
+      }
+    ],
+    "case_checks": [
+      {
+        "width": 1440,
+        "height": 900,
+        "assignment_priority_status": true,
+        "literal_note_xss_safe": true,
+        "note_not_transmitted": true,
+        "no_case_write_requests": true,
+        "refresh_and_navigation_persistence": true,
+        "filter_clear_preserves_cases": true,
+        "single_scoring_and_back": true
+      },
+      {
+        "width": 1280,
+        "height": 800,
+        "assignment_priority_status": true,
+        "literal_note_xss_safe": true,
+        "note_not_transmitted": true,
+        "no_case_write_requests": true,
+        "refresh_and_navigation_persistence": true,
+        "filter_clear_preserves_cases": true,
+        "single_scoring_and_back": true
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "assignment_priority_status": true,
+        "literal_note_xss_safe": true,
+        "note_not_transmitted": true,
+        "no_case_write_requests": true,
+        "refresh_and_navigation_persistence": true,
+        "filter_clear_preserves_cases": true,
+        "single_scoring_and_back": true
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "assignment_priority_status": true,
+        "literal_note_xss_safe": true,
+        "note_not_transmitted": true,
+        "no_case_write_requests": true,
+        "refresh_and_navigation_persistence": true,
+        "filter_clear_preserves_cases": true,
+        "single_scoring_and_back": true
+      }
+    ],
+    "performance": {
+      "environment": "macOS, disposable minimal serving venv; not Render runtime or load benchmark",
+      "startup_health_ready_seconds": 1.577018,
+      "artifact_startup_event": {
+        "event": "startup",
+        "artifact_loaded": true,
+        "startup_seconds": 0.3428
+      },
+      "rss_sample_interval_seconds": 0.01,
+      "process_peak_rss_bytes": 220495872,
+      "public_queue_request_samples": [
+        {
+          "route": "/v1/dashboard/queue",
+          "seed": 101,
+          "seconds": 0.103807
+        },
+        {
+          "route": "/v1/dashboard/queue",
+          "seed": 202,
+          "seconds": 0.054551
+        },
+        {
+          "route": "/v1/dashboard/queue",
+          "seed": 303,
+          "seconds": 0.05418
+        },
+        {
+          "route": "/v1/dashboard/queue",
+          "seed": 404,
+          "seconds": 0.051945
+        },
+        {
+          "route": "/v1/dashboard/queue",
+          "seed": 505,
+          "seconds": 0.053964
+        }
+      ],
+      "includes_chrome_memory": false,
+      "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
+    },
+    "runtime_errors": 0,
+    "note": "Independent PR-review repeat; screenshot comparisons retain original checksum-verified before/after images. Fresh captures were made in scratch storage only.",
+    "post_correction_public_browser": {
+      "entrypoint": "src.render_demo:app",
+      "historical_data_access": false,
+      "viewports": [
+        {
+          "image": null,
+          "view": "overview",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": [
+            {
+              "id": "chart-band-breakdown-mini",
+              "rendered": true,
+              "width": 539,
+              "height": 110
+            },
+            {
+              "id": "chart-distribution-mini",
+              "rendered": true,
+              "width": 539,
+              "height": 110
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "queue",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 644,
+          "containerScrollHeight": 644,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "analytics",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": [
+            {
+              "id": "chart-distribution",
+              "rendered": true,
+              "width": 528,
+              "height": 173
+            },
+            {
+              "id": "chart-band-breakdown",
+              "rendered": true,
+              "width": 528,
+              "height": 192
+            },
+            {
+              "id": "chart-by-product",
+              "rendered": true,
+              "width": 528,
+              "height": 192
+            },
+            {
+              "id": "chart-amount-vs-risk",
+              "rendered": true,
+              "width": 528,
+              "height": 173
+            },
+            {
+              "id": "chart-sequence",
+              "rendered": true,
+              "width": 1111,
+              "height": 190
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "workflow",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 644,
+          "containerScrollHeight": 644,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "insights",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "benchmark",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 776,
+          "containerScrollHeight": 776,
+          "charts": [
+            {
+              "id": "benchmark-metric-chart",
+              "rendered": true,
+              "width": 546,
+              "height": 216
+            },
+            {
+              "id": "benchmark-capacity-chart",
+              "rendered": true,
+              "width": 546,
+              "height": 216
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "explainability",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": [
+            {
+              "id": "explanation-global-chart",
+              "rendered": true,
+              "width": 553,
+              "height": 268
+            },
+            {
+              "id": "explanation-local-chart",
+              "rendered": true,
+              "width": 553,
+              "height": 214
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "monitoring",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": [
+            {
+              "id": "monitoring-main-chart",
+              "rendered": true,
+              "width": 552,
+              "height": 196
+            },
+            {
+              "id": "monitoring-detail-chart",
+              "rendered": true,
+              "width": 552,
+              "height": 216
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "capacity",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": [
+            {
+              "id": "capacity-recall-chart",
+              "rendered": true,
+              "width": 539,
+              "height": 280
+            },
+            {
+              "id": "capacity-precision-chart",
+              "rendered": true,
+              "width": 539,
+              "height": 280
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "responsible-ai",
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "bodyHeight": 900,
+          "containerHeight": 721,
+          "containerScrollHeight": 721,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "overview",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": [
+            {
+              "id": "chart-band-breakdown-mini",
+              "rendered": true,
+              "width": 459,
+              "height": 110
+            },
+            {
+              "id": "chart-distribution-mini",
+              "rendered": true,
+              "width": 459,
+              "height": 110
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "queue",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 544,
+          "containerScrollHeight": 544,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "analytics",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": [
+            {
+              "id": "chart-distribution",
+              "rendered": true,
+              "width": 448,
+              "height": 123
+            },
+            {
+              "id": "chart-band-breakdown",
+              "rendered": true,
+              "width": 448,
+              "height": 142
+            },
+            {
+              "id": "chart-by-product",
+              "rendered": true,
+              "width": 448,
+              "height": 142
+            },
+            {
+              "id": "chart-amount-vs-risk",
+              "rendered": true,
+              "width": 448,
+              "height": 123
+            },
+            {
+              "id": "chart-sequence",
+              "rendered": true,
+              "width": 951,
+              "height": 190
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "workflow",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 544,
+          "containerScrollHeight": 544,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "insights",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "benchmark",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 676,
+          "containerScrollHeight": 676,
+          "charts": [
+            {
+              "id": "benchmark-metric-chart",
+              "rendered": true,
+              "width": 466,
+              "height": 116
+            },
+            {
+              "id": "benchmark-capacity-chart",
+              "rendered": true,
+              "width": 466,
+              "height": 116
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "explainability",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": [
+            {
+              "id": "explanation-global-chart",
+              "rendered": true,
+              "width": 473,
+              "height": 205
+            },
+            {
+              "id": "explanation-local-chart",
+              "rendered": true,
+              "width": 473,
+              "height": 152
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "monitoring",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": [
+            {
+              "id": "monitoring-main-chart",
+              "rendered": true,
+              "width": 472,
+              "height": 100
+            },
+            {
+              "id": "monitoring-detail-chart",
+              "rendered": true,
+              "width": 472,
+              "height": 121
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "capacity",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": [
+            {
+              "id": "capacity-recall-chart",
+              "rendered": true,
+              "width": 459,
+              "height": 177
+            },
+            {
+              "id": "capacity-precision-chart",
+              "rendered": true,
+              "width": 459,
+              "height": 177
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "responsible-ai",
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "bodyHeight": 800,
+          "containerHeight": 621,
+          "containerScrollHeight": 621,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "overview",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 757,
+          "bodyHeight": 1283,
+          "containerHeight": 965,
+          "containerScrollHeight": 965,
+          "charts": [
+            {
+              "id": "chart-band-breakdown-mini",
+              "rendered": true,
+              "width": 310,
+              "height": 120
+            },
+            {
+              "id": "chart-distribution-mini",
+              "rendered": true,
+              "width": 310,
+              "height": 120
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "queue",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 757,
+          "bodyHeight": 1379,
+          "containerHeight": 978,
+          "containerScrollHeight": 978,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "analytics",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 757,
+          "bodyHeight": 2224,
+          "containerHeight": 1906,
+          "containerScrollHeight": 1906,
+          "charts": [
+            {
+              "id": "chart-distribution",
+              "rendered": true,
+              "width": 671,
+              "height": 220
+            },
+            {
+              "id": "chart-band-breakdown",
+              "rendered": true,
+              "width": 671,
+              "height": 220
+            },
+            {
+              "id": "chart-by-product",
+              "rendered": true,
+              "width": 671,
+              "height": 220
+            },
+            {
+              "id": "chart-amount-vs-risk",
+              "rendered": true,
+              "width": 671,
+              "height": 220
+            },
+            {
+              "id": "chart-sequence",
+              "rendered": true,
+              "width": 671,
+              "height": 190
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "workflow",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 757,
+          "bodyHeight": 1345,
+          "containerHeight": 944,
+          "containerScrollHeight": 944,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "insights",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 757,
+          "bodyHeight": 1792,
+          "containerHeight": 1474,
+          "containerScrollHeight": 1474,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "benchmark",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 757,
+          "bodyHeight": 1520,
+          "containerHeight": 1246,
+          "containerScrollHeight": 1246,
+          "charts": [
+            {
+              "id": "benchmark-metric-chart",
+              "rendered": true,
+              "width": 681,
+              "height": 200
+            },
+            {
+              "id": "benchmark-capacity-chart",
+              "rendered": true,
+              "width": 681,
+              "height": 200
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "explainability",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 757,
+          "bodyHeight": 1955,
+          "containerHeight": 1681,
+          "containerScrollHeight": 1681,
+          "charts": [
+            {
+              "id": "explanation-global-chart",
+              "rendered": true,
+              "width": 687,
+              "height": 290
+            },
+            {
+              "id": "explanation-local-chart",
+              "rendered": true,
+              "width": 687,
+              "height": 290
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "monitoring",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 757,
+          "bodyHeight": 1507,
+          "containerHeight": 1232,
+          "containerScrollHeight": 1232,
+          "charts": [
+            {
+              "id": "monitoring-main-chart",
+              "rendered": true,
+              "width": 686,
+              "height": 190
+            },
+            {
+              "id": "monitoring-detail-chart",
+              "rendered": true,
+              "width": 686,
+              "height": 190
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "capacity",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 757,
+          "bodyHeight": 1462,
+          "containerHeight": 1188,
+          "containerScrollHeight": 1188,
+          "charts": [
+            {
+              "id": "capacity-recall-chart",
+              "rendered": true,
+              "width": 675,
+              "height": 230
+            },
+            {
+              "id": "capacity-precision-chart",
+              "rendered": true,
+              "width": 675,
+              "height": 230
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "responsible-ai",
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 757,
+          "bodyHeight": 1081,
+          "containerHeight": 764,
+          "containerScrollHeight": 764,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "overview",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 379,
+          "bodyHeight": 1959,
+          "containerHeight": 1448,
+          "containerScrollHeight": 1448,
+          "charts": [
+            {
+              "id": "chart-band-breakdown-mini",
+              "rendered": true,
+              "width": 309,
+              "height": 120
+            },
+            {
+              "id": "chart-distribution-mini",
+              "rendered": true,
+              "width": 309,
+              "height": 120
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "queue",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 379,
+          "bodyHeight": 1781,
+          "containerHeight": 1083,
+          "containerScrollHeight": 1083,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "analytics",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 379,
+          "bodyHeight": 2502,
+          "containerHeight": 1992,
+          "containerScrollHeight": 1992,
+          "charts": [
+            {
+              "id": "chart-distribution",
+              "rendered": true,
+              "width": 309,
+              "height": 220
+            },
+            {
+              "id": "chart-band-breakdown",
+              "rendered": true,
+              "width": 309,
+              "height": 220
+            },
+            {
+              "id": "chart-by-product",
+              "rendered": true,
+              "width": 309,
+              "height": 220
+            },
+            {
+              "id": "chart-amount-vs-risk",
+              "rendered": true,
+              "width": 309,
+              "height": 220
+            },
+            {
+              "id": "chart-sequence",
+              "rendered": true,
+              "width": 309,
+              "height": 190
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "workflow",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 379,
+          "bodyHeight": 1625,
+          "containerHeight": 928,
+          "containerScrollHeight": 928,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "insights",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 379,
+          "bodyHeight": 2492,
+          "containerHeight": 1981,
+          "containerScrollHeight": 1981,
+          "charts": [],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "benchmark",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 379,
+          "bodyHeight": 2002,
+          "containerHeight": 1586,
+          "containerScrollHeight": 1586,
+          "charts": [
+            {
+              "id": "benchmark-metric-chart",
+              "rendered": true,
+              "width": 319,
+              "height": 200
+            },
+            {
+              "id": "benchmark-capacity-chart",
+              "rendered": true,
+              "width": 319,
+              "height": 200
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "explainability",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 379,
+          "bodyHeight": 2298,
+          "containerHeight": 1883,
+          "containerScrollHeight": 1883,
+          "charts": [
+            {
+              "id": "explanation-global-chart",
+              "rendered": true,
+              "width": 325,
+              "height": 290
+            },
+            {
+              "id": "explanation-local-chart",
+              "rendered": true,
+              "width": 325,
+              "height": 290
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "monitoring",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 379,
+          "bodyHeight": 1870,
+          "containerHeight": 1454,
+          "containerScrollHeight": 1454,
+          "charts": [
+            {
+              "id": "monitoring-main-chart",
+              "rendered": true,
+              "width": 324,
+              "height": 190
+            },
+            {
+              "id": "monitoring-detail-chart",
+              "rendered": true,
+              "width": 324,
+              "height": 190
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "capacity",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 379,
+          "bodyHeight": 1858,
+          "containerHeight": 1442,
+          "containerScrollHeight": 1442,
+          "charts": [
+            {
+              "id": "capacity-recall-chart",
+              "rendered": true,
+              "width": 313,
+              "height": 230
+            },
+            {
+              "id": "capacity-precision-chart",
+              "rendered": true,
+              "width": 313,
+              "height": 230
+            }
+          ],
+          "screenshot_retained": false
+        },
+        {
+          "image": null,
+          "view": "responsible-ai",
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 379,
+          "bodyHeight": 1680,
+          "containerHeight": 1170,
+          "containerScrollHeight": 1170,
+          "charts": [],
+          "screenshot_retained": false
+        }
+      ],
+      "case_checks": [
+        {
+          "width": 1440,
+          "height": 900,
+          "assignment_priority_status": true,
+          "literal_note_xss_safe": true,
+          "note_not_transmitted": true,
+          "no_case_write_requests": true,
+          "refresh_and_navigation_persistence": true,
+          "filter_clear_preserves_cases": true,
+          "single_scoring_and_back": true
+        },
+        {
+          "width": 1280,
+          "height": 800,
+          "assignment_priority_status": true,
+          "literal_note_xss_safe": true,
+          "note_not_transmitted": true,
+          "no_case_write_requests": true,
+          "refresh_and_navigation_persistence": true,
+          "filter_clear_preserves_cases": true,
+          "single_scoring_and_back": true
+        },
+        {
+          "width": 768,
+          "height": 1024,
+          "assignment_priority_status": true,
+          "literal_note_xss_safe": true,
+          "note_not_transmitted": true,
+          "no_case_write_requests": true,
+          "refresh_and_navigation_persistence": true,
+          "filter_clear_preserves_cases": true,
+          "single_scoring_and_back": true
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "assignment_priority_status": true,
+          "literal_note_xss_safe": true,
+          "note_not_transmitted": true,
+          "no_case_write_requests": true,
+          "refresh_and_navigation_persistence": true,
+          "filter_clear_preserves_cases": true,
+          "single_scoring_and_back": true
+        }
+      ],
+      "performance": {
+        "environment": "macOS, disposable minimal serving venv; not Render runtime or load benchmark",
+        "startup_health_ready_seconds": 1.597847,
+        "artifact_startup_event": {
+          "event": "startup",
+          "artifact_loaded": true,
+          "startup_seconds": 0.3507
+        },
+        "rss_sample_interval_seconds": 0.01,
+        "process_peak_rss_bytes": 220299264,
+        "public_queue_request_samples": [
+          {
+            "route": "/v1/dashboard/queue",
+            "seed": 101,
+            "seconds": 0.101194
+          },
+          {
+            "route": "/v1/dashboard/queue",
+            "seed": 202,
+            "seconds": 0.055649
+          },
+          {
+            "route": "/v1/dashboard/queue",
+            "seed": 303,
+            "seconds": 0.052549
+          },
+          {
+            "route": "/v1/dashboard/queue",
+            "seed": 404,
+            "seconds": 0.052593
+          },
+          {
+            "route": "/v1/dashboard/queue",
+            "seed": 505,
+            "seconds": 0.053859
+          }
+        ],
+        "includes_chrome_memory": false,
+        "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
+      },
+      "runtime_errors": 0,
+      "note": "Independent final public-app repeat after the cold-load reduced-motion correction. Scratch captures not committed; original before/after screenshots remain valid for settled chart appearance."
+    }
+  }
 }

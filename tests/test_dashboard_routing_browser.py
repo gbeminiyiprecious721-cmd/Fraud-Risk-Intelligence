@@ -1123,3 +1123,28 @@ def test_final_polish_historical_cards_and_reduced_motion(page, width, height, c
         assert page.evaluate('Object.values(Chart.instances).every(c=>c.options.animation===false)')
     finally:
         page.send('Emulation.setEmulatedMedia', {'features':[]})
+
+
+def test_final_polish_cold_reduced_motion_and_preference_roundtrip(page, browser_env):
+    """Type-specific doughnut defaults must not override a cold-load preference."""
+    try:
+        page.send('Emulation.setEmulatedMedia', {'features':[{'name':'prefers-reduced-motion','value':'reduce'}]})
+        page.navigate(browser_env['static_origin']+'/dashboard.html?cold-motion=1#/overview')
+        page.wait_for_queue_data()
+        assert page.evaluate('Chart.defaults.animation===false')
+        assert page.evaluate('Object.values(Chart.instances).every(c=>c.options.animation===false && c._animationsDisabled)')
+        page.click('.sidenav-list a[data-view="benchmark"]')
+        deadline=time.monotonic()+12
+        while page.evaluate("document.getElementById('benchmark-workspace').hidden") and time.monotonic()<deadline:
+            time.sleep(.1)
+        assert not page.evaluate("document.getElementById('benchmark-workspace').hidden")
+        for reduced in [False,True,False]:
+            page.send('Emulation.setEmulatedMedia', {'features':[{'name':'prefers-reduced-motion','value':'reduce' if reduced else 'no-preference'}]})
+            time.sleep(.2)
+            assert page.evaluate("['benchmark-metric-chart','benchmark-capacity-chart'].every(id=>Chart.getChart(id).options.animation===false)")
+            if reduced:
+                assert page.evaluate('Object.values(Chart.instances).every(c=>c.options.animation===false && c._animationsDisabled)')
+            else:
+                assert page.evaluate('Chart.defaults.animation.duration===180')
+    finally:
+        page.send('Emulation.setEmulatedMedia', {'features':[]})

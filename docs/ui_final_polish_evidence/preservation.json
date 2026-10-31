@@ -32,5 +32,51 @@
     "seconds": 301.09,
     "chrome": 90,
     "heavy_data_contract": 6
+  },
+  "independent_pr_review": {
+    "reviewed_implementation": "fb56510cf15f8f71e08e4d5bef16483187a7bca4",
+    "scope_files": 39,
+    "read_only_review": "No scope/security blocker; supplementary cold-load browser probe identified doughnut type defaults overriding global reduced motion.",
+    "verified_runtime_correction": "Explicit doughnut animation:false under reduction; 180ms otherwise; no chart data/geometry/scoring change.",
+    "cold_motion_before": {
+      "failed": 1,
+      "deselected": 90,
+      "seconds": 4.76
+    },
+    "focused_after": {
+      "passed": 5,
+      "deselected": 86,
+      "seconds": 7.99
+    },
+    "public_security": {
+      "allowed_approved_ids": 120,
+      "denied_nonpublic_ids": 120,
+      "runtime_inference_or_transform_calls": 0,
+      "shap_imported": false,
+      "case_write_methods_denied": 8,
+      "private_asset_paths_denied": 4,
+      "separate_audit_warnings": [
+        "StarletteDeprecationWarning"
+      ]
+    },
+    "documentation_targets": 18,
+    "original_screenshot_checksums_verified": 24,
+    "sensitive_text_pattern_hits": 0,
+    "render_read_only": {
+      "plan": "free",
+      "auto_deploy": "off",
+      "previews": "off"
+    },
+    "authorisation": "Feature branch push and PR only; no merge/deploy/Render modifications.",
+    "final_regression": {
+      "passed": 566,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "warnings": 5,
+      "seconds": 297.07,
+      "chrome": 91,
+      "heavy_data_contract": 6
+    }
   }
 }
