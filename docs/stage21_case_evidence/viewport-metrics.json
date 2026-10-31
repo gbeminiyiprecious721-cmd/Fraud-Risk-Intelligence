@@ -1,0 +1,210 @@
+[
+  {
+    "view": "workflow",
+    "width": 1440,
+    "height": 900,
+    "metrics": {
+      "bodyWidth": 1440,
+      "viewportWidth": 1440,
+      "contentHeight": 667,
+      "contentScrollHeight": 667,
+      "drawerOpen": false,
+      "errors": []
+    }
+  },
+  {
+    "view": "queue",
+    "width": 1440,
+    "height": 900,
+    "metrics": {
+      "bodyWidth": 1440,
+      "viewportWidth": 1440,
+      "contentHeight": 667,
+      "contentScrollHeight": 667,
+      "drawerOpen": false,
+      "errors": []
+    }
+  },
+  {
+    "view": "case-detail",
+    "width": 1440,
+    "height": 900,
+    "metrics": {
+      "bodyWidth": 1440,
+      "viewportWidth": 1440,
+      "contentHeight": 667,
+      "contentScrollHeight": 667,
+      "drawerOpen": true,
+      "errors": []
+    }
+  },
+  {
+    "view": "case-history",
+    "width": 1440,
+    "height": 900,
+    "metrics": {
+      "bodyWidth": 1440,
+      "viewportWidth": 1440,
+      "contentHeight": 667,
+      "contentScrollHeight": 667,
+      "drawerOpen": true,
+      "errors": []
+    }
+  },
+  {
+    "view": "workflow",
+    "width": 1280,
+    "height": 800,
+    "metrics": {
+      "bodyWidth": 1280,
+      "viewportWidth": 1280,
+      "contentHeight": 567,
+      "contentScrollHeight": 567,
+      "drawerOpen": false,
+      "errors": []
+    }
+  },
+  {
+    "view": "queue",
+    "width": 1280,
+    "height": 800,
+    "metrics": {
+      "bodyWidth": 1280,
+      "viewportWidth": 1280,
+      "contentHeight": 567,
+      "contentScrollHeight": 567,
+      "drawerOpen": false,
+      "errors": []
+    }
+  },
+  {
+    "view": "case-detail",
+    "width": 1280,
+    "height": 800,
+    "metrics": {
+      "bodyWidth": 1280,
+      "viewportWidth": 1280,
+      "contentHeight": 567,
+      "contentScrollHeight": 567,
+      "drawerOpen": true,
+      "errors": []
+    }
+  },
+  {
+    "view": "case-history",
+    "width": 1280,
+    "height": 800,
+    "metrics": {
+      "bodyWidth": 1280,
+      "viewportWidth": 1280,
+      "contentHeight": 567,
+      "contentScrollHeight": 567,
+      "drawerOpen": true,
+      "errors": []
+    }
+  },
+  {
+    "view": "workflow",
+    "width": 768,
+    "height": 1024,
+    "metrics": {
+      "bodyWidth": 753,
+      "viewportWidth": 768,
+      "contentHeight": 948,
+      "contentScrollHeight": 948,
+      "drawerOpen": false,
+      "errors": []
+    }
+  },
+  {
+    "view": "queue",
+    "width": 768,
+    "height": 1024,
+    "metrics": {
+      "bodyWidth": 753,
+      "viewportWidth": 768,
+      "contentHeight": 1014,
+      "contentScrollHeight": 1014,
+      "drawerOpen": false,
+      "errors": []
+    }
+  },
+  {
+    "view": "case-detail",
+    "width": 768,
+    "height": 1024,
+    "metrics": {
+      "bodyWidth": 753,
+      "viewportWidth": 768,
+      "contentHeight": 1014,
+      "contentScrollHeight": 1014,
+      "drawerOpen": true,
+      "errors": []
+    }
+  },
+  {
+    "view": "case-history",
+    "width": 768,
+    "height": 1024,
+    "metrics": {
+      "bodyWidth": 753,
+      "viewportWidth": 768,
+      "contentHeight": 1014,
+      "contentScrollHeight": 1014,
+      "drawerOpen": true,
+      "errors": []
+    }
+  },
+  {
+    "view": "workflow",
+    "width": 390,
+    "height": 844,
+    "metrics": {
+      "bodyWidth": 375,
+      "viewportWidth": 390,
+      "contentHeight": 932,
+      "contentScrollHeight": 932,
+      "drawerOpen": false,
+      "errors": []
+    }
+  },
+  {
+    "view": "queue",
+    "width": 390,
+    "height": 844,
+    "metrics": {
+      "bodyWidth": 375,
+      "viewportWidth": 390,
+      "contentHeight": 1263,
+      "contentScrollHeight": 1263,
+      "drawerOpen": false,
+      "errors": []
+    }
+  },
+  {
+    "view": "case-detail",
+    "width": 390,
+    "height": 844,
+    "metrics": {
+      "bodyWidth": 375,
+      "viewportWidth": 390,
+      "contentHeight": 1263,
+      "contentScrollHeight": 1263,
+      "drawerOpen": true,
+      "errors": []
+    }
+  },
+  {
+    "view": "case-history",
+    "width": 390,
+    "height": 844,
+    "metrics": {
+      "bodyWidth": 375,
+      "viewportWidth": 390,
+      "contentHeight": 1263,
+      "contentScrollHeight": 1263,
+      "drawerOpen": true,
+      "errors": []
+    }
+  }
+]

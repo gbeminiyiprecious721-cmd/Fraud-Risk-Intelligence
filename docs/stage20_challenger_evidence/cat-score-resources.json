@@ -1,0 +1,10 @@
+{
+  "phase": "score",
+  "model": "cat",
+  "wall_seconds": 1.8717246249943855,
+  "rss_peak_bytes": 500498432,
+  "rss_baseline_bytes": 53886976,
+  "rss_increment_bytes": 446611456,
+  "sampling_seconds": 0.1,
+  "exit_code": 0
+}

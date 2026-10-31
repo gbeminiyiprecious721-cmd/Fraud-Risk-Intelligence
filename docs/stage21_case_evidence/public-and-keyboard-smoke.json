@@ -1,0 +1,7 @@
+{
+  "public_batch_size": 24,
+  "case_schema_accepts_actual_public_synthetic_population": true,
+  "public_case_write_endpoint_absent": true,
+  "native_keyboard_enter_opens_case": true,
+  "paid_resources_or_deployment_changes": false
+}

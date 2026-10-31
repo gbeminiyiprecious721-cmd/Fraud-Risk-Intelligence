@@ -1,0 +1,11 @@
+{
+  "status": 200,
+  "heading": true,
+  "tables": 5,
+  "images": 2,
+  "mermaid": true,
+  "readme_sha256": "791bff29c55885edab5640d2d3f5ac0ab5a8b93b5d6330faf04e2137319fe776",
+  "endpoint": "https://api.github.com/markdown",
+  "mode": "gfm",
+  "repository_write": false
+}

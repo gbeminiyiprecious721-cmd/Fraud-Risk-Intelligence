@@ -1,0 +1,46 @@
+{
+  "mermaid_version": "11.12.0",
+  "mermaid_bundle_sha256": "07e37dfa97b337ccc85365d57eddf99b9706f09db3b59b260d0333b23b343c4b",
+  "preview": [
+    {
+      "file": "README.md",
+      "done": true,
+      "error": null,
+      "svg": 1,
+      "broken": []
+    },
+    {
+      "file": "docs/ARCHITECTURE.md",
+      "done": true,
+      "error": null,
+      "svg": 2,
+      "broken": []
+    },
+    {
+      "file": "docs/PORTFOLIO_WALKTHROUGH.md",
+      "done": true,
+      "error": null,
+      "svg": 0,
+      "broken": []
+    },
+    {
+      "file": "docs/PORTFOLIO_CASE_STUDY.md",
+      "done": true,
+      "error": null,
+      "svg": 0,
+      "broken": []
+    }
+  ],
+  "serving": {
+    "/": 200,
+    "/index.html": 200,
+    "/health": 200,
+    "/v1/dashboard/capacity": 200,
+    "/v1/dashboard/benchmark": 200,
+    "/v1/dashboard/monitoring": 200,
+    "/v1/dashboard/explainability": 200,
+    "synthetic_queue_rows": 24,
+    "runtime": "Disposable Python 3.12.15 environment; existing requirements-render.txt only"
+  },
+  "rendering_limit": "Real Mermaid SVG in local GFM-style Chrome preview; GitHub Markdown API is checked separately. GitHub's final interactive Mermaid renderer is not checked through a published branch."
+}

@@ -1,0 +1,10 @@
+{
+  "phase": "prepare",
+  "model": "none",
+  "wall_seconds": 41.95118291700055,
+  "rss_peak_bytes": 15494021120,
+  "rss_baseline_bytes": 58687488,
+  "rss_increment_bytes": 15435333632,
+  "sampling_seconds": 0.1,
+  "exit_code": 0
+}

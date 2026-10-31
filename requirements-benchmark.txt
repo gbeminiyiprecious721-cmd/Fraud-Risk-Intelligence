@@ -1,0 +1,7 @@
+# Stage 20 only — owner-approved additions, excluded from production requirements.
+# Install with --no-deps to preserve every existing project distribution.
+lightgbm==4.7.0
+xgboost==3.4.1
+catboost==1.2.10
+graphviz==0.21
+plotly==7.1.0

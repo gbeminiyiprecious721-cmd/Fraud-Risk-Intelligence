@@ -1,0 +1,38 @@
+{
+  "base": "cad3c70ead38ec50623f0743f40d998ef1dd6326",
+  "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "protected_paths_unchanged": [
+    "ui/case-store.js",
+    "src/production_pipeline.py",
+    "src/preprocessing.py",
+    "requirements.txt",
+    "requirements-render.txt",
+    "ui/capacity-v1.json",
+    "ui/benchmark-v1.json",
+    "monitoring/reference_distributions.json",
+    "monitoring/reference_score_distribution.json",
+    "artifacts/frozen_rf_fraud_risk_v1.joblib.manifest.json"
+  ],
+  "prior_scientific_workflow_text_verbatim": true,
+  "production_api_ast_unchanged_except_read_only_router": true,
+  "closed_final_test_accessed": false,
+  "new_dependencies": [],
+  "protected_local_refs": {
+    "main": "52c01c919cb40cd2bedf1a41794a73e38c6cf737",
+    "render-dashboard-integration": "d413486e962368a5ad81a445f15549da3d8075fc",
+    "origin/render-dashboard-integration": "cad3c70ead38ec50623f0743f40d998ef1dd6326"
+  },
+  "push_merge_deploy_attempted": false,
+  "monitoring_pipeline_outcomes_read": false,
+  "inherited_regression_uses_authorised_training_labels": true,
+  "final_regression": {
+    "passed": 525,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 5,
+    "seconds": 292.42,
+    "real_chrome_cases": 77,
+    "heavy_data_contract_tests": 6
+  },
+  "final_frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
+}

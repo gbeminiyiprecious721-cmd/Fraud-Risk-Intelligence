@@ -1,0 +1,204 @@
+{
+  "entrypoint": "src.render_demo:app (local only)",
+  "batch_rows": 24,
+  "seed": 101,
+  "clean_case_scope_verified": true,
+  "opened_assignment_priority_and_status_intersections_verified": true,
+  "one_shared_risk_filter": true,
+  "clear_actions_preserve_exact_case_storage_bytes": true,
+  "native_reset_cancel_and_accept_verified": true,
+  "screenshots": [
+    {
+      "view": "queue-default",
+      "width": 1440,
+      "height": 900,
+      "metrics": {
+        "bodyWidth": 1440,
+        "viewportWidth": 1440,
+        "contentHeight": 644,
+        "contentScrollHeight": 644,
+        "scope": "Showing all 24 transactions"
+      }
+    },
+    {
+      "view": "queue-case-empty",
+      "width": 1440,
+      "height": 900,
+      "metrics": {
+        "bodyWidth": 1440,
+        "viewportWidth": 1440,
+        "contentHeight": 644,
+        "contentScrollHeight": 644,
+        "scope": "Showing 0 of 24 transactions \u00b7 1 filter active"
+      }
+    },
+    {
+      "view": "queue-case-matching",
+      "width": 1440,
+      "height": 900,
+      "metrics": {
+        "bodyWidth": 1440,
+        "viewportWidth": 1440,
+        "contentHeight": 644,
+        "contentScrollHeight": 644,
+        "scope": "Showing 1 of 24 transactions \u00b7 4 filters active"
+      }
+    },
+    {
+      "view": "workflow-case-matching",
+      "width": 1440,
+      "height": 900,
+      "metrics": {
+        "bodyWidth": 1440,
+        "viewportWidth": 1440,
+        "contentHeight": 644,
+        "contentScrollHeight": 644,
+        "scope": "Showing 1 of 24 transactions \u00b7 4 filters active"
+      }
+    },
+    {
+      "view": "queue-default",
+      "width": 1280,
+      "height": 800,
+      "metrics": {
+        "bodyWidth": 1280,
+        "viewportWidth": 1280,
+        "contentHeight": 544,
+        "contentScrollHeight": 544,
+        "scope": "Showing all 24 transactions"
+      }
+    },
+    {
+      "view": "queue-case-empty",
+      "width": 1280,
+      "height": 800,
+      "metrics": {
+        "bodyWidth": 1280,
+        "viewportWidth": 1280,
+        "contentHeight": 516,
+        "contentScrollHeight": 516,
+        "scope": "Showing 0 of 24 transactions \u00b7 1 filter active"
+      }
+    },
+    {
+      "view": "queue-case-matching",
+      "width": 1280,
+      "height": 800,
+      "metrics": {
+        "bodyWidth": 1280,
+        "viewportWidth": 1280,
+        "contentHeight": 516,
+        "contentScrollHeight": 516,
+        "scope": "Showing 1 of 24 transactions \u00b7 4 filters active"
+      }
+    },
+    {
+      "view": "workflow-case-matching",
+      "width": 1280,
+      "height": 800,
+      "metrics": {
+        "bodyWidth": 1280,
+        "viewportWidth": 1280,
+        "contentHeight": 516,
+        "contentScrollHeight": 516,
+        "scope": "Showing 1 of 24 transactions \u00b7 4 filters active"
+      }
+    },
+    {
+      "view": "queue-default",
+      "width": 768,
+      "height": 1024,
+      "metrics": {
+        "bodyWidth": 753,
+        "viewportWidth": 768,
+        "contentHeight": 978,
+        "contentScrollHeight": 978,
+        "scope": "Showing all 24 transactions"
+      }
+    },
+    {
+      "view": "queue-case-empty",
+      "width": 768,
+      "height": 1024,
+      "metrics": {
+        "bodyWidth": 768,
+        "viewportWidth": 768,
+        "contentHeight": 545,
+        "contentScrollHeight": 545,
+        "scope": "Showing 0 of 24 transactions \u00b7 1 filter active"
+      }
+    },
+    {
+      "view": "queue-case-matching",
+      "width": 768,
+      "height": 1024,
+      "metrics": {
+        "bodyWidth": 753,
+        "viewportWidth": 768,
+        "contentHeight": 650,
+        "contentScrollHeight": 650,
+        "scope": "Showing 1 of 24 transactions \u00b7 4 filters active"
+      }
+    },
+    {
+      "view": "workflow-case-matching",
+      "width": 768,
+      "height": 1024,
+      "metrics": {
+        "bodyWidth": 768,
+        "viewportWidth": 768,
+        "contentHeight": 412,
+        "contentScrollHeight": 412,
+        "scope": "Showing 1 of 24 transactions \u00b7 4 filters active"
+      }
+    },
+    {
+      "view": "queue-default",
+      "width": 390,
+      "height": 844,
+      "metrics": {
+        "bodyWidth": 375,
+        "viewportWidth": 390,
+        "contentHeight": 1151,
+        "contentScrollHeight": 1151,
+        "scope": "Showing all 24 transactions"
+      }
+    },
+    {
+      "view": "queue-case-empty",
+      "width": 390,
+      "height": 844,
+      "metrics": {
+        "bodyWidth": 375,
+        "viewportWidth": 390,
+        "contentHeight": 797,
+        "contentScrollHeight": 797,
+        "scope": "Showing 0 of 24 transactions \u00b7 1 filter active"
+      }
+    },
+    {
+      "view": "queue-case-matching",
+      "width": 390,
+      "height": 844,
+      "metrics": {
+        "bodyWidth": 375,
+        "viewportWidth": 390,
+        "contentHeight": 870,
+        "contentScrollHeight": 870,
+        "scope": "Showing 1 of 24 transactions \u00b7 4 filters active"
+      }
+    },
+    {
+      "view": "workflow-case-matching",
+      "width": 390,
+      "height": 844,
+      "metrics": {
+        "bodyWidth": 375,
+        "viewportWidth": 390,
+        "contentHeight": 518,
+        "contentScrollHeight": 518,
+        "scope": "Showing 1 of 24 transactions \u00b7 4 filters active"
+      }
+    }
+  ]
+}

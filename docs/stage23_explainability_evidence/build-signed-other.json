@@ -1,0 +1,69 @@
+{
+  "schema_order_verified": true,
+  "raw_groups": 392,
+  "transformed_features": 813,
+  "population": {
+    "partition": "validation",
+    "n": 512,
+    "eligible": 75560,
+    "id_sha256": "b65d62465b93fe4bc5e969be95a177d7a6b7acfc368a0a2824600e583bac7362",
+    "labels_used": false
+  },
+  "method": "MDI and exact path-dependent TreeSHAP; no fitting",
+  "python": "3.12.15",
+  "leaf_baseline": 0.035109660485021406,
+  "checks": {
+    "compatibility_probe": {
+      "passed": true,
+      "max_abs_error": 7.216449660063518e-16,
+      "tolerance": 1e-08,
+      "rows": 2,
+      "seconds": 0.13917841599322855,
+      "baseline_max_error": 6.938893903907228e-18
+    },
+    "validation_global": {
+      "passed": true,
+      "max_abs_error": 4.0245584642661925e-16,
+      "tolerance": 1e-08,
+      "rows": 512,
+      "seconds": 20.248885499997414,
+      "baseline_max_error": 6.938893903907228e-18
+    },
+    "synthetic_stress": {
+      "passed": true,
+      "max_abs_error": 2.220446049250313e-16,
+      "tolerance": 1e-08,
+      "rows": 3,
+      "seconds": 0.16339933300332632,
+      "baseline_max_error": 6.938893903907228e-18
+    },
+    "synthetic_local": {
+      "passed": true,
+      "max_abs_error": 6.661338147750939e-16,
+      "tolerance": 1e-08,
+      "rows": 240,
+      "seconds": 8.35619120899355,
+      "baseline_max_error": 6.938893903907228e-18
+    }
+  },
+  "rare_category_probe": {
+    "eligible": true,
+    "sample_count": 5,
+    "scope": "rarity in fixed512 sample only"
+  },
+  "seconds": 38.50112166699546,
+  "asset_sha256": {
+    "global-v1.json": "b6985a81087cba786d927e59967038da87804db27794429ee78f53649d84a44c",
+    "local-v1.json": "facb66f0d1f19d1bf3c3d60e3f9c2f69fc535d17df84555afa139fd83129b168"
+  },
+  "identical_to_previous": {
+    "global-v1.json": true,
+    "local-v1.json": false
+  },
+  "capabilities": {
+    "mdi": true,
+    "global_shap": true,
+    "local_shap": true
+  },
+  "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
+}

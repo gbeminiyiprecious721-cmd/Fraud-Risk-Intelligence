@@ -1,0 +1,10 @@
+{
+  "phase": "score",
+  "model": "xgb",
+  "wall_seconds": 1.662895875000686,
+  "rss_peak_bytes": 443940864,
+  "rss_baseline_bytes": 53346304,
+  "rss_increment_bytes": 390594560,
+  "sampling_seconds": 0.1,
+  "exit_code": 0
+}

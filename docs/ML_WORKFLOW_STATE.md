@@ -1,5 +1,333 @@
 # ML Workflow State — Fraud-Risk-Intelligence
 
+## Portfolio Stage 24 — Professional portfolio documentation (2026-10-31)
+
+Release-review authorisation update: the owner explicitly permits pushing
+`stage24-portfolio-documentation` and opening a PR against
+`render-dashboard-integration`. This supersedes the original local-only note
+below. Merge, deployment, Render changes and Stage 25 remain prohibited.
+Scientific history and the original implementation evidence remain preserved.
+Fresh release regression: 555 passed, zero failures/skips, five inherited
+warnings, 312.64s, including 84 Chrome and all six heavy/data-contract cases.
+All original 145 internal targets pass; two added evidence links expand final
+scope to 147. Fresh minimal serving setup and three Mermaid renderings pass.
+Release inventory is 23 files (original 21 plus two fresh evidence records).
+
+The owner explicitly authorised Stage 24 and supplied the complete Phase A–I
+brief. This supersedes historical notes below prohibiting Stage 24. Work is
+limited to `stage24-portfolio-documentation`, based on approved integration
+`942b6d53ae004b847a8c0eca9a9298f1fe0c3024`. No Stage 25 approval is inferred.
+
+The README now separates original Stage 10 held-out summaries, later reused
+validation research and synthetic application behaviour. Source-backed evidence
+inventory, three Mermaid diagrams, a 5–7 minute walkthrough and a written case
+study document the implemented Stages 19–23 without changing their conclusions.
+The trusted artifact prerequisite replaces default rebuilding in normal setup.
+Six existing feature screenshots are reused; one current Overview capture fixes
+outdated screenshot context. No runtime source, dependency or UI change is made.
+
+Fresh complete regression: 555 passed, zero failures/skips, five inherited
+warnings, 314.22 seconds, including 84 real-Chrome tests and all six heavy/data-
+contract tests. Clean minimal-runtime installation and single-origin startup
+are verified in a disposable Python 3.12.15 environment. All three Mermaid
+sources render in Chrome; GitHub's non-publishing Markdown API validates GFM.
+The live dashboard returns HTTP 200. Kaggle's canonical dataset page is verified
+via its official indexed content, but the direct client receives HTTP 404;
+this access limitation is disclosed rather than called a successful HTTP check.
+
+Frozen artifact SHA256 remains
+`2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+Original scientific records, approved aggregates, browser-local storage code and
+production scoring/security are preserved. Historical workflow text below this
+addition is retained verbatim. No closed final-test data/predictions are opened
+for Stage 24. Heavy tests use existing train-only regression fixtures, not a
+replacement serving artifact. No push, merge, deployment or Render change.
+
+Report: [Stage 24 portfolio documentation](STAGE24_PORTFOLIO_DOCUMENTATION.md).
+
+## Portfolio Stage 23 — Frozen-artifact model explainability (2026-10-31)
+
+Release-review update: owner authorises pushing the feature branch and opening
+a PR against `render-dashboard-integration`, superseding the local-only note
+below. Independent fitted-transformer metadata reconstruction verifies813-to-392
+mapping; fresh SHAP reproduces512 global and240 local examples. Both assets are
+byte-identical. Public scope is exhaustively120 allowed/120 denied with no SHAP
+import, inference or transforms in serving. Fresh full suite:555 passed, zero
+failures/skips, five inherited warnings,313.06s; includes84 real-Chrome and all
+six heavy/data-contract tests. No runtime correction is needed. Release inventory
+is52 files (original49 plus an independent audit and two fresh evidence records).
+Merge, deployment, Render changes, challenger promotion and Stage24 remain
+prohibited pending separate approval.
+
+
+The owner explicitly authorised Stage23 and approved the concrete MDI+offline
+TreeSHAP protocol. This supersedes earlier historical notes prohibiting Stage23.
+Branch `stage23-model-explainability` starts at approved integration/live
+`756013d724364d3d16ba1dfcfc39f85fc1679884`. No Stage24 work is authorised.
+
+The actual frozen artifact and all813 ordered transformed columns are verified.
+378 numeric values,271 missingness flags and164 one-hot columns map uniquely to
+392 raw groups. Global SHAP uses a uniform, label-free512-record validation
+sample; the original validation population has been repeatedly reused in
+research. MDI is fitted impurity share; SHAP uses signed grouped contributions
+before mean absolute aggregation, not the historical sum-of-mean-absolute rule.
+No new predictive performance, causality, calibration, fairness or live-banking
+claim is made. No outcome columns or closed final-test data/predictions accessed.
+
+Weighted-leaf baseline0.035109660485 matches TreeSHAP within6.94e-18. All512 global,
+240 fixed synthetic local, two compatibility and three stress rows reconcile
+within1e-8 (measured maximum raw error7.22e-16). Public lookup allows only120
+existing public-cohort identifiers; local lookup allows240. Both final assets
+regenerate byte-identically. Final watched offline build39.48s/~381MiB, within
+10minutes/4GiB. Serving performs no SHAP, historical access or inference.
+
+New Explainability view supports global method/feature and synthetic transaction
+selection, signed charts/Other subtotals/reconciliation, case links, reset/retry,
+methods/stability/limits. Historical Stage11 SHAP labels are corrected; its
+values and fixed Stage10 evaluation figures remain unchanged. Prior stages,
+case-store schema/keys, scoring/security and dependencies are preserved. Final
+complete regression:555 passed, zero failures/skips, five inherited warnings,
+318.99s, including84 real-Chrome cases and all six heavy/data-contract tests.
+Seven focused Chrome and23 scientific/API tests pass;12 screenshots cover all
+four sizes. Independent fresh-artifact verification matches240 scores and392 MDI
+groups; original science/protected paths/checksum preserved. Stage23 is complete
+locally, awaiting owner review. Report:
+[Stage23 model explainability](STAGE23_MODEL_EXPLAINABILITY.md).
+
+Local commit only: no push, merge, deploy, Render changes, new dependencies,
+paid infrastructure, model replacement/retraining or challenger promotion.
+Original closed scientific workflow record follows verbatim.
+
+## Portfolio Stage 22 — Historical model monitoring (2026-10-31)
+
+Release-review update: the owner authorises feature-branch push and a PR against
+`render-dashboard-integration`, superseding the local-only delivery note below.
+Independent release audit verifies395 numerical/population assertions; fresh
+aggregate regeneration is byte-identical and the four-viewport public-app check
+passes. No runtime correction is necessary. Release inventory51 files: original48
+plus an independent audit script and two fresh evidence records. Merge, deployment,
+Render changes and Stage23 remain prohibited. Fresh full-suite evidence is
+525 passed, zero failures/skips, five existing warnings,317.00s, including77
+real-Chrome cases and all six heavy/data-contract tests. Controlled merge
+requires separate owner approval.
+
+
+The owner explicitly authorised Stage22 implementation and supplied the complete
+Phases F–H/testing/local-delivery continuation, superseding earlier notes that
+Stage22 was not authorised. Work is isolated on `stage22-model-monitoring`, based
+on approved integration `cad3c70ead38ec50623f0743f40d998ef1dd6326`.
+The owner chose earliest validation third as reference. Three disjoint,
+timestamp-tie-safe windows contain25,186/25,187/25,187 rows; all frozen-model
+scores are out-of-sample, but this is repeatedly reused development validation.
+No closed final-test rows/predictions or outcome columns were accessed.
+
+The protocol, calculations, predeclared investigation heuristics and limitations
+are in [Stage22 monitoring](STAGE22_MODEL_MONITORING.md). Two offline builds of
+feature/score/quality aggregates are byte-identical and each has14 independent
+numerical distribution checks. All selected drift statistics are below fixed
+demonstration rules. dist1 missingness rises3.00/3.41pp, below the5pp quality rule.
+Neither observation proves model health, equivalence or performance stability.
+No current precision/recall or production-monitoring claim is made.
+
+A fixed read-only validated aggregate endpoint and Model Monitoring view add
+window/feature/dimension selectors, reset/retry, charts, exact counts and
+methodology. All production scoring/security, prior science, historical
+capacity/benchmark evidence and browser-local case-store contracts are
+preserved. Frozen SHA256 remains
+`2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+No new dependencies, paid infrastructure, model fit/replacement or Render
+changes. Final verification: **525 passed, zero failures/skips, five inherited
+warnings,292.42 seconds**, including77 real-Chrome cases and all six heavy/data-
+contract checks. Six focused monitoring browser tests and25 numerical/API tests
+pass;18 screenshots cover all dimensions/four sizes and full mobile/tablet views.
+Three aggregate builds are byte-identical; the final one additionally verifies
+KS directly from empirical CDFs. Independent final review found no blockers.
+Stage22 historical demonstration is complete locally, awaiting owner review.
+Local verified commit only; no push, merge or deployment. Stage23 is not
+authorised. Original closed workflow record follows verbatim.
+
+## Stage 21 correction — Investigation Queue filters (2026-10-31)
+
+Release-preparation update: the owner now authorises pushing this correction
+branch and opening a PR against `render-dashboard-integration`; this supersedes
+the original local-only delivery restriction below. Fresh full regression:
+494 passed, zero failures/skips, five existing warnings, 266.02 seconds, including
+71 real-Chrome cases and all six heavy/data-contract checks. Independent source
+review and four-viewport public-app refresh/seed/reset verification found no
+blocking defect. Frozen model and prior science/security boundaries are unchanged.
+Release inventory is35 files (original33 plus two fresh evidence files).
+No merge, deployment, Render change or Stage22 work is authorised.
+
+
+The owner authorised a targeted correction, not Stage 22 or a redesign.
+Branch `stage21-queue-filter-corrections` starts from the verified integration
+and owner-identified live commit `d419da2dfa11ff0dda85f99a094e114f4e733e3e`.
+Real clean-Chrome reproduction against the LOCAL public entrypoint documented
+that zero-case Status/Priority/fictional-analyst filters were deliberately
+case-only but badly explained. Unassigned wrongly included unopened records.
+Risk Band was duplicated; Clear case filters also wrongly cleared risk.
+
+Corrections retain actual-case status/analyst/priority semantics, define
+Unassigned only for opened cases, explain empty/intersecting filters and show
+seeded display labels neutrally, separate from actual analyst decisions.
+One shared risk selector and distinct non-destructive case/all filter clears
+remain separate from confirmed local case-data reset. No store/schema change,
+backend routes, dependencies or model/scientific change was made.
+
+Four focused correction and four native-keyboard viewport regressions pass;
+public 24-record checks and 16 screenshots verify required viewports and exact
+case preservation when clearing filters. Final full regression: **494 passed,
+zero failures/skips**, five existing warnings, 263.81 seconds; includes all six
+heavy/data-contract tests and 71 real-Chrome cases. Frozen checksum, original
+case store/schema, API safeguards, historical aggregates, prior workflow text
+and protected refs remain unchanged. All supplied Phases A–F requirements are
+verified; the correction is complete locally and ready for owner review.
+See [correction report](STAGE21_QUEUE_FILTER_CORRECTIONS.md). The owner supplied
+the initially truncated Phases C–F continuation during this task, explicitly
+authorising verification and local commit only. Four additional native-keyboard
+viewport variants are included in the expanded final suite. No push, merge,
+deployment, Render change or Stage 22 work is authorised or attempted.
+
+## Portfolio enhancement Stage 21 — Browser-local case management (2026-10-30)
+
+The owner explicitly authorised Stage 21 implementation, tests and local-only
+commit on `stage21-case-management`, based at approved integration/live
+reference `7ffe91f995bd4bea7296e04ef408d9c3600869a7`. The owner's Stage 21
+brief supersedes the earlier Stage 20 note's restriction on advancing stages.
+Architecture and plan were documented before implementation in
+[Stage 21 case management](STAGE21_CASE_MANAGEMENT.md).
+
+A versioned, bounded, replay-validated browser store and shared drawer extend
+the existing queue and Kanban board. Cases support fictional assignments,
+priority, status, reasons, notes and append-only local activity. Case state
+is isolated by fixed seed and 24/48-record batch scope. Model scores/ranks
+remain immutable context. No backend writes, database, authentication or
+Render filesystem persistence was added; server changes only serve two
+static JavaScript assets. Unopened cards retain explicitly labelled seeded
+lanes; opened-case KPIs measure analyst-controlled case state separately.
+
+Initial 21 pure-store contract checks and the final 32 Stage 21 real-Chrome
+checks pass, including all four viewports, create/assign/resolve/reopen,
+refresh, filters, safe text, storage denial/quota/corruption/version recovery,
+reset confirmation and atomic rejection at the 64-event history limit.
+Independent review found one P2 partial-save issue; a regression reproduced
+it, and atomic multi-field validation/persistence fixed it. Native keyboard
+creation focus loss was also reproduced and fixed. Final complete regression:
+**486 passed, zero failures/skips**, five existing warnings, 253.66s; includes
+all six heavy/data-contract tests and 63 real-Chrome cases. Sixteen screenshots
+show Queue, Workflow, Case Details and history at all four required sizes;
+default desktop outer overflow is zero. Frozen checksum, all prior scientific
+records, source scoring/security, historical aggregates, dependencies and
+protected refs remain unchanged. Stage 21 implementation is complete locally
+and ready for owner review; browser-local/audit/accessibility limitations are
+documented. All pre-existing workflow records below remain unchanged.
+Initial delivery was local-only. The owner subsequently explicitly authorised
+final review, feature-branch push and a PR to `render-dashboard-integration`.
+Fresh full regression: **486 passed, zero failures/skips**, five unchanged
+warnings, 249.27s; all six heavy/data-contract tests and 63 real-Chrome cases.
+An independent source review found no concrete defects; two-tab/CDP verification
+confirmed conflicts, persistence, scoped reset, schema/quota recovery and no
+case-note canary or non-GET case requests in 42 observed requests. The original
+37-file scope remains intact; two added review-evidence files produce a 39-file
+PR inventory. No product/styling correction was needed. Frozen model, science,
+historical aggregates and public safeguards remain unchanged. No merge,
+deployment, Render changes, frozen-model training/replacement/promotion or
+closed final-test access is authorised. No Stage 22+ work is authorised.
+
+## Portfolio enhancement Stage 20 — Challenger benchmarking (2026-10-30)
+
+The owner explicitly approved Stage 20, its pre-training protocol and five
+pinned optional dependencies. Implementation is verified locally on
+`stage20-challenger-benchmark`, based at Stage 19 merge
+`5b6e90d8bf5665d4a316c063e0a6a1b0737feab7`. The prior usage-limit
+interruption was recovered without discarding work or changing Git config.
+All 132 existing package versions remain unchanged; exactly five approved
+additions were installed. Training libraries are not runtime dependencies.
+
+Frozen RF inference and three bounded challengers share the authorised
+75,560-row validation population, 2,617 positives and 813 final features.
+Inner chronological train-only preprocessing/stopping precedes fixed-round
+full-train challenger fits. AP: RF 0.447002; LightGBM 0.545903;
+XGBoost 0.551777; CatBoost 0.490482. XGBoost has highest observed AP within
+this shared-representation budget, not proven future superiority. All three
+runs reached the round ceiling without establishing convergence. One identical
+XGBoost selection fit was repeated after a metadata serialization failure:
+seven executions for six scientific fits, no added candidate/retuning.
+Reused validation and selection optimism remain explicit limitations.
+
+The read-only eighth dashboard view serves verified aggregate evidence only.
+All 804 capacity checkpoints have independent confusion/precision/recall
+checks. All 1,000 paired chronological block draws were valid. Native reload,
+five-pass inference consistency, byte-identical aggregate reproduction and
+RF equivalence to Stage 19 evidence pass. Full suite: **453 passed, zero
+failures/skips**, including all six heavy/data-contract tests and 31 real-Chrome
+cases. Eighteen screenshots cover all eight desktop views at 1440×900 and
+1280×800 plus benchmark tablet/mobile layouts; default desktop outer content
+overflow is zero. See [Stage 20 report](STAGE20_CHALLENGER_BENCHMARK.md)
+for configurations, results, resource costs, evidence and limitations.
+
+Frozen RF checksum remains
+`2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04`.
+Original scientific records below are preserved verbatim. Closed final-test
+values/predictions were not used. Production scoring/security, deployment
+requirements, main and integration refs are unchanged. Initial implementation
+was committed locally only. The owner subsequently explicitly authorised final
+release review, branch push and a PR targeting `render-dashboard-integration`.
+Fresh full regression: **453 passed, zero failures/skips**, 197.72s, including
+all six heavy/data-contract checks and 31 real-Chrome cases. The independent
+release verifier re-read validation-only labels, reloaded native models and
+recomputed all 804 checkpoints plus 1,000 literal-row paired block bootstrap
+draws; all metrics/intervals match to 1e-12. Complete committed diff review
+found no implementation defect. Fresh evidence is linked in the Stage 20
+report. No merge, deployment, Render changes or model promotion is authorised;
+no Stage 21+ work is authorised.
+
+## Portfolio enhancement Stage 19 — Investigation Capacity Simulator (2026-10-30)
+
+This is separate from the original closed ML Stages 0–19 below. The owner
+explicitly authorized this local-only enhancement on a new branch from
+`3569473e649ed27ce21771d4b2d2c8cb41fa6547`.
+Branch: `stage19-investigation-capacity`. Initial delivery was local only;
+the owner has now explicitly authorized release preparation, branch push
+and a PR against `render-dashboard-integration`. Merge, deployment and
+Render setting changes remain unauthorized.
+The trusted train-only frozen artifact supplies inference on the original
+validation population (75560 rows, 2617 positives), never on closed final-test
+outcomes. All 201 aggregate checkpoints have independent sklearn checks.
+Validation reuse/selection optimism is disclosed; no new independent
+performance, calibration, savings or production claim is made.
+Implementation and verification are complete; owner approval is pending.
+Full suite: 431 passed, zero skips/exclusions (26 real-Chrome cases plus all
+six heavy/data-contract tests). Desktop, tablet and mobile evidence and
+limitations are recorded in [the separate Stage 19 report](STAGE19_CAPACITY_SIMULATOR.md).
+No scientific decision or historical evaluation record below is changed.
+No Stage 20–25 work is authorized by this entry.
+
+## Dashboard UX recovery — 2026-10-30 (separate from ML stages)
+
+The owner authorized recovery and completion of dashboard **Stage 15: Live
+Dashboard UX, Navigation and Viewport Refinement** on
+`dashboard-viewport-refinement`, based at `9e9741a`. Existing uncommitted
+work was preserved. Recovery found and fixed two UI defects (a stale chart
+empty-state message and a collapsed queue region on short desktops).
+Final owner-requested verification: **408 passed, no exclusions or skips**,
+including **21 real-Chrome cases** and all six heavy/data-contract tests.
+The separate heavy/data-contract run also passed all six tests. Final
+review corrected Overview/Workflow/Queue sizing; all six views have zero
+outer overflow at 1440×900 and 1280×800. Twelve screenshots and test logs
+are recorded in `docs/stage15_ux_verification/`.
+See [Stage 15 UX recovery](STAGE15_UX_RECOVERY.md) for the recovered file
+inventory, requirement status, branch discrepancy and verification limits.
+Implementation and automated verification are complete for the recovered
+scope. The owner approved Stage 15 for release preparation on 2026-10-30
+and explicitly authorized dashboard Stage 16: commit, push and open a PR
+against `render-dashboard-integration`. Merge, deployment and Render setting
+changes remain unauthorized. This is separate from the approved ML roadmap.
+Original ML-stage approvals and scientific results below remain unchanged.
+No API/security source or frozen model changed. Stage 15 itself did not
+push, merge or deploy; Stage 16 authorizes only the feature-branch push and PR.
+
+
 ## Project Identity
 - Problem type: **Binary classification** (fraud detection), tabular, with a **confirmed chronological train/test holdout** (verified Stage 2 — see Dataset Findings; was inferred at Stage 0, now measured).
 - Business objective: not yet defined — this is the deliverable of Stage 1. Working premise (from the dataset and repo name): detect fraudulent transactions in e-commerce payment data, as a portfolio piece.

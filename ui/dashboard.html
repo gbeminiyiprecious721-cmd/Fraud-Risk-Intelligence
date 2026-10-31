@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fraud Risk Intelligence Dashboard — Portfolio Demonstration</title>
+<link rel="stylesheet" href="dashboard.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-CQBWl4fJHWbryGE+Pc7UAxWMUMNMWzWxF4SQo9CgkJIN1kx6djDQZjh3Y8SZ1d+6I+1zze6Z7kHXO7q3UyZAWw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+
+<a class="skip-link" href="#view-container">Skip to main content</a>
+
+<div class="app-shell">
+
+  <div class="nav-backdrop" id="nav-backdrop"></div>
+  <nav class="sidenav" id="sidenav" aria-label="Dashboard sections">
+    <div class="sidenav-brand">
+      <span class="mark" aria-hidden="true"></span>
+      <span class="name">Fraud Risk<br>Intelligence</span>
+      <button type="button" class="sidenav-close" id="sidenav-close" aria-label="Close navigation">&times;</button>
+    </div>
+    <ul class="sidenav-list">
+      <li><a href="#/overview" data-view="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg><span class="label">Overview</span></a></li>
+      <li><a href="#/queue" data-view="queue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg><span class="label">Investigation queue</span></a></li>
+      <li><a href="#/analytics" data-view="analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="20" x2="5" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="14"/></svg><span class="label">Analytics</span></a></li>
+      <li><a href="#/workflow" data-view="workflow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="4.5" height="16" rx="1"/><rect x="9.75" y="4" width="4.5" height="10" rx="1"/><rect x="16.5" y="4" width="4.5" height="13" rx="1"/></svg><span class="label">Workflow board</span></a></li>
+      <li><a href="#/insights" data-view="insights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg><span class="label">Model insights</span></a></li>
+      <li><a href="#/benchmark" data-view="benchmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V4M4 20h16M8 17V9M13 17V5M18 17v-6"/></svg><span class="label">Model benchmarking</span></a></li>
+      <li><a href="#/explainability" data-view="explainability"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h12M4 18h8"/></svg><span class="label">Model explainability</span></a></li>
+      <li><a href="#/monitoring" data-view="monitoring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="label">Model monitoring</span></a></li>
+      <li><a href="#/capacity" data-view="capacity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V4M4 20h16M7 16l4-5 4 2 5-8"/></svg><span class="label">Capacity simulator</span></a></li>
+      <li><a href="#/responsible-ai" data-view="responsible-ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg><span class="label">Responsible use</span></a></li>
+      <li><a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg><span class="label">Single-transaction demo</span></a></li>
+    </ul>
+  </nav>
+
+  <div class="app-main">
+
+    <header class="topbar">
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="sidenav">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+      </button>
+      <div class="topbar-titles">
+        <h1>Fraud Risk <span style="color: var(--accent);">Intelligence</span> Dashboard</h1>
+        <p class="subtitle">Interactive fraud risk analysis and investigation prioritisation.</p>
+      </div>
+      <div class="topbar-badges">
+        <span class="badge badge-synthetic" title="Every transaction shown here is fabricated for this demo, never a real or training record.">Synthetic / portfolio demonstration</span>
+        <a class="badge badge-uncalibrated" href="#/responsible-ai" title="No calibration check (reliability diagram, Brier score) has been performed on this score anywhere in the project. Click for the full Responsible AI disclosure.">Not a calibrated probability</a>
+        <span class="badge badge-health" id="health-badge" role="status"><span class="dot" id="health-dot"></span><span id="health-text">Checking service&hellip;</span></span>
+      </div>
+      <div class="header-controls">
+        <span class="capacity-context">Historical validation workspace · synthetic batch filters do not apply</span>
+        <div class="header-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <label for="filter-search" class="visually-hidden">Search transaction or case ID (synthetic views)</label>
+          <input type="search" id="filter-search" placeholder="Search transaction or case ID">
+        </div>
+        <div class="header-batch-select-wrap">
+          <label for="batch-select">Demo batch</label>
+          <select id="batch-select">
+            <option value="101">Sequence 1</option>
+            <option value="202">Sequence 2</option>
+            <option value="303">Sequence 3</option>
+            <option value="404">Sequence 4</option>
+            <option value="505">Sequence 5</option>
+          </select>
+        </div>
+        <div class="header-batch-select-wrap">
+            <label for="filter-band">Risk band</label>
+            <select id="filter-band">
+              <option value="">All bands</option>
+              <option value="Critical">Critical</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        <button type="button" class="ghost" id="reset-filters-btn" title="Clear every case and transaction filter; keep saved cases and notes">Clear all filters</button>
+        <button type="button" class="icon-btn" id="reload-btn" title="Re-score the current demo sequence" aria-label="Reload current demo batch">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h5"/><path d="M20 20v-5h-5"/><path d="M5.5 9A7 7 0 0118 8.5M18.5 15A7 7 0 016 15.5"/></svg>
+        </button>
+        <span id="global-scope-status" class="scope-status" role="status" aria-live="polite"></span>
+        <div id="case-filters" class="case-filters" aria-label="Investigation case filters">
+          <label>Case status <select id="case-status-filter" aria-describedby="case-filter-help"><option value="">All transactions</option><option>Not opened</option><optgroup label="Opened case statuses"><option>New</option><option>In Review</option><option>Escalated</option><option>Resolved</option></optgroup></select></label>
+          <label>Case analyst <select id="case-analyst-filter" aria-describedby="case-filter-help"><option value="">All analysts</option><option>Unassigned</option><option>Fictional Analyst A</option><option>Fictional Analyst B</option><option>Fictional Analyst C</option></select></label>
+          <label>Case priority <select id="case-priority-filter" aria-describedby="case-filter-help"><option value="">All priorities</option><option>Normal</option><option>High</option><option>Urgent</option></select></label>
+
+          <button type="button" class="ghost" id="case-clear-filters" title="Clear only case status, analyst and priority; keep transaction filters and saved cases">Clear case filters</button>
+          <button type="button" class="ghost" id="case-reset" title="Delete saved case changes for this batch after confirmation">Reset Demo Cases</button>
+          <p id="case-filter-help" class="case-filter-help"></p>
+        </div>
+      </div>
+    </header>
+
+    <div class="view-container" id="view-container" tabindex="-1">
+
+      <!-- ===================== OVERVIEW ===================== -->
+      <section class="view view-flex" data-view="overview" aria-labelledby="view-heading-overview">
+        <h2 id="view-heading-overview" class="view-heading" tabindex="-1">Overview</h2>
+        <section class="kpi-grid" id="kpi-grid" aria-label="Key metrics for this batch">
+          <!-- populated by dashboard.js -->
+        </section>
+        <div class="overview-grid">
+          <div class="panel chart-card">
+            <h3>Risk band breakdown</h3>
+            <div class="chart-canvas-wrap chart-canvas-wrap-sm"><canvas id="chart-band-breakdown-mini" role="img" aria-label="Count of transactions per risk band for this batch"></canvas><p class="chart-empty-state" id="chart-band-breakdown-mini-empty" hidden>No matching transactions.</p></div>
+          </div>
+          <div class="panel chart-card">
+            <h3>Risk score distribution</h3>
+            <div class="chart-canvas-wrap chart-canvas-wrap-sm"><canvas id="chart-distribution-mini" role="img" aria-label="Histogram of risk scores across the current batch"></canvas><p class="chart-empty-state" id="chart-distribution-mini-empty" hidden>No matching transactions.</p></div>
+          </div>
+        </div>
+        <div class="panel overview-preview view-fill">
+          <div class="panel-head-row">
+            <h3>Investigation preview</h3>
+            <a href="#/queue" class="ghost-link">View full queue &rarr;</a>
+          </div>
+          <p class="panel-note">Highest-priority transactions in the current scope. Click a row to inspect it.</p>
+          <div class="table-scroll table-scroll-preview">
+            <table class="queue" id="preview-table">
+              <thead>
+                <tr><th>Transaction ID</th><th>ProductCD</th><th>Amount</th><th>Risk score</th><th>Risk band</th><th>Case / seeded display status</th></tr>
+              </thead>
+              <tbody id="preview-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== INVESTIGATION QUEUE ===================== -->
+      <section class="view view-flex" data-view="queue" aria-labelledby="view-heading-queue">
+        <h2 id="view-heading-queue" class="view-heading" tabindex="-1">Investigation Queue</h2>
+        <section class="controls" aria-label="Filters and controls">
+          <div class="controls-heading">
+            <h3>Filter the investigation queue</h3>
+            <span class="filter-count" id="filter-count" hidden></span>
+          </div>
+          <div class="control-field">
+            <label for="filter-product">ProductCD</label>
+            <select id="filter-product"><option value="">All products</option></select>
+          </div>
+          <div class="control-field">
+            <label for="filter-card-network">Card network</label>
+            <select id="filter-card-network"><option value="">All networks</option></select>
+          </div>
+          <div class="control-field amount-range">
+            <label for="filter-amount-max">Max transaction amount (<span id="filter-amount-max-value">$5,000</span>)</label>
+            <div class="amount-range-inputs">
+              <input type="range" id="filter-amount-max" min="5" max="5000" step="5" value="5000">
+            </div>
+          </div>
+          <span id="controls-status" role="status" aria-live="polite"></span>
+        </section>
+        <div class="view-fill">
+          <div class="panel queue-panel">
+            <p class="panel-note">Each row is a synthetic transaction scored live, on request, by the real frozen model artifact. Click a row to inspect it, or click a column header to sort. Filters here apply across every view.</p>
+            <div class="table-scroll table-scroll-full">
+              <table class="queue" id="queue-table">
+                <thead>
+                  <tr>
+                    <th class="sortable" data-sort-key="transaction_id" aria-sort="none"><button type="button">Transaction ID <span class="sort-caret">&#9662;</span></button></th>
+                    <th>ProductCD</th>
+                    <th class="sortable" data-sort-key="amount" aria-sort="none"><button type="button">Amount <span class="sort-caret">&#9662;</span></button></th>
+                    <th class="sortable" data-sort-key="risk_score" aria-sort="descending"><button type="button">Risk score <span class="sort-caret">&#9662;</span></button></th>
+                    <th>Risk band</th>
+                    <th>Case / seeded display status</th>
+                    <th>Order</th>
+                    <th><span class="visually-hidden">Actions</span></th>
+                  </tr>
+                </thead>
+                <tbody id="queue-tbody">
+                  <tr><td colspan="8" class="table-empty">Loading&hellip;</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== ANALYTICS ===================== -->
+      <section class="view view-flex" data-view="analytics" aria-labelledby="view-heading-analytics">
+        <h2 id="view-heading-analytics" class="view-heading" tabindex="-1">Analytics</h2>
+        <p class="panel-note view-intro">Charts reflect the current demo batch and active filters (same scope as the Investigation Queue). Binned/scaled explicitly where the data clusters narrowly &mdash; no invented time-series, real fraud rates, or outcomes.</p>
+        <div class="view-fill">
+          <div class="analytics-grid analytics-grid-primary">
+            <div class="panel chart-card">
+              <h3>Risk score distribution</h3>
+              <p class="panel-note" id="distribution-note">Binned across this batch's own observed score range (not a fixed 0&ndash;1 axis) so the shape stays readable even when scores cluster narrowly.</p>
+              <div class="chart-canvas-wrap"><canvas id="chart-distribution" role="img" aria-label="Histogram of risk scores across the current batch, binned across the batch's observed range"></canvas><p class="chart-empty-state" id="chart-distribution-empty" hidden>No synthetic transactions match the current filters.</p></div>
+            </div>
+            <div class="panel chart-card">
+              <h3>Risk band breakdown</h3>
+              <p class="panel-note chart-clickable-hint">Click a slice or legend entry to filter the queue.</p>
+              <div class="chart-canvas-wrap"><canvas id="chart-band-breakdown" role="img" aria-label="Count of transactions per risk band. Clicking a slice filters the investigation queue to that band."></canvas><p class="chart-empty-state" id="chart-band-breakdown-empty" hidden>No synthetic transactions match the current filters.</p></div>
+            </div>
+            <div class="panel chart-card">
+              <h3>High-risk by ProductCD</h3>
+              <p class="panel-note chart-clickable-hint">Click a bar to filter the queue.</p>
+              <div class="chart-canvas-wrap"><canvas id="chart-by-product" role="img" aria-label="Count of High and Critical transactions per ProductCD. Clicking a bar filters the investigation queue to that product."></canvas><p class="chart-empty-state" id="chart-by-product-empty" hidden>No synthetic transactions match the current filters.</p></div>
+            </div>
+            <div class="panel chart-card">
+              <h3>Amount vs. risk score</h3>
+              <p class="panel-note" id="amount-risk-note">Y-axis zoomed to this batch's observed score range, not a fixed 0&ndash;1 axis, for the same reason as the distribution chart.</p>
+              <div class="chart-canvas-wrap"><canvas id="chart-amount-vs-risk" role="img" aria-label="Scatter plot of transaction amount against risk score"></canvas><p class="chart-empty-state" id="chart-amount-vs-risk-empty" hidden>No synthetic transactions match the current filters.</p></div>
+            </div>
+          </div>
+          <div class="panel chart-card analytics-grid-wide-standalone">
+            <h3>Risk score by queue order</h3>
+            <p class="panel-note">Sequence in the scored batch, not real elapsed time.</p>
+            <div class="chart-canvas-wrap"><canvas id="chart-sequence" role="img" aria-label="Risk score for each transaction in batch order"></canvas><p class="chart-empty-state" id="chart-sequence-empty" hidden>No synthetic transactions match the current filters.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== WORKFLOW BOARD ===================== -->
+      <section class="view view-flex" data-view="workflow" aria-labelledby="view-heading-workflow">
+        <h2 id="view-heading-workflow" class="view-heading" tabindex="-1">Investigation Workflow</h2>
+        <p class="panel-note view-intro">Synthetic browser-local cases, not a server audit log. Unopened cards retain seeded demo lanes. Open a case to manage its analyst-controlled state; model scores never change.</p>
+        <p id="case-storage-status" role="status" class="case-disclaimer"></p>
+        <div id="case-workload" class="case-workload" aria-live="polite"></div>
+        <div class="view-fill">
+          <div class="kanban-scroll-wrap" id="kanban-scroll-wrap">
+            <div class="kanban-board kanban-board-full" id="kanban-board">
+              <div class="kanban-column" data-status="New">
+                <div class="kanban-column-head"><span>New</span><span class="count" data-count="New">0</span></div>
+                <div class="kanban-cards" data-cards="New"></div>
+              </div>
+              <div class="kanban-column" data-status="In Review">
+                <div class="kanban-column-head"><span>In Review</span><span class="count" data-count="In Review">0</span></div>
+                <div class="kanban-cards" data-cards="In Review"></div>
+              </div>
+              <div class="kanban-column" data-status="Escalated">
+                <div class="kanban-column-head"><span>Escalated</span><span class="count" data-count="Escalated">0</span></div>
+                <div class="kanban-cards" data-cards="Escalated"></div>
+              </div>
+              <div class="kanban-column" data-status="Resolved">
+                <div class="kanban-column-head"><span>Resolved</span><span class="count" data-count="Resolved">0</span></div>
+                <div class="kanban-cards" data-cards="Resolved"></div>
+              </div>
+            </div>
+            <div class="kanban-scroll-fade kanban-scroll-fade-left" aria-hidden="true"></div>
+            <div class="kanban-scroll-fade kanban-scroll-fade-right" aria-hidden="true"></div>
+          </div>
+          <div class="kanban-scroll-dots" id="kanban-scroll-dots" aria-hidden="true">
+            <span class="dot" data-dot="0"></span>
+            <span class="dot" data-dot="1"></span>
+            <span class="dot" data-dot="2"></span>
+            <span class="dot" data-dot="3"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="view explanation-view" data-view="explainability" aria-labelledby="view-heading-explainability">
+        <h2 id="view-heading-explainability" class="view-heading" tabindex="-1">Model Explainability</h2>
+        <p class="capacity-disclosure">Deployed frozen Random Forest only · global validation sample and fixed synthetic local examples. Contributions explain uncalibrated model scores, never fraud causation, calibrated probabilities or a fraud verdict.</p>
+        <p id="explanation-status" role="status" aria-live="polite">Open this view to load verified explanations.</p><button id="explanation-retry" class="ghost" type="button" hidden>Retry explanations</button>
+        <div id="explanation-workspace" hidden>
+          <div class="explanation-controls panel">
+            <label>Global method<select id="explanation-method"><option value="shap">Mean absolute grouped TreeSHAP</option><option value="mdi">Impurity importance (MDI)</option></select></label>
+            <label>Feature interpretation<select id="explanation-feature"></select></label>
+            <button id="explanation-reset" class="ghost" type="button">Reset explanation controls</button>
+          </div>
+          <p id="explanation-provenance" class="panel-note"></p>
+          <div class="explanation-charts">
+            <div class="panel"><h3 id="explanation-global-title">Global importance</h3><p id="explanation-global-note" class="panel-note"></p><div class="explanation-canvas"><canvas id="explanation-global-chart" role="img" aria-label="Global importance for frozen Random Forest; values in table"></canvas></div></div>
+            <div class="panel"><h3>Synthetic local score contributions</h3><label class="explanation-local-label">Current demo batch <select id="explanation-transaction" aria-describedby="explanation-local-scope"></select></label><p id="explanation-local-scope" class="panel-note">Change batch in <a href="#/queue">Queue</a>. Notes remain browser-local.</p><p id="explanation-local-status" role="status" aria-live="polite"></p><button id="explanation-local-retry" class="ghost" type="button" hidden>Retry local explanation</button><div class="explanation-canvas"><canvas id="explanation-local-chart" role="img" aria-label="Signed contributions increase or decrease model score relative to baseline"></canvas></div></div>
+          </div>
+          <div class="panel explanation-details"><p id="explanation-feature-detail"></p><p id="explanation-reconciliation" aria-live="polite"></p><div class="explanation-tables"><div class="explanation-table-wrap"><table><caption>Global values · displayed to 6 decimals</caption><thead><tr><th scope="col">Raw input group</th><th scope="col">Importance</th></tr></thead><tbody id="explanation-global-table"></tbody></table></div><div class="explanation-table-wrap"><table><caption>Local score contributions · displayed to 6 decimals</caption><thead><tr><th scope="col">Group / baseline</th><th scope="col">Signed value</th></tr></thead><tbody id="explanation-local-table"></tbody></table></div></div></div>
+          <details class="panel explanation-methodology"><summary>Methods, stability and investigation guidance</summary><p>MDI sums fitted impurity importance across a raw input's numeric, missingness and one-hot columns. It is biased by cardinality and correlation; it is not permutation sensitivity. TreeSHAP first sums signed components per raw input, then averages absolute grouped contributions across 512 label-free validation examples. These are different statistics, not interchangeable evidence of causal importance.</p><p>Local baseline uses the trees' recorded weighted training paths. Positive/negative contributions increase/decrease this model score relative to that baseline. Other features retains every omitted contribution. Additivity is a numerical identity, not proof that a feature causes fraud. Synthetic numeric defaults and unknown categories can be unrepresentative.</p><p id="explanation-stability"></p><p>Use these associations to guide investigation of data quality and case context; do not automate declines or promote experimental challengers. Reference assumptions, correlated inputs, anonymised features and reused validation limit interpretation.</p><div id="explanation-limitations"></div></details>
+        </div>
+      </section>
+
+      <section class="view monitoring-view" data-view="monitoring" aria-labelledby="view-heading-monitoring">
+        <h2 id="view-heading-monitoring" class="view-heading" tabindex="-1">Model Monitoring</h2>
+        <p class="capacity-disclosure">Historical validation demonstration · not live production monitoring. Distribution shifts do not prove performance deterioration. Scores are uncalibrated ranks; no new verified fraud labels or current precision/recall.</p>
+        <p id="monitoring-status" role="status" aria-live="polite">Open this view to load historical aggregates.</p>
+        <button type="button" class="ghost" id="monitoring-retry" hidden>Retry monitoring evidence</button>
+        <div id="monitoring-workspace" hidden>
+          <div class="monitoring-controls panel">
+            <label>Comparison window<select id="monitoring-window"><option value="V2">V2 vs reference V1</option><option value="V3">V3 vs reference V1</option></select></label>
+            <label>Monitoring dimension<select id="monitoring-mode"><option value="features">Feature drift</option><option value="scores">Score drift</option><option value="quality">Data quality</option></select></label>
+            <label>Feature detail<select id="monitoring-feature"><option value="TransactionAmt">Transaction amount</option><option value="ProductCD">Product code</option><option value="card4">Card network</option><option value="C1">C1 · anonymised count</option><option value="dist1">dist1 · dataset distance</option><option value="daily_phase">Relative daily phase</option></select></label>
+            <button type="button" class="ghost" id="monitoring-reset">Reset monitoring filters</button>
+          </div>
+          <p id="monitoring-population" class="panel-note"></p>
+          <div id="monitoring-kpis" class="monitoring-kpis" aria-live="polite"></div>
+          <div class="monitoring-charts">
+            <div class="panel"><h3 id="monitoring-chart-title">Feature drift indicators</h3><p id="monitoring-chart-note" class="panel-note"></p><div class="monitoring-canvas"><canvas id="monitoring-main-chart" role="img" aria-label="Selected monitoring dimension comparison; exact values follow"></canvas></div></div>
+            <div class="panel"><h3 id="monitoring-detail-title">Feature distribution</h3><div class="monitoring-canvas"><canvas id="monitoring-detail-chart" role="img" aria-label="Reference and comparison distributions; exact values follow"></canvas></div></div>
+          </div>
+          <div class="panel monitoring-detail"><p id="monitoring-detail" aria-live="polite"></p><div class="monitoring-table-wrap"><table><caption id="monitoring-table-caption">Exact selected distribution counts</caption><thead><tr><th scope="col">Bucket / quantile</th><th scope="col">Reference V1</th><th scope="col" id="monitoring-column">Comparison</th></tr></thead><tbody id="monitoring-table"></tbody></table></div></div>
+          <details class="panel monitoring-method"><summary>Methodology, investigation guidance and limitations</summary><p>Reference V1 is the earliest validation third; later V2/V3 are disjoint chronological windows. All scores are out-of-sample for the frozen Random Forest, but validation was reused during development. Relative seconds are not calendar dates.</p><p>Numeric: reference-only quantile bins, PSI with additive 0.0001 smoothing, KS empirical distance. Categorical: base2 Jensen–Shannon divergence. Demonstration investigation rules: PSI ≥0.20 or KS ≥0.10; JS ≥0.05. Minimum sample 200; no IID p-values or significance claims. Missingness increase ≥5 percentage points and invalid values warrant quality investigation. Inspect upstream changes before considering any model response; never retrain automatically.</p><p>Score-tail criterion is strictly greater than fixed reference q95, not a calibrated fraud probability. Histogram bins have open-ended extremes; ties may reduce the number of quantile bins. Missing/nonfinite numeric values are tracked separately.</p><div id="monitoring-limits"></div></details>
+        </div>
+      </section>
+
+      <section class="view benchmark-view" data-view="benchmark" aria-labelledby="view-heading-benchmark">
+        <h2 id="view-heading-benchmark" class="view-heading" tabindex="-1">Model Benchmarking</h2>
+        <p class="capacity-disclosure">Historical validation / development backtesting. Reused validation may overstate performance. Shared features and bounded training; no independent future-performance or promotion claim. Random Forest remains deployed.</p>
+        <p id="benchmark-status" role="status" aria-live="polite">Open this view to load measured evidence.</p>
+        <button type="button" class="ghost" id="benchmark-retry" hidden>Retry evidence</button>
+        <div id="benchmark-workspace" hidden>
+          <p id="benchmark-population" class="panel-note"></p>
+          <div class="benchmark-controls panel">
+            <label for="benchmark-metric">Comparison metric <select id="benchmark-metric"><option value="average_precision">Average Precision</option><option value="roc_auc">ROC-AUC</option><option value="top1">Precision at top 1%</option><option value="top5">Recall at top 5%</option></select></label>
+            <label for="benchmark-slider"><span>Review capacity <output id="benchmark-percent"></output></span><input type="range" id="benchmark-slider" min="0" max="200" step="1" value="2"></label>
+            <label for="benchmark-count">Transactions to review <input type="number" id="benchmark-count" min="0" step="1" aria-describedby="benchmark-step"></label>
+            <button type="button" class="ghost" id="benchmark-reset">Reset to 1%</button>
+            <span id="benchmark-step" class="panel-note">Snaps to 0.5% checkpoints.</span>
+          </div>
+          <div id="benchmark-kpis" class="benchmark-kpis"></div>
+          <div class="benchmark-charts">
+            <div class="panel"><h3>Shared-population comparison</h3><div class="benchmark-canvas"><canvas id="benchmark-metric-chart" role="img" aria-label="Measured validation metric by model"></canvas></div></div>
+            <div class="panel"><h3>Historical fraud capture</h3><div class="benchmark-canvas"><canvas id="benchmark-capacity-chart" role="img" aria-label="Historical recall versus review capacity for all four models"></canvas></div></div>
+          </div>
+          <div class="panel benchmark-table-wrap"><table class="benchmark-table"><caption>Measured model costs and exact selected-capacity metrics</caption><thead><tr><th scope="col">Model</th><th scope="col">AP [95% block interval]</th><th scope="col">Precision / recall</th><th scope="col">TP / FP / FN / TN</th><th scope="col">Training seconds</th><th scope="col">Scoring seconds / peak RSS</th></tr></thead><tbody id="benchmark-table"></tbody></table></div>
+          <details class="panel benchmark-findings"><summary id="benchmark-finding">Findings and limitations</summary><div id="benchmark-limits"></div></details>
+        </div>
+      </section>
+      <!-- Stage 19: separate labelled validation population; never synthetic outcomes. -->
+      <section class="view capacity-view" data-view="capacity" aria-labelledby="view-heading-capacity">
+        <h2 id="view-heading-capacity" class="view-heading" tabindex="-1">Investigation Capacity Simulator</h2>
+        <p class="capacity-disclosure">Historical validation / development backtesting — previously used during model development. Estimates may be optimistic; future fraud capture is not guaranteed. Separate from the Stage 10 final-test results.</p>
+        <p id="capacity-status" role="status" aria-live="polite">Historical evidence loads when you open this view.</p>
+        <button type="button" class="ghost" id="capacity-retry" hidden>Retry loading evidence</button>
+        <div id="capacity-workspace" hidden>
+          <p class="capacity-population" id="capacity-population"></p>
+          <div class="capacity-controls panel">
+            <div class="capacity-slider-field">
+              <label for="capacity-slider">Investigation capacity <output id="capacity-percent" for="capacity-slider"></output></label>
+              <input id="capacity-slider" type="range" min="0" max="200" step="1" value="2" aria-describedby="capacity-step-note">
+            </div>
+            <div><label for="capacity-count">Transactions to review</label><input id="capacity-count" type="number" min="0" step="1" inputmode="numeric" aria-describedby="capacity-step-note"></div>
+            <button type="button" class="ghost" id="capacity-reset">Reset to 1%</button>
+            <span id="capacity-step-note">Numeric input snaps to 0.5% checkpoints.</span>
+          </div>
+          <div class="capacity-kpis" id="capacity-kpis" aria-live="polite"></div>
+          <div class="capacity-charts">
+            <div class="panel"><h3>Capacity vs. historical fraud capture</h3><p class="panel-note">Click a checkpoint to select capacity. Random review is an expectation.</p><div class="capacity-canvas"><canvas id="capacity-recall-chart" role="img" aria-label="Historical validation recall and expected random-review recall at computed investigation capacities"></canvas></div></div>
+            <div class="panel"><h3>Workload vs. precision</h3><p class="panel-note">Fraction of reviewed transactions historically labelled fraudulent.</p><div class="capacity-canvas"><canvas id="capacity-precision-chart" role="img" aria-label="Historical precision versus workload compared with expected random-review precision"></canvas></div></div>
+          </div>
+          <details class="capacity-decision panel" aria-label="Capacity decision support"><summary><strong>Decision support</strong> — <span id="capacity-brief"></span> <span class="ghost-link">Counts &amp; assumptions</span></summary><p id="capacity-decision"></p><p id="capacity-counts"></p><p class="panel-note">Fixed historical batch, not a staffing forecast. Uncalibrated ranks; no automated declines or monetary claims. Lines join computed checkpoints; metrics are never interpolated.</p></details>
+        </div>
+      </section>
+
+      <!-- ===================== MODEL INSIGHTS ===================== -->
+      <section class="view view-flex" data-view="insights" aria-labelledby="view-heading-insights">
+        <h2 id="view-heading-insights" class="view-heading" tabindex="-1">Model Insights</h2>
+        <div class="historical-panel" aria-label="Historical model performance">
+          <h3>Model performance &mdash; historical, Stage 10 offline evaluation</h3>
+          <p class="panel-note">Scored exactly once on the held-out <code>final_test</code> split, before any UI existed. These numbers are <strong>fixed and historical</strong> &mdash; distinct from, and not comparable to, the live scores on the current demo batch. Source: <code>README.md</code> / <code>docs/STAGE10_EVALUATION_PROTOCOL.md</code>.</p>
+          <div class="historical-grid">
+            <div class="historical-stat"><div class="k">Average Precision</div><div class="v">0.4278</div></div>
+            <div class="historical-stat"><div class="k">ROC-AUC</div><div class="v">0.8664</div></div>
+            <div class="historical-stat"><div class="k">95% CI on AP</div><div class="v">[0.408, 0.445]</div></div>
+            <div class="historical-stat"><div class="k">Precision @ 1%</div><div class="v">0.858</div></div>
+            <div class="historical-stat"><div class="k">Recall @ 1%</div><div class="v">0.246</div></div>
+            <div class="historical-stat"><div class="k">No-skill baseline</div><div class="v">0.035</div></div>
+          </div>
+        </div>
+        <div class="view-fill">
+          <div class="insights-grid">
+            <div class="panel insights-drivers-panel">
+              <h3>Historical Stage 11 SHAP context</h3>
+              <p class="panel-note">Historical Stage 11 summed mean-absolute SHAP ranking from a balanced training sample and separate fitted experiment, computed offline &mdash; not a live, per-transaction explanation of any specific score on this page.</p>
+              <p class="panel-note"><a href="#/explainability">Open verified explanations of the deployed artifact</a>. These historical values remain unchanged.</p>
+              <ol class="feature-list feature-list-lg" id="insights-feature-importance"></ol>
+            </div>
+            <div class="panel">
+              <h3>Model &amp; service health</h3>
+              <div class="health-stat-grid" id="health-rows">
+                <div class="historical-stat"><div class="k">API status</div><div class="v" id="health-row-status">&ndash;</div></div>
+                <div class="historical-stat"><div class="k">Artifact version</div><div class="v" id="health-row-version">&ndash;</div></div>
+                <div class="historical-stat"><div class="k">Artifact checksum</div><div class="v" id="health-row-checksum">&ndash;</div></div>
+                <div class="historical-stat"><div class="k">API contract</div><div class="v" id="health-row-contract">&ndash;</div></div>
+                <div class="historical-stat"><div class="k">Batch generated</div><div class="v" id="health-row-generated">&ndash;</div></div>
+                <div class="historical-stat"><div class="k">Batch seed</div><div class="v" id="health-row-seed">&ndash;</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== RESPONSIBLE AI ===================== -->
+      <section class="view" data-view="responsible-ai" aria-labelledby="view-heading-responsible-ai">
+        <h2 id="view-heading-responsible-ai" class="view-heading" tabindex="-1">Responsible Use &amp; Limitations</h2>
+        <div class="responsible-ai-grid">
+          <section class="responsible-ai" aria-label="Responsible AI and limitations">
+            <ul>
+              <li>This score is an <strong>investigation-prioritization signal only</strong> &mdash; it ranks transactions relative to one another, for a human investigator to triage.</li>
+              <li>It must <strong>never</strong> be used to automatically decline, block, or flag a transaction as fraud without human review.</li>
+              <li>It is <strong>not a calibrated probability</strong> &mdash; no reliability diagram, Brier score, or recalibration has been performed anywhere in this project.</li>
+              <li>Every queue record shown here is <strong>synthetic and portfolio-safe</strong>, fabricated for this demo and scored on request &mdash; none are real or training transactions.</li>
+              <li>The <strong>historical Stage 10 metrics</strong> (Model Insights) are a separate, fixed, one-time measurement on held-out data &mdash; they describe the model in general, not any specific prediction shown on this page, and must never be read as if they applied to an individual transaction.</li>
+              <li>This project makes <strong>no demographic fairness claim</strong>; a Responsible AI assessment was performed on the model (Stage 12) but is not re-run or re-validated by this dashboard.</li>
+              <li>This is a <strong>portfolio demonstration</strong>, not production banking software, and was never evaluated, reviewed, or approved as one.</li>
+            </ul>
+          </section>
+          <aside class="panel responsible-ai-aside" aria-label="At a glance">
+            <h3>At a glance</h3>
+            <ul class="quick-facts">
+              <li><span class="badge badge-synthetic">Synthetic / portfolio demonstration</span></li>
+              <li><span class="badge badge-uncalibrated">Not a calibrated probability</span></li>
+            </ul>
+            <p class="panel-note">For the fixed, one-time Stage 10 evaluation numbers, see <a href="#/insights">Model Insights</a>. To see the model score one real request end-to-end, try the <a href="index.html">single-transaction demo</a>.</p>
+          </aside>
+        </div>
+      </section>
+
+    </div>
+
+    <footer class="page-footer">Fraud-Risk-Intelligence &mdash; portfolio presentation layer. Synthetic queue; historical aggregates only, with no raw records exposed. <a href="index.html">Single-transaction demo &rarr;</a></footer>
+
+  </div>
+</div>
+
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="drawer" id="detail-drawer" aria-label="Transaction detail" aria-hidden="true" role="dialog" aria-modal="true">
+  <button type="button" class="drawer-close" id="drawer-close" aria-label="Close detail panel">&times;</button>
+  <h2 id="drawer-id">&ndash;</h2>
+  <p class="score-big" id="drawer-score">&ndash;</p>
+  <span class="risk-pill" id="drawer-band-pill">&ndash;</span>
+  <div class="interpretation" id="drawer-interpretation"></div>
+  <p class="caveat">This is a relative ranking score, not a calibrated probability of real-world fraud.</p>
+  <section class="case-panel" aria-label="Investigation case management">
+    <h3>Investigation case</h3>
+    <p class="case-disclaimer">Synthetic demo only. Notes stay in this browser/device. Do not enter real personal, customer or sensitive information. Local history can be edited outside this app; it is not a secure audit log. Resolution never blocks a transaction.</p>
+    <p id="case-message" role="status" aria-live="polite"></p>
+    <button id="case-open" type="button" class="ghost">Open investigation case</button>
+    <div id="case-detail" hidden>
+      <p id="case-identity"></p>
+      <div class="case-fields">
+        <label>Fictional demo analyst <select id="case-analyst"></select></label>
+        <label>Priority <select id="case-priority"></select></label>
+        <label>Investigation status <select id="case-status"></select></label>
+      </div>
+      <label for="case-reason">Resolution / reopening reason (required for those changes, max 300)</label>
+      <textarea id="case-reason" maxlength="300" rows="2" placeholder="Fictional demo reason only"></textarea>
+      <button id="case-save" type="button" class="ghost">Apply case changes</button>
+      <label for="case-note">Add plain-text demo note (max 500, maximum 16 notes)</label>
+      <textarea id="case-note" maxlength="500" rows="3" placeholder="Synthetic demonstration notes only"></textarea>
+      <button id="case-add-note" type="button" class="ghost">Add timestamped note</button>
+      <h4>Notes</h4><ol id="case-notes"></ol>
+      <details open><summary>Local activity history</summary><ol id="case-history"></ol></details>
+    </div>
+  </section>
+  <button id="drawer-explain" class="ghost" type="button">Explain this synthetic score</button>
+  <dl>
+    <dt>ProductCD</dt><dd id="drawer-product">&ndash;</dd>
+    <dt>Card network</dt><dd id="drawer-card">&ndash;</dd>
+    <dt>Amount</dt><dd id="drawer-amount">&ndash;</dd>
+    <dt>Seeded transaction status (not analyst decision)</dt><dd id="drawer-status">&ndash;</dd>
+    <dt>Queue order</dt><dd id="drawer-sequence">&ndash;</dd>
+  </dl>
+  <dt style="color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em;">Historical Stage 11 context (not this transaction)</dt>
+  <p class="panel-note" style="margin-top: 0.3rem;">Historical Stage 11 SHAP values from a separate fit and balanced training sample; retained for context, not verified attributions for this deployed score. Use Explain this synthetic score for the current frozen-artifact explanation.</p>
+  <ol class="feature-list" id="drawer-features"></ol>
+</aside>
+
+<script src="case-store.js"></script>
+<script src="case-ui.js"></script>
+<script src="dashboard.js"></script>
+<script src="capacity.js"></script>
+<script src="benchmark.js"></script>
+<script src="monitoring.js"></script>
+<script src="explainability.js"></script>
+</body>
+</html>

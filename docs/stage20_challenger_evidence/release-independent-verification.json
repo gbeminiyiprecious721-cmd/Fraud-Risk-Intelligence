@@ -1,0 +1,76 @@
+{
+  "reviewed_commit": "cf4fea1141c7f721f59300a8afb17dae48a73627",
+  "authorised_rows": 75560,
+  "positives": 2617,
+  "validation_id_sha256": "14e5f38141f4ea86cf6228d76bf9af398c7cc3116d1ca49ddecc3b502e9ff5bc",
+  "source_validation_labels_independently_matched": true,
+  "checkpoints_verified": 804,
+  "bootstrap_method": "sklearn Average Precision on literal paired resampled block rows; independent of weighted implementation",
+  "valid_draws": 1000,
+  "degenerate_draws": 0,
+  "models": [
+    {
+      "name": "Random Forest",
+      "average_precision": 0.44700194663110016,
+      "roc_auc": 0.8733329269600856,
+      "checkpoints_verified": 201,
+      "native_reload_max_difference": 2.220446049250313e-16,
+      "ap_ci": [
+        0.4018665604671081,
+        0.49191999407967313
+      ],
+      "ap_difference_ci": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "LightGBM",
+      "average_precision": 0.5459031863285158,
+      "roc_auc": 0.9093741994648268,
+      "checkpoints_verified": 201,
+      "native_reload_max_difference": 0.0,
+      "ap_ci": [
+        0.5002182289964365,
+        0.5901305909825679
+      ],
+      "ap_difference_ci": [
+        0.08446401306569011,
+        0.11643682794192155
+      ]
+    },
+    {
+      "name": "XGBoost",
+      "average_precision": 0.5517774920821589,
+      "roc_auc": 0.9104383885342899,
+      "checkpoints_verified": 201,
+      "native_reload_max_difference": 0.0,
+      "ap_ci": [
+        0.5056865573922188,
+        0.5955745677192035
+      ],
+      "ap_difference_ci": [
+        0.08862822443890218,
+        0.12331729105653938
+      ]
+    },
+    {
+      "name": "CatBoost",
+      "average_precision": 0.4904820505838211,
+      "roc_auc": 0.8775438117097845,
+      "checkpoints_verified": 201,
+      "native_reload_max_difference": 0.0,
+      "ap_ci": [
+        0.4471637355843466,
+        0.5310955015175091
+      ],
+      "ap_difference_ci": [
+        0.03110125438620056,
+        0.05641566465279666
+      ]
+    }
+  ],
+  "no_training_performed": true,
+  "closed_evaluation_values_accessed": false,
+  "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
+}

@@ -1,0 +1,12 @@
+{
+  "added": {
+    "plotly": "7.1.0",
+    "lightgbm": "4.7.0",
+    "graphviz": "0.21",
+    "catboost": "1.2.10",
+    "xgboost": "3.4.1"
+  },
+  "existing_distributions_unchanged": true,
+  "native_imports_passed": true,
+  "model_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
+}

@@ -1,0 +1,7 @@
+{
+  "before_sha256": "ba765f9d1058f51f54c8becf8e938e5a430f585cc4f1eb6fa8ad0ed9f25d3fc6",
+  "after_sha256": "ba765f9d1058f51f54c8becf8e938e5a430f585cc4f1eb6fa8ad0ed9f25d3fc6",
+  "identical_recomputed_aggregate": true,
+  "paired_draws": 1000,
+  "native_training_repeated_for_check": false
+}

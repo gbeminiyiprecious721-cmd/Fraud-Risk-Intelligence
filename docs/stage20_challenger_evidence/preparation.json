@@ -1,0 +1,56 @@
+{
+  "populations": {
+    "train": {
+      "n": 438125,
+      "min_time": 86400,
+      "max_time": 11093269,
+      "id_sha256": "a39d2eeedd2b1c6f2f26bb26670e6a4b53973480806294524887ff56dbdc4470"
+    },
+    "inner_fit": {
+      "n": 372406,
+      "min_time": 86400,
+      "max_time": 9256765,
+      "id_sha256": "d6d5804ae742971a9cbcbfeb9bd1a9e8a4893b4a54e3912762625efadebe9c16"
+    },
+    "inner_stop": {
+      "n": 65719,
+      "min_time": 9256767,
+      "max_time": 11093269,
+      "id_sha256": "471b323867a54114e87731281f8782769252da450b0a53a52188e91b820034ff"
+    },
+    "validation": {
+      "n": 75560,
+      "min_time": 11093842,
+      "max_time": 13452406,
+      "id_sha256": "14e5f38141f4ea86cf6228d76bf9af398c7cc3116d1ca49ddecc3b502e9ff5bc"
+    }
+  },
+  "validation_positives": 2617,
+  "inner_preprocessor_fit_seconds": 12.21798883300653,
+  "transforms": {
+    "inner_fit": {
+      "rows": 372406,
+      "features": 813,
+      "transform_seconds": 6.68980645800184
+    },
+    "inner_stop": {
+      "rows": 65719,
+      "features": 813,
+      "transform_seconds": 1.2888032909977483
+    },
+    "train": {
+      "rows": 438125,
+      "features": 813,
+      "transform_seconds": 7.837812124998891
+    },
+    "validation": {
+      "rows": 75560,
+      "features": 813,
+      "transform_seconds": 1.5980282910022652
+    }
+  },
+  "preparation_seconds": 40.1196634999942,
+  "feature_order_sha256": "a2dc5bca64b90120b552e1fa339e35887995bf9b17e539958e710a591a4b500e",
+  "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+  "closed_evaluation_accessed": false
+}
