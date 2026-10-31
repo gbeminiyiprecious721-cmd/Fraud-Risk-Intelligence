@@ -1,0 +1,248 @@
+{
+  "date": "2026-10-31",
+  "reviewed_implementation_commit": "07aebeef925f1c5669ca3ef95f9cee52b04305b1",
+  "base": "756013d724364d3d16ba1dfcfc39f85fc1679884",
+  "original_inventory_verified": 49,
+  "release_inventory": 52,
+  "runtime_product_changes": false,
+  "independent_scientific_audit": {
+    "mapped_columns": 813,
+    "raw_groups": 392,
+    "components_from_fitted_metadata": true,
+    "complete_unique_mapping": true,
+    "mdi_group_total": 1.0,
+    "mdi_top20_reproduced": true,
+    "global_shap_rows": 512,
+    "selected_id_sha256": "b65d62465b93fe4bc5e969be95a177d7a6b7acfc368a0a2824600e583bac7362",
+    "global_shap_top20_reproduced": true,
+    "synthetic_records_recomputed": 240,
+    "local_signed_contributions_and_other_reproduced": true,
+    "public_identifier_inventory": 120,
+    "root_baseline": 0.0351096604850214,
+    "max_raw_grouped_additivity_error": 7.771561172376096e-16,
+    "max_serialised_reconciliation_error": 2.0000667788622195e-12,
+    "max_synthetic_score_error": 4.959366251000574e-13,
+    "max_attribution_difference": 4.99711383383783e-13,
+    "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04",
+    "outcomes_or_closed_records_accessed": false,
+    "public_scope_and_no_inference": {
+      "approved_identifiers_accessible": 120,
+      "nonpublic_local_identifiers_denied": 120,
+      "scope_override_ignored": true,
+      "static_private_paths_denied": true,
+      "write_methods_denied": true,
+      "serving_shap_imported": false,
+      "request_time_inference_calls": 0,
+      "request_time_transform_calls": 0,
+      "response_size_bounds_verified": true
+    },
+    "seconds": 33.83829912499641
+  },
+  "audit_resources": {
+    "exit_code": 0,
+    "seconds": 35.1812662500015,
+    "peak_rss_bytes": 616890368
+  },
+  "fresh_deterministic_build": {
+    "schema_order_verified": true,
+    "raw_groups": 392,
+    "transformed_features": 813,
+    "population": {
+      "partition": "validation",
+      "n": 512,
+      "eligible": 75560,
+      "id_sha256": "b65d62465b93fe4bc5e969be95a177d7a6b7acfc368a0a2824600e583bac7362",
+      "labels_used": false
+    },
+    "method": "MDI and exact path-dependent TreeSHAP; no fitting",
+    "python": "3.12.15",
+    "leaf_baseline": 0.035109660485021406,
+    "checks": {
+      "compatibility_probe": {
+        "passed": true,
+        "max_abs_error": 7.216449660063518e-16,
+        "tolerance": 1e-08,
+        "rows": 2,
+        "seconds": 0.13904441699560266,
+        "baseline_max_error": 6.938893903907228e-18
+      },
+      "validation_global": {
+        "passed": true,
+        "max_abs_error": 4.163336342344337e-16,
+        "tolerance": 1e-08,
+        "rows": 512,
+        "seconds": 20.18213212500268,
+        "baseline_max_error": 6.938893903907228e-18
+      },
+      "synthetic_stress": {
+        "passed": true,
+        "max_abs_error": 3.3306690738754696e-16,
+        "tolerance": 1e-08,
+        "rows": 3,
+        "seconds": 0.16121645900420845,
+        "baseline_max_error": 6.938893903907228e-18
+      },
+      "synthetic_local": {
+        "passed": true,
+        "max_abs_error": 7.216449660063518e-16,
+        "tolerance": 1e-08,
+        "rows": 240,
+        "seconds": 8.237863374990411,
+        "baseline_max_error": 6.938893903907228e-18
+      }
+    },
+    "rare_category_probe": {
+      "eligible": true,
+      "sample_count": 5,
+      "scope": "rarity in fixed512 sample only"
+    },
+    "seconds": 38.719402457994875,
+    "asset_sha256": {
+      "global-v1.json": "b6985a81087cba786d927e59967038da87804db27794429ee78f53649d84a44c",
+      "local-v1.json": "facb66f0d1f19d1bf3c3d60e3f9c2f69fc535d17df84555afa139fd83129b168"
+    },
+    "identical_to_previous": {
+      "global-v1.json": true,
+      "local-v1.json": true
+    },
+    "capabilities": {
+      "mdi": true,
+      "global_shap": true,
+      "local_shap": true
+    },
+    "frozen_sha256": "2fb0cbc4457ec2e63ce235d5faee92c2812f3811c9efdf872760268d9122bf04"
+  },
+  "fresh_build_resources": {
+    "exit_code": 0,
+    "wall_seconds": 40.280311833004816,
+    "rss_peak_bytes": 400146432,
+    "limit_seconds": 600,
+    "limit_bytes": 4294967296
+  },
+  "fresh_public_browser": {
+    "entrypoint": "local src.render_demo:app",
+    "synthetic_queue_rows": 24,
+    "case_storage_bytes_preserved": true,
+    "public_scope_max_sequence": 23,
+    "runtime_errors": 0,
+    "screenshots": [
+      {
+        "image": "explainability-mdi-1440x900.png",
+        "method": "mdi",
+        "metrics": {
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "contentHeight": 721,
+          "contentScrollHeight": 721,
+          "globalPlot": 249,
+          "localPlot": 179
+        }
+      },
+      {
+        "image": "explainability-shap-1440x900.png",
+        "method": "shap",
+        "metrics": {
+          "width": 1440,
+          "height": 900,
+          "bodyWidth": 1440,
+          "contentHeight": 721,
+          "contentScrollHeight": 721,
+          "globalPlot": 233,
+          "localPlot": 179
+        }
+      },
+      {
+        "image": "explainability-mdi-1280x800.png",
+        "method": "mdi",
+        "metrics": {
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "contentHeight": 621,
+          "contentScrollHeight": 621,
+          "globalPlot": 183,
+          "localPlot": 117
+        }
+      },
+      {
+        "image": "explainability-shap-1280x800.png",
+        "method": "shap",
+        "metrics": {
+          "width": 1280,
+          "height": 800,
+          "bodyWidth": 1280,
+          "contentHeight": 621,
+          "contentScrollHeight": 621,
+          "globalPlot": 170,
+          "localPlot": 117
+        }
+      },
+      {
+        "image": "explainability-mdi-768x1024.png",
+        "method": "mdi",
+        "metrics": {
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 753,
+          "contentHeight": 1681,
+          "contentScrollHeight": 1681,
+          "globalPlot": 255,
+          "localPlot": 255
+        }
+      },
+      {
+        "image": "explainability-shap-768x1024.png",
+        "method": "shap",
+        "metrics": {
+          "width": 768,
+          "height": 1024,
+          "bodyWidth": 753,
+          "contentHeight": 1681,
+          "contentScrollHeight": 1681,
+          "globalPlot": 255,
+          "localPlot": 255
+        }
+      },
+      {
+        "image": "explainability-mdi-390x844.png",
+        "method": "mdi",
+        "metrics": {
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 375,
+          "contentHeight": 1883,
+          "contentScrollHeight": 1883,
+          "globalPlot": 255,
+          "localPlot": 255
+        }
+      },
+      {
+        "image": "explainability-shap-390x844.png",
+        "method": "shap",
+        "metrics": {
+          "width": 390,
+          "height": 844,
+          "bodyWidth": 375,
+          "contentHeight": 1883,
+          "contentScrollHeight": 1883,
+          "globalPlot": 255,
+          "localPlot": 255
+        }
+      }
+    ]
+  },
+  "fresh_regression": {
+    "passed": 555,
+    "failed": 0,
+    "skipped": 0,
+    "warnings": 5,
+    "seconds": 313.06,
+    "real_chrome_cases": 84,
+    "heavy_data_contract_tests": 6
+  },
+  "independent_source_review": "No release blockers in original implementation. Added audit DELETE convenience-client invocation corrected to generic request; corrected scope and full audit pass.",
+  "preservation": "Frozen SHA256, previous scientific workflow, historical aggregates, case store/schema, scoring/security and dependencies unchanged.",
+  "render_compatibility": "No additional runtime packages, paid service or request-time inference/SHAP. Private assets remain outside static roots.",
+  "restrictions": "Owner authorises feature push and PR only; no main/integration mutation, merge/deploy/Render change, challenger promotion or closed final-test access."
+}

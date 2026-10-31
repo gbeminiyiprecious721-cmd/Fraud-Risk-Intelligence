@@ -35,7 +35,7 @@
 
   const RISK_BAND_ORDER = ["Low", "Medium", "High", "Critical"];
   const WORKFLOW_STATUSES = ["New", "In Review", "Escalated", "Resolved"];
-  const VIEWS = ["overview", "queue", "analytics", "workflow", "insights", "responsible-ai", "capacity", "benchmark", "monitoring"];
+  const VIEWS = ["overview", "queue", "analytics", "workflow", "insights", "responsible-ai", "capacity", "benchmark", "monitoring", "explainability"];
   const DEFAULT_VIEW = "overview";
 
   // Fixed demo-batch seeds. These are the SAME values src/render_demo.py
@@ -93,9 +93,11 @@
   function renderActiveView() {
     const view = parseViewFromHash();
     state.currentView = view;
-    const historical = ["capacity", "benchmark", "monitoring"].includes(view);
+    const historical = ["capacity", "benchmark", "monitoring", "explainability"].includes(view);
     document.body.classList.toggle("capacity-active", historical);
     document.body.classList.toggle("benchmark-active", view === "benchmark");
+    document.body.classList.toggle("explanation-active", view === "explainability");
+    document.querySelector(".capacity-context").textContent=view==="explainability"?"Global: fixed validation sample · Local: supported synthetic records":"Historical validation workspace · synthetic batch filters do not apply";
     document.body.classList.toggle("case-workspace-active", ["queue","workflow"].includes(view));
     const populationBadge = document.querySelector(".topbar .badge-synthetic");
     populationBadge.textContent = historical ? "Historical validation / portfolio" : "Synthetic / portfolio demonstration";
@@ -111,6 +113,7 @@
       if (isActive) a.setAttribute("aria-current", "page");
       else a.removeAttribute("aria-current");
     });
+    if(view==="explainability"){populationBadge.textContent="Model explanations / portfolio";populationBadge.title="Validation aggregate summaries and fixed synthetic local explanations for the deployed Random Forest.";}
     closeNav();
     const container = el("view-container");
     if (container) container.scrollTop = 0;
@@ -127,6 +130,7 @@
     if (view === "capacity" && window.CapacitySimulator) window.CapacitySimulator.show();
     if (view === "benchmark" && window.ModelBenchmark) window.ModelBenchmark.show();
     if (view === "monitoring" && window.ModelMonitoring) window.ModelMonitoring.show();
+    if (view === "explainability" && window.ModelExplanations) window.ModelExplanations.show();
   }
 
   // ---------------------------------------------------------------------
@@ -287,6 +291,7 @@
     renderCharts(rows, state.raw);
     renderKanban(rows);
     window.CaseUI.workload(rows);
+    window.ModelExplanations?.setBatch(state.raw);
     renderInsightsFeatureImportance();
   }
 
@@ -896,7 +901,7 @@
 
     const features = (state.raw.global_feature_importance || []).slice(0, 8);
     el("drawer-features").innerHTML = features
-      .map((f) => `<li><code>${escapeHtml(f.feature)}</code> &mdash; global importance ${f.importance.toFixed(5)}</li>`)
+      .map((f) => `<li><code>${escapeHtml(f.feature)}</code> &mdash; historical mean-|SHAP| sum ${f.importance.toFixed(5)}</li>`)
       .join("");
 
     el("detail-drawer").classList.add("open");
@@ -981,6 +986,7 @@
     });
 
     el("drawer-close").addEventListener("click", closeDrawer);
+    el("drawer-explain").addEventListener("click",()=>{const id=state.selectedId;closeDrawer();window.ModelExplanations?.selectTransaction(id);location.hash="/explainability";});
     el("drawer-backdrop").addEventListener("click", closeDrawer);
     document.addEventListener("keydown", (e) => {
       if (e.key === "Tab" && el("detail-drawer").classList.contains("open")) {

@@ -39,6 +39,7 @@ from pydantic import BaseModel, ConfigDict
 from src.capacity_routes import router as capacity_router
 from src.benchmark_routes import router as benchmark_router
 from src.monitoring_routes import router as monitoring_router
+from src.explanation_routes import router as explanation_router
 
 from src.production_pipeline import (
     ArtifactIntegrityError,
@@ -153,6 +154,7 @@ def create_app(artifact_path: Path | str = DEFAULT_ARTIFACT_PATH) -> FastAPI:
     app.include_router(capacity_router)
     app.include_router(benchmark_router)
     app.include_router(monitoring_router)
+    app.include_router(explanation_router)
 
     app.add_middleware(
         CORSMiddleware,
@@ -257,7 +259,7 @@ app = create_app()
 # extra routes onto its own app instance after calling create_app().
 # ---------------------------------------------------------------------------
 
-# Stage 11's own global permutation-importance ranking (top 15, by original
+# Stage11 historical summed mean-absolute SHAP ranking (top15, by original
 # column), copied verbatim from the already-approved
 # docs/_stage11_explainability_raw.json ("global_ranking_by_original_column_top15").
 # Never recomputed here. This is a GLOBAL, model-level ranking -- the

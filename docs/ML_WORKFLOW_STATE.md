@@ -1,5 +1,58 @@
 # ML Workflow State — Fraud-Risk-Intelligence
 
+## Portfolio Stage 23 — Frozen-artifact model explainability (2026-10-31)
+
+Release-review update: owner authorises pushing the feature branch and opening
+a PR against `render-dashboard-integration`, superseding the local-only note
+below. Independent fitted-transformer metadata reconstruction verifies813-to-392
+mapping; fresh SHAP reproduces512 global and240 local examples. Both assets are
+byte-identical. Public scope is exhaustively120 allowed/120 denied with no SHAP
+import, inference or transforms in serving. Fresh full suite:555 passed, zero
+failures/skips, five inherited warnings,313.06s; includes84 real-Chrome and all
+six heavy/data-contract tests. No runtime correction is needed. Release inventory
+is52 files (original49 plus an independent audit and two fresh evidence records).
+Merge, deployment, Render changes, challenger promotion and Stage24 remain
+prohibited pending separate approval.
+
+
+The owner explicitly authorised Stage23 and approved the concrete MDI+offline
+TreeSHAP protocol. This supersedes earlier historical notes prohibiting Stage23.
+Branch `stage23-model-explainability` starts at approved integration/live
+`756013d724364d3d16ba1dfcfc39f85fc1679884`. No Stage24 work is authorised.
+
+The actual frozen artifact and all813 ordered transformed columns are verified.
+378 numeric values,271 missingness flags and164 one-hot columns map uniquely to
+392 raw groups. Global SHAP uses a uniform, label-free512-record validation
+sample; the original validation population has been repeatedly reused in
+research. MDI is fitted impurity share; SHAP uses signed grouped contributions
+before mean absolute aggregation, not the historical sum-of-mean-absolute rule.
+No new predictive performance, causality, calibration, fairness or live-banking
+claim is made. No outcome columns or closed final-test data/predictions accessed.
+
+Weighted-leaf baseline0.035109660485 matches TreeSHAP within6.94e-18. All512 global,
+240 fixed synthetic local, two compatibility and three stress rows reconcile
+within1e-8 (measured maximum raw error7.22e-16). Public lookup allows only120
+existing public-cohort identifiers; local lookup allows240. Both final assets
+regenerate byte-identically. Final watched offline build39.48s/~381MiB, within
+10minutes/4GiB. Serving performs no SHAP, historical access or inference.
+
+New Explainability view supports global method/feature and synthetic transaction
+selection, signed charts/Other subtotals/reconciliation, case links, reset/retry,
+methods/stability/limits. Historical Stage11 SHAP labels are corrected; its
+values and fixed Stage10 evaluation figures remain unchanged. Prior stages,
+case-store schema/keys, scoring/security and dependencies are preserved. Final
+complete regression:555 passed, zero failures/skips, five inherited warnings,
+318.99s, including84 real-Chrome cases and all six heavy/data-contract tests.
+Seven focused Chrome and23 scientific/API tests pass;12 screenshots cover all
+four sizes. Independent fresh-artifact verification matches240 scores and392 MDI
+groups; original science/protected paths/checksum preserved. Stage23 is complete
+locally, awaiting owner review. Report:
+[Stage23 model explainability](STAGE23_MODEL_EXPLAINABILITY.md).
+
+Local commit only: no push, merge, deploy, Render changes, new dependencies,
+paid infrastructure, model replacement/retraining or challenger promotion.
+Original closed scientific workflow record follows verbatim.
+
 ## Portfolio Stage 22 — Historical model monitoring (2026-10-31)
 
 Release-review update: the owner authorises feature-branch push and a PR against
