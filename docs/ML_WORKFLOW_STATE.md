@@ -2,6 +2,18 @@
 
 ## Portfolio Stage 22 — Historical model monitoring (2026-10-31)
 
+Release-review update: the owner authorises feature-branch push and a PR against
+`render-dashboard-integration`, superseding the local-only delivery note below.
+Independent release audit verifies395 numerical/population assertions; fresh
+aggregate regeneration is byte-identical and the four-viewport public-app check
+passes. No runtime correction is necessary. Release inventory51 files: original48
+plus an independent audit script and two fresh evidence records. Merge, deployment,
+Render changes and Stage23 remain prohibited. Fresh full-suite evidence is
+525 passed, zero failures/skips, five existing warnings,317.00s, including77
+real-Chrome cases and all six heavy/data-contract tests. Controlled merge
+requires separate owner approval.
+
+
 The owner explicitly authorised Stage22 implementation and supplied the complete
 Phases F–H/testing/local-delivery continuation, superseding earlier notes that
 Stage22 was not authorised. Work is isolated on `stage22-model-monitoring`, based

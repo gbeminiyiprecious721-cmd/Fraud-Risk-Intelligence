@@ -376,3 +376,51 @@ protocol/plan/workflow documentation, logs, review/preservation evidence and
 18 screenshots. No unrelated styling or dependency change. The local commit SHA
 is reported with delivery; no push, merge, deployment or Render change. Main and
 integration references are unchanged. Stage23 requires separate owner approval.
+
+
+## Final review and GitHub PR preparation (2026-10-31)
+
+The owner now explicitly authorises pushing `stage22-model-monitoring` and
+opening a PR against `render-dashboard-integration`. This supersedes the prior
+local-only delivery restriction; merge, deployment, Render changes and Stage23
+remain prohibited. Original implementation head:
+`d4995276fd4dec6e93ab33e5d18ba62bb24e568e`.
+
+The complete48-file inventory and committed diff were reviewed. Independent
+source/scientific/security review found no release blockers. No product code
+correction was required. Release adds three verification files: the reproducible
+`scripts/verify_stage22_release.py`, fresh `release-regression.log` and
+`release-review.json`. Report/workflow/inventory are updated in place; the
+current release inventory is **51 files**. The earlier48 count refers to the
+original implementation snapshot.
+
+The independent audit passes **395 scalar/vector assertions**, checking exact
+V1/V2/V3 populations, disjointness/full validation coverage, timestamps and
+fingerprints, reference-only bins/counts, PSI, direct empirical-CDF KS,
+Jensen–Shannon divergence, missingness/invalid-value counts, score means and
+quantiles, and fixed-reference-tail fractions. It uses no outcome columns,
+metric builders or model fitting. Reproduce with
+`.venv/bin/python scripts/verify_stage22_release.py`.
+
+Fresh regeneration is byte-identical to the versioned aggregate at SHA256
+`715f88fdd67c6065d7bbe9702241c28041aab67ada72096283561d58372f3f37`.
+A fresh clean-profile public-entrypoint Chrome run passes all three dimensions,
+charts, reset, storage preservation and the24-record synthetic queue at all four
+sizes. Existing18 screenshot checksums remain verified; additional fresh captures
+were made in disposable temporary storage to avoid unrelated screenshot churn.
+See [release review](stage22_monitoring_evidence/release-review.json).
+
+Render Free compatibility requires no new packages, infrastructure or configuration:
+only a fixed14KiB aggregate and existing pinned NumPy/pandas/SciPy stack. No
+request-time model inference is introduced. The frozen checksum and previous
+science, historical aggregates, case schema/storage contracts, scoring and API
+safeguards are unchanged. No live performance claims are made; investigation
+thresholds remain expressly heuristic. Scientific limitations above still apply.
+
+
+Fresh release regression: **525 passed, 0 failed, 0 skipped, five existing
+warnings,317.00 seconds**. Includes all77 real-Chrome cases and all six heavy/data-
+contract tests. See [release regression](stage22_monitoring_evidence/release-regression.log).
+No test was excluded. Existing warnings remain the Starlette deprecation and
+sklearn logistic penalty/convergence warnings. No blocking defect remains;
+controlled merge still requires separate owner approval.

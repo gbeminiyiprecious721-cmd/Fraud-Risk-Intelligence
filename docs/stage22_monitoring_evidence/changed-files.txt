@@ -30,10 +30,13 @@ docs/stage22_monitoring_evidence/pre-final-viewport-regression.log
 docs/stage22_monitoring_evidence/preservation.json
 docs/stage22_monitoring_evidence/public-browser-verification.json
 docs/stage22_monitoring_evidence/public-browser.log
+docs/stage22_monitoring_evidence/release-regression.log
+docs/stage22_monitoring_evidence/release-review.json
 docs/stage22_monitoring_evidence/screenshot-checksums.json
 docs/superpowers/plans/2026-10-31-model-monitoring.md
 scripts/build_monitoring_aggregate.py
 scripts/verify_monitoring_browser.py
+scripts/verify_stage22_release.py
 src/api.py
 src/drift_intelligence.py
 src/monitoring_routes.py
