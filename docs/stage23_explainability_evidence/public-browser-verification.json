@@ -1,0 +1,113 @@
+{
+  "entrypoint": "local src.render_demo:app",
+  "synthetic_queue_rows": 24,
+  "case_storage_bytes_preserved": true,
+  "public_scope_max_sequence": 23,
+  "runtime_errors": 0,
+  "screenshots": [
+    {
+      "image": "explainability-mdi-1440x900.png",
+      "method": "mdi",
+      "metrics": {
+        "width": 1440,
+        "height": 900,
+        "bodyWidth": 1440,
+        "contentHeight": 721,
+        "contentScrollHeight": 721,
+        "globalPlot": 249,
+        "localPlot": 179
+      }
+    },
+    {
+      "image": "explainability-shap-1440x900.png",
+      "method": "shap",
+      "metrics": {
+        "width": 1440,
+        "height": 900,
+        "bodyWidth": 1440,
+        "contentHeight": 721,
+        "contentScrollHeight": 721,
+        "globalPlot": 233,
+        "localPlot": 179
+      }
+    },
+    {
+      "image": "explainability-mdi-1280x800.png",
+      "method": "mdi",
+      "metrics": {
+        "width": 1280,
+        "height": 800,
+        "bodyWidth": 1280,
+        "contentHeight": 621,
+        "contentScrollHeight": 621,
+        "globalPlot": 183,
+        "localPlot": 117
+      }
+    },
+    {
+      "image": "explainability-shap-1280x800.png",
+      "method": "shap",
+      "metrics": {
+        "width": 1280,
+        "height": 800,
+        "bodyWidth": 1280,
+        "contentHeight": 621,
+        "contentScrollHeight": 621,
+        "globalPlot": 170,
+        "localPlot": 117
+      }
+    },
+    {
+      "image": "explainability-mdi-768x1024.png",
+      "method": "mdi",
+      "metrics": {
+        "width": 768,
+        "height": 1024,
+        "bodyWidth": 753,
+        "contentHeight": 1681,
+        "contentScrollHeight": 1681,
+        "globalPlot": 255,
+        "localPlot": 255
+      }
+    },
+    {
+      "image": "explainability-shap-768x1024.png",
+      "method": "shap",
+      "metrics": {
+        "width": 768,
+        "height": 1024,
+        "bodyWidth": 753,
+        "contentHeight": 1681,
+        "contentScrollHeight": 1681,
+        "globalPlot": 255,
+        "localPlot": 255
+      }
+    },
+    {
+      "image": "explainability-mdi-390x844.png",
+      "method": "mdi",
+      "metrics": {
+        "width": 390,
+        "height": 844,
+        "bodyWidth": 375,
+        "contentHeight": 1883,
+        "contentScrollHeight": 1883,
+        "globalPlot": 255,
+        "localPlot": 255
+      }
+    },
+    {
+      "image": "explainability-shap-390x844.png",
+      "method": "shap",
+      "metrics": {
+        "width": 390,
+        "height": 844,
+        "bodyWidth": 375,
+        "contentHeight": 1883,
+        "contentScrollHeight": 1883,
+        "globalPlot": 255,
+        "localPlot": 255
+      }
+    }
+  ]
+}

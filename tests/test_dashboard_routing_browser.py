@@ -960,3 +960,98 @@ def test_monitoring_all_missing_feature_omits_undefined_chart_shares(browser_env
         assert p.evaluate("Chart.getChart('monitoring-detail-chart').data.datasets[1].data.every(v=>v===null)")
         assert not [m for m in p.console_messages if m[0] in ['error','exception']]
     finally:p.close()
+
+
+def _explanation_wait(page):
+    deadline=time.monotonic()+12
+    while time.monotonic()<deadline:
+        if page.evaluate("!document.getElementById('explanation-workspace').hidden&&document.getElementById('explanation-local-table').children.length>0"):return
+        time.sleep(.1)
+    raise AssertionError(page.evaluate("document.getElementById('explanation-status').textContent+' / '+document.getElementById('explanation-local-status').textContent"))
+
+
+@pytest.mark.parametrize('width,height',[(1440,900),(1280,800),(768,1024),(390,844)])
+def test_explainability_controls_case_link_keyboard_and_preservation(page,browser_env,width,height):
+    page.send('Emulation.setDeviceMetricsOverride',{'width':width,'height':height,'deviceScaleFactor':1,'mobile':False})
+    _stage21_ready(page,browser_env);page.click('.sidenav-list a[data-view="queue"]')
+    transaction=page.evaluate("document.querySelector('#queue-tbody tr[data-id]').dataset.id")
+    page.click('#queue-tbody .inspect-btn');page.click('#case-open')
+    _stage21_select(page,'case-note','Synthetic case remains local while opening explanations');page.click('#case-add-note')
+    stored=page.evaluate("localStorage.getItem('fri.demo.cases.v1.101.48')")
+    page.click('#drawer-explain');_explanation_wait(page)
+    assert page.evaluate("document.querySelector('.view.active').dataset.view")=='explainability'
+    assert page.evaluate("document.getElementById('explanation-transaction').value")==transaction
+    assert 'baseline' in page.evaluate("document.getElementById('explanation-reconciliation').textContent")
+    assert 'not a pristine holdout' in page.evaluate("document.getElementById('explanation-provenance').textContent")
+    _stage21_select(page,'explanation-transaction','TXN-DEMO-0101-0000');_explanation_wait(page)
+    assert page.evaluate("Chart.getChart('explanation-local-chart').data.datasets[0].data.some(x=>x<0)")
+    _stage21_select(page,'explanation-method','mdi')
+    assert 'not' in page.evaluate("document.getElementById('explanation-feature-detail').textContent").lower()
+    assert page.evaluate("document.querySelectorAll('#explanation-global-table tr').length")==20
+    _stage21_select(page,'explanation-feature','C1')
+    assert 'C1:' in page.evaluate("document.getElementById('explanation-feature-detail').textContent")
+    page.evaluate("document.getElementById('explanation-method').focus()")
+    for ch in 'mean':
+        page.send('Input.dispatchKeyEvent',{'type':'keyDown','key':ch,'code':'Key'+ch.upper(),'text':ch,'windowsVirtualKeyCode':ord(ch.upper())});page.send('Input.dispatchKeyEvent',{'type':'keyUp','key':ch})
+    page.send('Input.dispatchKeyEvent',{'type':'keyDown','key':'Enter','code':'Enter','windowsVirtualKeyCode':13,'text':'\r'});page.send('Input.dispatchKeyEvent',{'type':'keyUp','key':'Enter','code':'Enter','windowsVirtualKeyCode':13})
+    assert page.evaluate("document.getElementById('explanation-method').value")=='shap'
+    _stage21_select(page,'explanation-transaction','TXN-DEMO-0101-0047');_explanation_wait(page)
+    page.evaluate("document.getElementById('explanation-reset').focus()")
+    page.send('Input.dispatchKeyEvent',{'type':'keyDown','key':'Enter','code':'Enter','windowsVirtualKeyCode':13,'text':'\r'});page.send('Input.dispatchKeyEvent',{'type':'keyUp','key':'Enter','code':'Enter','windowsVirtualKeyCode':13});_explanation_wait(page)
+    assert page.evaluate("document.getElementById('explanation-transaction').value")=='TXN-DEMO-0101-0000'
+    assert page.evaluate('document.body.scrollWidth<=innerWidth')
+    if width>900:
+        assert page.evaluate("document.querySelector('.view-container').scrollHeight<=document.querySelector('.view-container').clientHeight+1")
+        assert page.evaluate("Chart.getChart('explanation-local-chart').chartArea.bottom-Chart.getChart('explanation-local-chart').chartArea.top")>=40
+    page.click('.explanation-methodology summary')
+    if width>900:assert page.evaluate("document.querySelector('.view-container').scrollHeight<=document.querySelector('.view-container').clientHeight+1")
+    page.click('.explanation-methodology summary')
+    for view in ['capacity','benchmark','monitoring','workflow','queue','explainability']:
+        page.click(f'.sidenav-list a[data-view="{view}"]')
+        assert page.evaluate("document.querySelector('.view.active').dataset.view")==view
+    assert page.evaluate("localStorage.getItem('fri.demo.cases.v1.101.48')")==stored
+    assert not [m for m in page.console_messages if m[0] in ['error','exception']]
+    page.evaluate('localStorage.clear()')
+
+
+def test_explainability_unavailable_asset_retry_does_not_break_cases(browser_env):
+    p=CDPSession(browser_env['cdp_port'],'about:blank')
+    try:
+        p.send('Page.addScriptToEvaluateOnNewDocument',{'source':"window.realFetch=window.fetch;window.fetch=(url,...args)=>String(url).includes('/v1/dashboard/explainability')?Promise.resolve(new Response('{}',{status:503})):window.realFetch(url,...args);"})
+        p.navigate(browser_env['static_origin']+'/dashboard.html#/explainability');p.wait_for_queue_data()
+        deadline=time.monotonic()+10
+        while time.monotonic()<deadline and p.evaluate("document.getElementById('explanation-retry').hidden"):time.sleep(.1)
+        assert p.evaluate("document.getElementById('explanation-workspace').hidden")
+        p.evaluate('window.fetch=window.realFetch');p.click('#explanation-retry');_explanation_wait(p)
+        p.click('.sidenav-list a[data-view="queue"]')
+        assert p.evaluate("document.querySelectorAll('#queue-tbody tr[data-id]').length")==48
+    finally:p.close()
+
+
+def test_explainability_rejects_mismatched_local_score_and_recovers(browser_env):
+    p=CDPSession(browser_env['cdp_port'],'about:blank')
+    try:
+        p.send('Page.addScriptToEvaluateOnNewDocument',{'source':"window.realFetch=window.fetch;window.fetch=async(url,...args)=>{const r=await window.realFetch(url,...args);if(!String(url).includes('/v1/dashboard/explanation?'))return r;const a=await r.json();a.score=1;return new Response(JSON.stringify(a),{status:200});};"})
+        p.navigate(browser_env['static_origin']+'/dashboard.html#/explainability');p.wait_for_queue_data()
+        deadline=time.monotonic()+10
+        while time.monotonic()<deadline and p.evaluate("document.getElementById('explanation-local-retry').hidden"):time.sleep(.1)
+        assert 'do not match' in p.evaluate("document.getElementById('explanation-local-status').textContent")
+        assert p.evaluate("document.getElementById('explanation-local-table').children.length")==0
+        p.evaluate('window.fetch=window.realFetch');p.click('#explanation-local-retry');_explanation_wait(p)
+    finally:p.close()
+
+
+def test_explainability_mdi_only_fallback_never_claims_completed_shap(browser_env):
+    p=CDPSession(browser_env['cdp_port'],'about:blank')
+    try:
+        p.send('Page.addScriptToEvaluateOnNewDocument',{'source':"window.realFetch=window.fetch;window.fetch=async(url,...args)=>{const r=await window.realFetch(url,...args);if(!String(url).includes('/v1/dashboard/explainability'))return r;const a=await r.json();delete a.methods.shap;a.capabilities.global_shap=false;a.capabilities.local_shap=false;a.baseline=null;a.stability={status:'insufficient',reason:'Test-only SHAP validation unavailable'};a.unavailable_reason='SHAP unavailable; validated MDI only.';return new Response(JSON.stringify(a),{status:200});};"})
+        p.navigate(browser_env['static_origin']+'/dashboard.html#/explainability');p.wait_for_queue_data()
+        deadline=time.monotonic()+10
+        while time.monotonic()<deadline and p.evaluate("document.getElementById('explanation-workspace').hidden"):time.sleep(.1)
+        assert not p.evaluate("document.getElementById('explanation-workspace').hidden")
+        assert p.evaluate("document.getElementById('explanation-method').value")=='mdi'
+        assert p.evaluate("document.querySelector('#explanation-method option[value=shap]').disabled")
+        assert 'SHAP unavailable; MDI from fitted trees only' in p.evaluate("document.getElementById('explanation-provenance').textContent")
+        assert p.evaluate("document.getElementById('explanation-local-table').children.length")==0
+        assert not [m for m in p.console_messages if m[0] in ['error','exception']]
+    finally:p.close()

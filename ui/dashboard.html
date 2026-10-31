@@ -27,6 +27,7 @@
       <li><a href="#/workflow" data-view="workflow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="4.5" height="16" rx="1"/><rect x="9.75" y="4" width="4.5" height="10" rx="1"/><rect x="16.5" y="4" width="4.5" height="13" rx="1"/></svg><span class="label">Workflow board</span></a></li>
       <li><a href="#/insights" data-view="insights"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg><span class="label">Model insights</span></a></li>
       <li><a href="#/benchmark" data-view="benchmark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V4M4 20h16M8 17V9M13 17V5M18 17v-6"/></svg><span class="label">Model benchmarking</span></a></li>
+      <li><a href="#/explainability" data-view="explainability"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h12M4 18h8"/></svg><span class="label">Model explainability</span></a></li>
       <li><a href="#/monitoring" data-view="monitoring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="label">Model monitoring</span></a></li>
       <li><a href="#/capacity" data-view="capacity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V4M4 20h16M7 16l4-5 4 2 5-8"/></svg><span class="label">Capacity simulator</span></a></li>
       <li><a href="#/responsible-ai" data-view="responsible-ai"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg><span class="label">Responsible use</span></a></li>
@@ -251,6 +252,26 @@
         </div>
       </section>
 
+      <section class="view explanation-view" data-view="explainability" aria-labelledby="view-heading-explainability">
+        <h2 id="view-heading-explainability" class="view-heading" tabindex="-1">Model Explainability</h2>
+        <p class="capacity-disclosure">Deployed frozen Random Forest only · global validation sample and fixed synthetic local examples. Contributions explain uncalibrated model scores, never fraud causation, calibrated probabilities or a fraud verdict.</p>
+        <p id="explanation-status" role="status" aria-live="polite">Open this view to load verified explanations.</p><button id="explanation-retry" class="ghost" type="button" hidden>Retry explanations</button>
+        <div id="explanation-workspace" hidden>
+          <div class="explanation-controls panel">
+            <label>Global method<select id="explanation-method"><option value="shap">Mean absolute grouped TreeSHAP</option><option value="mdi">Impurity importance (MDI)</option></select></label>
+            <label>Feature interpretation<select id="explanation-feature"></select></label>
+            <button id="explanation-reset" class="ghost" type="button">Reset explanation controls</button>
+          </div>
+          <p id="explanation-provenance" class="panel-note"></p>
+          <div class="explanation-charts">
+            <div class="panel"><h3 id="explanation-global-title">Global importance</h3><p id="explanation-global-note" class="panel-note"></p><div class="explanation-canvas"><canvas id="explanation-global-chart" role="img" aria-label="Global importance for frozen Random Forest; values in table"></canvas></div></div>
+            <div class="panel"><h3>Synthetic local score contributions</h3><label class="explanation-local-label">Current demo batch <select id="explanation-transaction" aria-describedby="explanation-local-scope"></select></label><p id="explanation-local-scope" class="panel-note">Change batch in <a href="#/queue">Queue</a>. Notes remain browser-local.</p><p id="explanation-local-status" role="status" aria-live="polite"></p><button id="explanation-local-retry" class="ghost" type="button" hidden>Retry local explanation</button><div class="explanation-canvas"><canvas id="explanation-local-chart" role="img" aria-label="Signed contributions increase or decrease model score relative to baseline"></canvas></div></div>
+          </div>
+          <div class="panel explanation-details"><p id="explanation-feature-detail"></p><p id="explanation-reconciliation" aria-live="polite"></p><div class="explanation-tables"><div class="explanation-table-wrap"><table><caption>Global values · displayed to 6 decimals</caption><thead><tr><th scope="col">Raw input group</th><th scope="col">Importance</th></tr></thead><tbody id="explanation-global-table"></tbody></table></div><div class="explanation-table-wrap"><table><caption>Local score contributions · displayed to 6 decimals</caption><thead><tr><th scope="col">Group / baseline</th><th scope="col">Signed value</th></tr></thead><tbody id="explanation-local-table"></tbody></table></div></div></div>
+          <details class="panel explanation-methodology"><summary>Methods, stability and investigation guidance</summary><p>MDI sums fitted impurity importance across a raw input's numeric, missingness and one-hot columns. It is biased by cardinality and correlation; it is not permutation sensitivity. TreeSHAP first sums signed components per raw input, then averages absolute grouped contributions across 512 label-free validation examples. These are different statistics, not interchangeable evidence of causal importance.</p><p>Local baseline uses the trees' recorded weighted training paths. Positive/negative contributions increase/decrease this model score relative to that baseline. Other features retains every omitted contribution. Additivity is a numerical identity, not proof that a feature causes fraud. Synthetic numeric defaults and unknown categories can be unrepresentative.</p><p id="explanation-stability"></p><p>Use these associations to guide investigation of data quality and case context; do not automate declines or promote experimental challengers. Reference assumptions, correlated inputs, anonymised features and reused validation limit interpretation.</p><div id="explanation-limitations"></div></details>
+        </div>
+      </section>
+
       <section class="view monitoring-view" data-view="monitoring" aria-labelledby="view-heading-monitoring">
         <h2 id="view-heading-monitoring" class="view-heading" tabindex="-1">Model Monitoring</h2>
         <p class="capacity-disclosure">Historical validation demonstration · not live production monitoring. Distribution shifts do not prove performance deterioration. Scores are uncalibrated ranks; no new verified fraud labels or current precision/recall.</p>
@@ -341,8 +362,9 @@
         <div class="view-fill">
           <div class="insights-grid">
             <div class="panel insights-drivers-panel">
-              <h3>Top model-level risk drivers</h3>
-              <p class="panel-note">The model's own global permutation-importance ranking (Stage 11 explainability), computed once, offline &mdash; not a live, per-transaction explanation of any specific score on this page.</p>
+              <h3>Historical Stage 11 SHAP context</h3>
+              <p class="panel-note">Historical Stage 11 summed mean-absolute SHAP ranking from a balanced training sample and separate fitted experiment, computed offline &mdash; not a live, per-transaction explanation of any specific score on this page.</p>
+              <p class="panel-note"><a href="#/explainability">Open verified explanations of the deployed artifact</a>. These historical values remain unchanged.</p>
               <ol class="feature-list feature-list-lg" id="insights-feature-importance"></ol>
             </div>
             <div class="panel">
@@ -423,6 +445,7 @@
       <details open><summary>Local activity history</summary><ol id="case-history"></ol></details>
     </div>
   </section>
+  <button id="drawer-explain" class="ghost" type="button">Explain this synthetic score</button>
   <dl>
     <dt>ProductCD</dt><dd id="drawer-product">&ndash;</dd>
     <dt>Card network</dt><dd id="drawer-card">&ndash;</dd>
@@ -430,8 +453,8 @@
     <dt>Seeded transaction status (not analyst decision)</dt><dd id="drawer-status">&ndash;</dd>
     <dt>Queue order</dt><dd id="drawer-sequence">&ndash;</dd>
   </dl>
-  <dt style="color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em;">Feature highlights (model-level, not per-transaction)</dt>
-  <p class="panel-note" style="margin-top: 0.3rem;">These are the model's own globally most important features (Stage 11 explainability), shown for context &mdash; not a live, per-transaction explanation of this specific score.</p>
+  <dt style="color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em;">Historical Stage 11 context (not this transaction)</dt>
+  <p class="panel-note" style="margin-top: 0.3rem;">Historical Stage 11 SHAP values from a separate fit and balanced training sample; retained for context, not verified attributions for this deployed score. Use Explain this synthetic score for the current frozen-artifact explanation.</p>
   <ol class="feature-list" id="drawer-features"></ol>
 </aside>
 
@@ -441,5 +464,6 @@
 <script src="capacity.js"></script>
 <script src="benchmark.js"></script>
 <script src="monitoring.js"></script>
+<script src="explainability.js"></script>
 </body>
 </html>

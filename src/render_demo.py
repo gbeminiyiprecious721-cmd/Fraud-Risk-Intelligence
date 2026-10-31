@@ -146,6 +146,8 @@ DEMO_TRANSACTION = _demo_payload()
 # can be configured without a second prediction pathway or code change.
 _artifact_override = os.environ.get("FRAUD_API_ARTIFACT_PATH")
 app = create_app(Path(_artifact_override) if _artifact_override else DEFAULT_ARTIFACT_PATH)
+# Restrict precomputed explanation lookup to the existing public24-row cohort.
+app.state.explanation_max_sequence = PUBLIC_DASHBOARD_BATCH_SIZE
 
 
 @app.middleware("http")
@@ -319,3 +321,8 @@ def case_ui_js():
 @app.get("/monitoring.js", include_in_schema=False)
 def monitoring_js():
     return FileResponse(_UI_DIR / "monitoring.js", media_type="application/javascript", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/explainability.js", include_in_schema=False)
+def explainability_js():
+    return FileResponse(_UI_DIR / "explainability.js", media_type="application/javascript", headers={"Cache-Control": "no-store"})
