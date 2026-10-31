@@ -286,7 +286,6 @@
     renderCharts(rows, state.raw);
     renderKanban(rows);
     window.CaseUI.workload(rows);
-    el("case-risk-filter").value = el("filter-band").value;
     renderInsightsFeatureImportance();
   }
 
@@ -423,13 +422,14 @@
   function queueRowHtml(t, columns) {
     const id = escapeHtml(t.transaction_id);
     const band = escapeHtml(t.risk_band);
+    const caseStatus = window.CaseUI.get(t.transaction_id)?.status || "Not opened";
     const cells = {
       id: `<td>${id}</td>`,
       product: `<td>${escapeHtml(t.product_cd)}</td>`,
       amount: `<td>${fmtMoney(t.amount)}</td>`,
       score: `<td>${fmtScore(t.risk_score)}</td>`,
       band: `<td><span class="risk-pill ${band}">${band}</span></td>`,
-      status: `<td><span class="status-pill" data-status="${escapeHtml(window.CaseUI.status(t))}">${escapeHtml(window.CaseUI.label(t))}</span></td>`,
+      status: `<td><span class="status-pill" data-status="${escapeHtml(caseStatus)}" title="${caseStatus === "Not opened" ? "Seeded display label only; no investigation case or analyst decision yet." : "Actual investigation case status, saved in this browser."}">${escapeHtml(window.CaseUI.label(t))}</span></td>`,
       sequence: `<td>#${t.sequence}</td>`,
       inspect: `<td><button type="button" class="ghost inspect-btn" data-id="${id}">Inspect</button></td>`,
     };
@@ -440,7 +440,7 @@
     updateSortHeaderIndicators();
     const tbody = el("queue-tbody");
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="table-empty">No synthetic transactions match the current filters.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="8" class="table-empty">${escapeHtml(window.CaseUI.emptyMessage())}</td></tr>`;
       applySelectionVisuals();
       return;
     }
@@ -465,7 +465,7 @@
     const PREVIEW_LIMIT = 8;
     const preview = rows.slice(0, PREVIEW_LIMIT);
     if (!preview.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="table-empty">No synthetic transactions match the current filters.</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="6" class="table-empty">${escapeHtml(window.CaseUI.emptyMessage())}</td></tr>`;
       applySelectionVisuals();
       return;
     }
@@ -488,7 +488,7 @@
       const inColumn = rows.filter((t) => window.CaseUI.status(t) === status);
       countEl.textContent = inColumn.length;
       if (!inColumn.length) {
-        container.innerHTML = '<p class="kanban-empty">No matching transactions</p>';
+        container.innerHTML = `<p class="kanban-empty">${rows.length ? 'No matching transactions in this lane.' : escapeHtml(window.CaseUI.emptyMessage())}</p>`;
         return;
       }
       container.innerHTML = inColumn
@@ -954,7 +954,7 @@
       el("filter-amount-max").value = 5000;
       el("filter-amount-max-value").textContent = "$5,000";
       el("filter-search").value = "";
-      ["case-status-filter","case-analyst-filter","case-priority-filter","case-risk-filter"].forEach(id => el(id).value = "");
+      ["case-status-filter","case-analyst-filter","case-priority-filter"].forEach(id => el(id).value = "");
       applyFiltersAndRender();
     });
 

@@ -52,8 +52,8 @@
         <span class="capacity-context">Historical validation workspace · synthetic batch filters do not apply</span>
         <div class="header-search">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <label for="filter-search" class="visually-hidden">Search transaction ID (applies across every view)</label>
-          <input type="search" id="filter-search" placeholder="Search transaction ID (e.g. TXN-DEMO-...)">
+          <label for="filter-search" class="visually-hidden">Search transaction or case ID (synthetic views)</label>
+          <input type="search" id="filter-search" placeholder="Search transaction or case ID">
         </div>
         <div class="header-batch-select-wrap">
           <label for="batch-select">Demo batch</label>
@@ -65,17 +65,29 @@
             <option value="505">Sequence 5</option>
           </select>
         </div>
+        <div class="header-batch-select-wrap">
+            <label for="filter-band">Risk band</label>
+            <select id="filter-band">
+              <option value="">All bands</option>
+              <option value="Critical">Critical</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        <button type="button" class="ghost" id="reset-filters-btn" title="Clear every case and transaction filter; keep saved cases and notes">Clear all filters</button>
         <button type="button" class="icon-btn" id="reload-btn" title="Re-score the current demo sequence" aria-label="Reload current demo batch">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h5"/><path d="M20 20v-5h-5"/><path d="M5.5 9A7 7 0 0118 8.5M18.5 15A7 7 0 016 15.5"/></svg>
         </button>
         <span id="global-scope-status" class="scope-status" role="status" aria-live="polite"></span>
         <div id="case-filters" class="case-filters" aria-label="Investigation case filters">
-          <label>Status <select id="case-status-filter"><option value="">All statuses</option><option>Not opened</option><option>New</option><option>In Review</option><option>Escalated</option><option>Resolved</option></select></label>
-          <label>Demo analyst <select id="case-analyst-filter"><option value="">All analysts</option><option>Unassigned</option><option>Fictional Analyst A</option><option>Fictional Analyst B</option><option>Fictional Analyst C</option></select></label>
-          <label>Priority <select id="case-priority-filter"><option value="">All priorities</option><option>Normal</option><option>High</option><option>Urgent</option></select></label>
-          <label>Risk band <select id="case-risk-filter"><option value="">All bands</option><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></label>
-          <button type="button" class="ghost" id="case-clear-filters">Clear case filters</button>
-          <button type="button" class="ghost" id="case-reset">Reset Demo Cases</button>
+          <label>Case status <select id="case-status-filter" aria-describedby="case-filter-help"><option value="">All transactions</option><option>Not opened</option><optgroup label="Opened case statuses"><option>New</option><option>In Review</option><option>Escalated</option><option>Resolved</option></optgroup></select></label>
+          <label>Case analyst <select id="case-analyst-filter" aria-describedby="case-filter-help"><option value="">All analysts</option><option>Unassigned</option><option>Fictional Analyst A</option><option>Fictional Analyst B</option><option>Fictional Analyst C</option></select></label>
+          <label>Case priority <select id="case-priority-filter" aria-describedby="case-filter-help"><option value="">All priorities</option><option>Normal</option><option>High</option><option>Urgent</option></select></label>
+
+          <button type="button" class="ghost" id="case-clear-filters" title="Clear only case status, analyst and priority; keep transaction filters and saved cases">Clear case filters</button>
+          <button type="button" class="ghost" id="case-reset" title="Delete saved case changes for this batch after confirmation">Reset Demo Cases</button>
+          <p id="case-filter-help" class="case-filter-help"></p>
         </div>
       </div>
     </header>
@@ -107,7 +119,7 @@
           <div class="table-scroll table-scroll-preview">
             <table class="queue" id="preview-table">
               <thead>
-                <tr><th>Transaction ID</th><th>ProductCD</th><th>Amount</th><th>Risk score</th><th>Risk band</th><th>Status</th></tr>
+                <tr><th>Transaction ID</th><th>ProductCD</th><th>Amount</th><th>Risk score</th><th>Risk band</th><th>Case / seeded display status</th></tr>
               </thead>
               <tbody id="preview-tbody"></tbody>
             </table>
@@ -131,23 +143,12 @@
             <label for="filter-card-network">Card network</label>
             <select id="filter-card-network"><option value="">All networks</option></select>
           </div>
-          <div class="control-field">
-            <label for="filter-band">Risk band</label>
-            <select id="filter-band">
-              <option value="">All bands</option>
-              <option value="Critical">Critical</option>
-              <option value="High">High</option>
-              <option value="Medium">Medium</option>
-              <option value="Low">Low</option>
-            </select>
-          </div>
           <div class="control-field amount-range">
             <label for="filter-amount-max">Max transaction amount (<span id="filter-amount-max-value">$5,000</span>)</label>
             <div class="amount-range-inputs">
               <input type="range" id="filter-amount-max" min="5" max="5000" step="5" value="5000">
             </div>
           </div>
-          <button type="button" class="ghost" id="reset-filters-btn">Reset all filters</button>
           <span id="controls-status" role="status" aria-live="polite"></span>
         </section>
         <div class="view-fill">
@@ -162,7 +163,7 @@
                     <th class="sortable" data-sort-key="amount" aria-sort="none"><button type="button">Amount <span class="sort-caret">&#9662;</span></button></th>
                     <th class="sortable" data-sort-key="risk_score" aria-sort="descending"><button type="button">Risk score <span class="sort-caret">&#9662;</span></button></th>
                     <th>Risk band</th>
-                    <th>Status</th>
+                    <th>Case / seeded display status</th>
                     <th>Order</th>
                     <th><span class="visually-hidden">Actions</span></th>
                   </tr>
